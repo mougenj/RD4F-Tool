@@ -1,16 +1,22 @@
 import sip
 sip.setdestroyonexit(True)
 
-from PyQt5.QtCore import *
+#from PyQt5.QtCore import *
 from PyQt5.QtWidgets import (QApplication,
                              QWidget,
                              QPushButton,
                              QLabel,
                              QHBoxLayout,
                              QVBoxLayout, 
-                             QTabWidget)
+                             QTabWidget,
+                             QScrollArea,
+                             QGridLayout,
+                             QScroller,
+                             QFormLayout)
 from PyQt5.QtGui import QIcon, QPixmap
 import sys
+import matplotlib.pyplot as plt
+import json
 
 
 class App(QWidget):
@@ -30,9 +36,9 @@ class App(QWidget):
 
         tabs = QTabWidget()
         tabs.resize(self.width, self.height)
-        tabs.addTab(self.create_fisrt_tab(), "Tab 1")
-        tabs.addTab(self.create_second_tab(), "Tab 2")
-        tabs.addTab(self.create_third_tab(), "Tab 3")
+        tabs.addTab(self.create_fisrt_tab(), "Lecture")
+        tabs.addTab(self.create_second_tab(), "Ecriture")
+        tabs.addTab(self.create_third_tab(), "Post-traitement")
 
         layout = QVBoxLayout()  # contient les tabs
         layout.addWidget(tabs)
@@ -47,6 +53,7 @@ class App(QWidget):
         tab1.layout = QHBoxLayout()
         tab1.setLayout(tab1.layout)
         # fill it
+        tab1.layout.addWidget(self.create_scroll())
         label = QLabel(self)
         pixmap = QPixmap('image.png')
         label.setPixmap(pixmap)
@@ -70,24 +77,28 @@ class App(QWidget):
         tab3 = QWidget()
         tab3.layout = QVBoxLayout()
         tab3.setLayout(tab3.layout)
+        # fill it
         # return it
         return tab3
+    
+    def create_scroll(self):
+        scroll_area = QScrollArea()
+        layout = QGridLayout()
+        layout.addWidget(scroll_area)
 
+        scroll_widget = QWidget()
+        scroll_layout = QFormLayout(scroll_widget)
 
+        for i in range(200):
+            scroll_layout.addRow(QLabel('Label #{}'.format(i)))
 
+        scroll_area.setWidget(scroll_widget)
 
-# def main(args):
-#     app = QApplication(args)
-#     widget = QWidget(None)
-#     widget.resize(400,90)
-#     button = QPushButton("Hello World !", widget)
-#     button.resize(100,30)
-#     widget.show()
-#     app.exec_()
-# if __name__ == "__main__":
-#     main(sys.argv)
+        QScroller.grabGesture(
+            scroll_area.viewport(), QScroller.LeftMouseButtonGesture
+        )
 
-
+        return scroll_area
 
 if __name__ == '__main__':
     print("création de l'interface")
