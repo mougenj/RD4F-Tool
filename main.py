@@ -21,7 +21,7 @@ import random as rd
 import sys
 import matplotlib.pyplot as plt
 import json
-
+from functools import partial
 
 class App(QWidget):
 
@@ -76,10 +76,6 @@ class App(QWidget):
         tab2.layout.addWidget(boutton)
         # return it
         return tab2
-    
-    @pyqtSlot()
-    def on_click(self):
-        print('PyQt5 button click')
 
     def create_third_tab(self):
         # create the tab
@@ -94,6 +90,7 @@ class App(QWidget):
         with open("json.txt", "r") as fichier:
             chaine = fichier.read()
         data = json.loads(chaine)
+        self.data = data
 
         # element[1] is the data, so we get all the len() of the data
         number_of_column = max([len(element[1]) for element in data])
@@ -105,11 +102,17 @@ class App(QWidget):
         grid_layout = QGridLayout(scrollAreaWidgetContents)
         for i, element in enumerate(data):
             name, values = element
+            # first of all, place the name at the beginning of the line
             grid_layout.addWidget(QLabel(name), i, 0)
             for j, value in enumerate(values):
+                # add a spinbox at the right place with the right value
                 sp = QSpinBox()
                 sp.setValue(value)
                 grid_layout.addWidget(sp, i, j+1)
+            # last but not least, let's create a button at the end of the line
+            bt = QPushButton("Tracer") 
+            bt.clicked.connect(partial(self.on_click_tracer, data[i]))
+            grid_layout.addWidget(bt, i, len(data) + 1)
 
         QScroller.grabGesture(
             scroll_area.viewport(), QScroller.LeftMouseButtonGesture
@@ -118,9 +121,22 @@ class App(QWidget):
         scroll_area.setWidget(scrollAreaWidgetContents)
         return scroll_area
 
+    @pyqtSlot()
+    def on_click(self):
+        print('PyQt5 button click')
+
+    @pyqtSlot()
+    def on_click_tracer(self, line):
+        print('Tracons la courbe de la ligne ' + line)
+        name, values = line
+        if name == "S" or name == "D":
+            pass
 
 def create_json_example():
     data = []
+    # ajout de données sensées
+    data.append(["D", [1, 6]])
+    data.append(["S", [1, 6]])
     alphabet_latin = [chr(x) for x in range(ord('a'), ord('z') + 1)]
     #ecriture de 5 nom au hasard de 9 caractere de long
     liste_nom_equation = []
