@@ -12,8 +12,10 @@ from PyQt5.QtWidgets import (QApplication,
                              QScrollArea,
                              QGridLayout,
                              QScroller,
-                             QFormLayout)
+                             QFormLayout,
+                             QSpinBox)
 from PyQt5.QtGui import QIcon, QPixmap
+import random as rd
 import sys
 import matplotlib.pyplot as plt
 import json
@@ -82,6 +84,10 @@ class App(QWidget):
         return tab3
     
     def create_scroll(self):
+        with open("json.txt", "r") as fichier:
+            chaine = fichier.read()
+        data = json.loads(chaine)
+        # print("I loaded", data)
         scroll_area = QScrollArea()
         layout = QGridLayout()
         layout.addWidget(scroll_area)
@@ -89,8 +95,20 @@ class App(QWidget):
         scroll_widget = QWidget()
         scroll_layout = QFormLayout(scroll_widget)
 
-        for i in range(200):
-            scroll_layout.addRow(QLabel('Label #{}'.format(i)))
+        for element in data:
+            # create a line
+            line = QWidget()
+            line.layout = QHBoxLayout()
+            line.setLayout(line.layout)
+            
+            #fill the line
+            name, values = element
+            line.layout.addWidget(QLabel(name))
+            for value in values:
+                sp = QSpinBox()
+                sp.setValue(value)
+                line.layout.addWidget(sp)
+            scroll_layout.addRow(line)
 
         scroll_area.setWidget(scroll_widget)
 
@@ -100,14 +118,32 @@ class App(QWidget):
 
         return scroll_area
 
+
+def create_json_example():
+    data = []
+    alphabet_latin = [chr(x) for x in range(ord('a'), ord('z') + 1)]
+    #ecriture de 5 nom au hasard de 9 caractere de long
+    liste_nom_equation = []
+    for _ in range(5):
+        nom = "".join([rd.choice(alphabet_latin) for _ in range(9)])
+        liste_nom_equation.append(nom)
+    for nom in liste_nom_equation:
+        data.append((nom, [rd.randint(0, 50) for _ in range(rd.randint(1, 5))]))
+    chaine = json.dumps(data, indent=4)
+    with open("json.txt", "w") as fichier:
+        fichier.write(chaine)
+    # print(chaine)
+
+
 if __name__ == '__main__':
-    print("création de l'interface")
+    create_json_example()
+    #print("création de l'interface")
     #print(sys.argv)
     app = QApplication(sys.argv)
-    print("lancement de l'interface")
+    #print("lancement de l'interface")
     ex = App()
-    print("sortie de l'interface")
+    #print("sortie de l'interface")
     rc = app.exec_()
-    print("sortie prog")
+    #print("sortie prog")
     del app
     sys.exit(rc)
