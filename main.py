@@ -2,6 +2,7 @@ import sip
 sip.setdestroyonexit(True)
 
 #from PyQt5.QtCore import *
+from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import (QApplication,
                              QWidget,
                              QPushButton,
@@ -13,7 +14,8 @@ from PyQt5.QtWidgets import (QApplication,
                              QGridLayout,
                              QScroller,
                              QFormLayout,
-                             QSpinBox)
+                             QSpinBox,
+                             QGroupBox)
 from PyQt5.QtGui import QIcon, QPixmap
 import random as rd
 import sys
@@ -70,10 +72,15 @@ class App(QWidget):
         tab2.setLayout(tab2.layout)
         # fill it
         boutton = QPushButton("PyQt5 button")
+        boutton.clicked.connect(self.on_click)
         tab2.layout.addWidget(boutton)
         # return it
         return tab2
     
+    @pyqtSlot()
+    def on_click(self):
+        print('PyQt5 button click')
+
     def create_third_tab(self):
         # create the tab
         tab3 = QWidget()
@@ -87,35 +94,28 @@ class App(QWidget):
         with open("json.txt", "r") as fichier:
             chaine = fichier.read()
         data = json.loads(chaine)
-        # print("I loaded", data)
+
+        # element[1] is the data, so we get all the len() of the data
+        number_of_column = max([len(element[1]) for element in data])
+        number_of_lines = len(data)
+        
         scroll_area = QScrollArea()
-        layout = QGridLayout()
-        layout.addWidget(scroll_area)
-
-        scroll_widget = QWidget()
-        scroll_layout = QFormLayout(scroll_widget)
-
-        for element in data:
-            # create a line
-            line = QWidget()
-            line.layout = QHBoxLayout()
-            line.setLayout(line.layout)
-            
-            #fill the line
+        #scroll_area.setWidgetResizable(True)
+        scrollAreaWidgetContents = QWidget()
+        grid_layout = QGridLayout(scrollAreaWidgetContents)
+        for i, element in enumerate(data):
             name, values = element
-            line.layout.addWidget(QLabel(name))
-            for value in values:
+            grid_layout.addWidget(QLabel(name), i, 0)
+            for j, value in enumerate(values):
                 sp = QSpinBox()
                 sp.setValue(value)
-                line.layout.addWidget(sp)
-            scroll_layout.addRow(line)
-
-        scroll_area.setWidget(scroll_widget)
+                grid_layout.addWidget(sp, i, j+1)
 
         QScroller.grabGesture(
             scroll_area.viewport(), QScroller.LeftMouseButtonGesture
         )
 
+        scroll_area.setWidget(scrollAreaWidgetContents)
         return scroll_area
 
 
