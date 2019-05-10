@@ -14,13 +14,14 @@ from PyQt5.QtWidgets import (QApplication,
                              QGridLayout,
                              QScroller,
                              QFormLayout,
-                             QSpinBox,
+                             QDoubleSpinBox,
                              QGroupBox)
 from PyQt5.QtGui import QIcon, QPixmap
 import random as rd
 import sys
 import matplotlib.pyplot as plt
 import json
+import numpy as np
 from functools import partial
 
 class App(QWidget):
@@ -30,7 +31,7 @@ class App(QWidget):
         self.title = 'Titre'
         self.left = 10
         self.top = 10
-        self.width = 640
+        self.width = 1800  # 640
         self.height = 480
         self.initUI()
 
@@ -59,11 +60,20 @@ class App(QWidget):
         # fill it
         tab1.layout.addWidget(self.create_scroll())
         label = QLabel(self)
-        pixmap = QPixmap('image.png')
+        pixmap = QPixmap('name.png')
         label.setPixmap(pixmap)
         tab1.layout.addWidget(label)
         #return it
         return tab1
+
+    def update_first_tab_image(self, name):
+        tabWidget = self.findChildren(QTabWidget)[0]
+        labels = tabWidget.findChildren(QLabel)
+
+        for label in labels:
+            if label.pixmap() is not None:
+                pixmap = QPixmap(name)
+                label.setPixmap(pixmap)
     
     def create_second_tab(self):
         # create the tab
@@ -89,30 +99,31 @@ class App(QWidget):
     def create_scroll(self):
         with open("json.txt", "r") as fichier:
             chaine = fichier.read()
-        data = json.loads(chaine)
-        self.data = data
+        self.data = json.loads(chaine)
 
         # element[1] is the data, so we get all the len() of the data
-        number_of_column = max([len(element[1]) for element in data])
-        number_of_lines = len(data)
+        number_of_column = max([len(element[1]) for element in self.data])
+        number_of_lines = len(self.data)
         
         scroll_area = QScrollArea()
         #scroll_area.setWidgetResizable(True)
         scrollAreaWidgetContents = QWidget()
         grid_layout = QGridLayout(scrollAreaWidgetContents)
-        for i, element in enumerate(data):
+        for i, element in enumerate(self.data):
             name, values = element
             # first of all, place the name at the beginning of the line
             grid_layout.addWidget(QLabel(name), i, 0)
             for j, value in enumerate(values):
                 # add a spinbox at the right place with the right value
-                sp = QSpinBox()
+                sp = QDoubleSpinBox()
+                sp.setObjectName(json.dumps([i, j]))
                 sp.setValue(value)
+                sp.valueChanged.connect(self.on_update_spin_box)
                 grid_layout.addWidget(sp, i, j+1)
             # last but not least, let's create a button at the end of the line
             bt = QPushButton("Tracer") 
-            bt.clicked.connect(partial(self.on_click_tracer, data[i]))
-            grid_layout.addWidget(bt, i, len(data) + 1)
+            bt.clicked.connect(partial(self.on_click_tracer, self.data[i]))
+            grid_layout.addWidget(bt, i, len(self.data) + 1)
 
         QScroller.grabGesture(
             scroll_area.viewport(), QScroller.LeftMouseButtonGesture
@@ -124,21 +135,41 @@ class App(QWidget):
     @pyqtSlot()
     def on_click(self):
         print('PyQt5 button click')
+        # self.update_first_tab_image("image.png")
+
+    def on_update_spin_box(self):
+        spinbox = self.sender()
+        # print(spinbox.objectName(), "is now", spinbox.value())
+        i, j = json.loads(spinbox.objectName())
+        self.data[i][1][j] = spinbox.value()
+        # print(self.data)
+
 
     @pyqtSlot()
     def on_click_tracer(self, line):
-        print('Tracons la courbe de la ligne ' + line)
+        print('Tracons la courbe de la ligne ' + str(line))
         name, values = line
         if name == "S" or name == "D":
-            pass
+            debut, fin, pas = 300, 2500, 0.1
+            les_temperatures = np.arange(debut, fin, pas)
+            d_0 = values[0] #6*10**-4
+            e_d = values[1]#1.04
+            k_b = 1.38064852 * 10**(-23) * 8.617e+18
+            les_d = d_0 * np.exp(-e_d/(k_b * les_temperatures))
+            plt.plot(1000/les_temperatures, les_d)
+            plt.savefig("name.png")
+            self.update_first_tab_image("name.png")
+        else:
+            print("Fonction non reconnue.")
+
 
 def create_json_example():
     data = []
-    # ajout de données sensées
+    # ajout de données "sensées"
     data.append(["D", [1, 6]])
     data.append(["S", [1, 6]])
     alphabet_latin = [chr(x) for x in range(ord('a'), ord('z') + 1)]
-    #ecriture de 5 nom au hasard de 9 caractere de long
+    # ecriture de 5 nom au hasard de 9 caractere de long
     liste_nom_equation = []
     for _ in range(5):
         nom = "".join([rd.choice(alphabet_latin) for _ in range(9)])
