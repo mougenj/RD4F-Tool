@@ -34,7 +34,7 @@ class App(QWidget):
         self.width = 1800  # 640
         self.height = 480
         self.initUI()
-        self.plots = [plt.subplots() for _ in rang(3)]  # 3 subplots
+        self.plots = [plt.subplots() for _ in range(3)]  # 3 subplots
 
     def initUI(self):
         self.setWindowTitle(self.title)
