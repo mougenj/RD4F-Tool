@@ -34,6 +34,7 @@ class App(QWidget):
         self.width = 1800  # 640
         self.height = 480
         self.initUI()
+        self.plots = [plt.subplots() for _ in rang(3)]  # 3 subplots
 
     def initUI(self):
         self.setWindowTitle(self.title)
@@ -59,10 +60,38 @@ class App(QWidget):
         tab1.setLayout(tab1.layout)
         # fill it
         tab1.layout.addWidget(self.create_scroll())
-        label = QLabel(self)
-        pixmap = QPixmap('name.png')
-        label.setPixmap(pixmap)
-        tab1.layout.addWidget(label)
+
+        # let's add tabs in the 1st tab
+        tabs = QTabWidget()
+
+        def make_tab():
+            tab = QWidget()
+            tab.layout = QHBoxLayout()
+            tab.setLayout(tab.layout)
+            return tab
+
+        def make_pixmap(name):
+            label = QLabel()
+            pixmap = QPixmap(name)
+            label.setPixmap(pixmap)
+            return label
+
+        # 1st image
+        tab1_1 = make_tab()
+        tab1_1.layout.addWidget(make_pixmap("tab1_1.png"))
+        tabs.addTab(tab1_1, "Non log")
+
+
+        tab1_2 = make_tab()
+        tab1_2.layout.addWidget(make_pixmap("tab1_2.png"))
+        tabs.addTab(tab1_2, "log-log")
+
+        tab1_3 = make_tab()
+        tab1_3.layout.addWidget(make_pixmap("tab1_3.png"))
+        tabs.addTab(tab1_3, "log-1/T")
+
+        tab1.layout.addWidget(tabs)
+
         #return it
         return tab1
 
@@ -139,10 +168,8 @@ class App(QWidget):
 
     def on_update_spin_box(self):
         spinbox = self.sender()
-        # print(spinbox.objectName(), "is now", spinbox.value())
         i, j = json.loads(spinbox.objectName())
         self.data[i][1][j] = spinbox.value()
-        # print(self.data)
 
 
     @pyqtSlot()
@@ -152,10 +179,13 @@ class App(QWidget):
         if name == "S" or name == "D":
             debut, fin, pas = 300, 2500, 0.1
             les_temperatures = np.arange(debut, fin, pas)
-            d_0 = values[0] #6*10**-4
-            e_d = values[1]#1.04
+            d_0 = values[0]  # 6*10**-4
+            e_d = values[1]  # 1.04
             k_b = 1.38064852 * 10**(-23) * 8.617e+18
             les_d = d_0 * np.exp(-e_d/(k_b * les_temperatures))
+            for plot in self.plots:
+                fig, ax = plot
+            plt.figure(0)  # 1st
             plt.plot(1000/les_temperatures, les_d)
             plt.savefig("name.png")
             self.update_first_tab_image("name.png")
