@@ -31,7 +31,7 @@ class App(QWidget):
         self.title = 'Titre'
         self.left = 10
         self.top = 10
-        self.width = 1800  # 640
+        self.width = 1500  # 640
         self.height = 480
         self.initUI()
         self.plots = [plt.subplots() for _ in range(3)]  # 3 subplots
@@ -70,24 +70,25 @@ class App(QWidget):
             tab.setLayout(tab.layout)
             return tab
 
-        def make_pixmap(name):
+        def make_pixmap(picture_name, label_name):
             label = QLabel()
-            pixmap = QPixmap(name)
+            label.setObjectName(label_name)
+            pixmap = QPixmap(picture_name)
             label.setPixmap(pixmap)
             return label
 
         # 1st image
         tab1_1 = make_tab()
-        tab1_1.layout.addWidget(make_pixmap("tab1_1.png"))
+        tab1_1.layout.addWidget(make_pixmap("tab1_1.png", "tab1_1.png"))
         tabs.addTab(tab1_1, "Non log")
 
 
         tab1_2 = make_tab()
-        tab1_2.layout.addWidget(make_pixmap("tab1_2.png"))
+        tab1_2.layout.addWidget(make_pixmap("tab1_2.png", "tab1_2.png"))
         tabs.addTab(tab1_2, "log-log")
 
         tab1_3 = make_tab()
-        tab1_3.layout.addWidget(make_pixmap("tab1_3.png"))
+        tab1_3.layout.addWidget(make_pixmap("tab1_3.png", "tab1_3.png"))
         tabs.addTab(tab1_3, "log-1/T")
 
         tab1.layout.addWidget(tabs)
@@ -95,13 +96,14 @@ class App(QWidget):
         #return it
         return tab1
 
-    def update_first_tab_image(self, name):
+    def update_first_tab_image(self):
         tabWidget = self.findChildren(QTabWidget)[0]
         labels = tabWidget.findChildren(QLabel)
 
         for label in labels:
             if label.pixmap() is not None:
-                pixmap = QPixmap(name)
+                name_label = label.objectName()
+                pixmap = QPixmap(name_label)
                 label.setPixmap(pixmap)
     
     def create_second_tab(self):
@@ -164,7 +166,6 @@ class App(QWidget):
     @pyqtSlot()
     def on_click(self):
         print('PyQt5 button click')
-        # self.update_first_tab_image("image.png")
 
     def on_update_spin_box(self):
         spinbox = self.sender()
@@ -183,12 +184,22 @@ class App(QWidget):
             e_d = values[1]  # 1.04
             k_b = 1.38064852 * 10**(-23) * 8.617e+18
             les_d = d_0 * np.exp(-e_d/(k_b * les_temperatures))
-            for plot in self.plots:
-                fig, ax = plot
-            plt.figure(0)  # 1st
-            plt.plot(1000/les_temperatures, les_d)
-            plt.savefig("name.png")
-            self.update_first_tab_image("name.png")
+            for indice in range(len(self.plots)):
+                fig, ax = self.plots[indice]
+                if indice == 0:
+                    ax.plot(les_temperatures, les_d)
+                    fig.savefig("tab1_1.png")
+                elif indice == 1:
+                    ax.plot(np.log(les_temperatures, np.log(les_d)))
+                    fig.savefig("tab1_2.png")
+                elif indice == 2:
+                    ax.plot(1000/les_temperatures, les_d)
+                    fig.savefig("tab1_3.png")
+                else:
+                    print("trop de figure a tracer")
+                    print(indice, len(self.plots))
+
+            self.update_first_tab_image()
         else:
             print("Fonction non reconnue.")
 
