@@ -46,7 +46,8 @@ class App(QWidget):
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
 
-        tabs = QTabWidget()
+        tabs = QTabWidget()#tabsClosable=True
+        #tabs.setTabPosition(QTabWidget.West)
         tabs.resize(self.width, self.height)
         tabs.addTab(self.create_fisrt_tab(), "Lecture")
         tabs.addTab(self.create_second_tab(), "Ecriture")

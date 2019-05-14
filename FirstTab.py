@@ -12,13 +12,15 @@ from PyQt5.QtWidgets import (QApplication,
                              QScroller,
                              QFormLayout,
                              QDoubleSpinBox,
-                             QGroupBox)
+                             QGroupBox,
+                             QPlainTextEdit,
+                             QLineEdit)
 from PyQt5.QtGui import QIcon, QPixmap
 import matplotlib.pyplot as plt
 import json
 import numpy as np
 from functools import partial
-
+import DragAndDrop
 
 class FirstTab(QWidget):
 
@@ -30,14 +32,46 @@ class FirstTab(QWidget):
         self.data = data
         self.plots = plots
 
+        """
         # LEFT
+        # "onglets"
+        onglets = QWidget()
+        onglets.layout = QVBoxLayout()
+        onglets.setLayout(onglets.layout)
+        #exemple ajout
+        for i in range(10):
+            onglets.layout.addWidget(self.make_new_line_for_a_file())
+        self.layout.addWidget(onglets)
+        """
 
+        # LEFT
+        def decoupe(chaine):
+            if len(chaine) > 10:
+                return "..." + chaine[len(chaine)-5:]
         show_drop = QWidget()
         show_drop.layout = QVBoxLayout()
         show_drop.setLayout(show_drop.layout)
         show_drop.layout.addWidget(self.make_show_files())
-        show_drop.layout.addWidget(DragAndDrop.DragAndDrop("", self))
-        self.layout.addWidget(show_drop)
+
+        tab_left = QTabWidget(tabsClosable=True)
+        tab_left.setTabPosition(QTabWidget.West)
+        tab_left.addTab(show_drop, decoupe("une tab avec un nom super long qui va même dépasser de la fenetre tellement il est long"))
+        tab_left.addTab(QWidget(), "2")
+
+        add_files = QWidget()
+        add_files.layout = QHBoxLayout()
+        add_files.setLayout(add_files.layout)
+
+        add_files.layout.addWidget(DragAndDrop.FileEdit("glisser vos fichier ici"))
+        add_files.layout.addWidget(QPushButton("ajout de fichier"))        
+
+        files_vbox = QWidget()
+        files_vbox.layout = QVBoxLayout()
+        files_vbox.setLayout(files_vbox.layout)
+        files_vbox.layout.addWidget(tab_left)
+        files_vbox.layout.addWidget(add_files)
+
+        self.layout.addWidget(files_vbox)
 
 
         # RIGHT
@@ -79,12 +113,16 @@ class FirstTab(QWidget):
         return self.create_scroll()
     
     def make_new_line_for_a_file(self):
-        label = QLabel("I am a custom widget")
-        button = QPushButton("A useless button")
+        widget = QWidget()
+        widget.layout = QHBoxLayout()
+        widget.setLayout(widget.layout)
 
-        layout = QHBoxLayout()
-        layout.addWidget(label)
-        layout.addWidget(button)
+        label = QLabel("I am a new tab")
+        button = QPushButton("close")
+
+        widget.layout.addWidget(button)
+        widget.layout.addWidget(label)
+        return widget
 
     def create_scroll(self):
         scroll_area = QScrollArea()
@@ -120,7 +158,7 @@ class FirstTab(QWidget):
         self.data[i][1][j] = spinbox.value()
 
     def update_first_tab_image(self):
-        tabWidget = self.findChildren(QTabWidget)[0]
+        tabWidget = self.findChildren(QTabWidget)[1]
         labels = tabWidget.findChildren(QLabel)
 
         for label in labels:
