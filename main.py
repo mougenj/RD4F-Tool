@@ -24,7 +24,10 @@ def create_json_example():
     with open("json.txt", "w") as fichier:
         fichier.write(chaine)
 
-
+# todo: utiliser des QlistWidget (à partir du fichier testQListWi.py) pour faire des onglets. Ajouter des boutons pour la fermuture.
+# revoir le json et y ajouter des paramètres
+# ajouter un champs de recherche des valeurs sur le graphes en fonction de l'abscisse (qu'en est-il de s'il y a plusieurs courbes?)
+# lire le matlab
 if __name__ == '__main__':
     create_json_example()
     #print("création de l'interface")
