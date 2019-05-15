@@ -6,14 +6,22 @@ from PyQt5.QtGui import QIcon
 
 import sys
 import os
-
+import json
 
 class FileEdit(QLineEdit):
-    def __init__(self, title):
+    """
+        Petit hack ici:
+        la fonction dropEvent ne peut pas renvoyer des résultats
+        (on a un TypeError: invalid result from FileEdit.dropEvent())
+        alors on lui passe en paramètre une fonction, qu'il va executer lors de la reception de données
+    """
+    def __init__(self, title, trigger):  # , theReturnList):
         super(FileEdit, self).__init__()
         self.setText(title)
         self.setReadOnly(True)
         self.setDragEnabled(True)
+        self.trigger = trigger
+        # self.theReturnList = theReturnList
 
     def dragEnterEvent(self, event):
         data = event.mimeData()
@@ -30,14 +38,38 @@ class FileEdit(QLineEdit):
     def dropEvent(self, event):
         data = event.mimeData()
         urls = data.urls()
-        if urls and urls[0].scheme() == 'file':
-            filepath = str(urls[0].path())[1:]
-            # any file type here
-            if filepath[-4:].upper() == ".txt":
-                self.setText(filepath)
+        print(urls)
+        for url in urls:
+            print(url.scheme())       
+            filepath = str(url.path())
+            sucessfully_loaded = []
+            failed = []
+            try:
+                with open(filepath, "r") as fichier: 
+                    liste = json.loads(fichier.read())
+                print(liste, "was just sucessfully loaded")
+                sucessfully_loaded.append((filepath, liste))
+            except Exception as e:
+                failed.append(filepath)
+                print(e)
+        if failed:
+            dialog = QMessageBox()
+            if len(failed) > 1:
+                dialog.setWindowTitle("Error: Invalid Files")
             else:
-                dialog = QMessageBox()
                 dialog.setWindowTitle("Error: Invalid File")
-                dialog.setText("Only .txt files are accepted")
-                dialog.setIcon(QMessageBox.Warning)
-                dialog.exec_()
+            error_text = "An error occured when loading :"
+            for failure in failed:
+                error_text += "\n" + failure
+            dialog.setText(error_text)
+
+            dialog.setIcon(QMessageBox.Warning)
+            dialog.exec_()
+        for success in sucessfully_loaded:
+            get_name_from_path = lambda path : path.split("/")[-1].split('.', 1)[0]
+            filepath, liste = success
+            self.trigger(get_name_from_path(filepath), liste)
+        #return sucessfully_loaded
+
+        #self.theReturnList = self.theReturnList + sucessfully_loaded
+        #print(self.theReturnList)

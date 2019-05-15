@@ -21,13 +21,18 @@ def create_json_example():
     for nom in liste_nom_equation:
         data.append((nom, [rd.randint(0, 50) for _ in range(rd.randint(1, 5))]))
     chaine = json.dumps(data, indent=4)
-    with open("json.txt", "w") as fichier:
+    with open("ressources/json.txt", "w") as fichier:
         fichier.write(chaine)
 
-# todo: utiliser des QlistWidget (à partir du fichier testQListWi.py) pour faire des onglets. Ajouter des boutons pour la fermuture.
+# todo:
 # revoir le json et y ajouter des paramètres
 # ajouter un champs de recherche des valeurs sur le graphes en fonction de l'abscisse (qu'en est-il de s'il y a plusieurs courbes?)
-# lire le matlab
+# lire le matlab founi par le client
+# gérer la fermeture des onglets et leurs conséquances sur le graphe
+# gérer le drag and drop (avertir l'utilisateur si il y a un fichier mal chargé)
+# enlever le chargement automatique du json au lancement
+# nettoyer les import
+# ne plus pouvoir modifer les box dans l'onglet lecture
 if __name__ == '__main__':
     create_json_example()
     #print("création de l'interface")

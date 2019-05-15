@@ -32,38 +32,16 @@ class FirstTab(QWidget):
         self.data = data
         self.plots = plots
 
-        """
         # LEFT
-        # "onglets"
-        onglets = QWidget()
-        onglets.layout = QVBoxLayout()
-        onglets.setLayout(onglets.layout)
-        #exemple ajout
-        for i in range(10):
-            onglets.layout.addWidget(self.make_new_line_for_a_file())
-        self.layout.addWidget(onglets)
-        """
-
-        # LEFT
-        def decoupe(chaine):
-            if len(chaine) > 10:
-                return "..." + chaine[len(chaine)-5:]
-        show_drop = QWidget()
-        show_drop.layout = QVBoxLayout()
-        show_drop.setLayout(show_drop.layout)
-        show_drop.layout.addWidget(self.make_show_files())
-
         tab_left = QTabWidget(tabsClosable=True)
         tab_left.setTabPosition(QTabWidget.West)
-        tab_left.addTab(show_drop, decoupe("une tab avec un nom super long qui va même dépasser de la fenetre tellement il est long"))
-        tab_left.addTab(QWidget(), "2")
 
         add_files = QWidget()
         add_files.layout = QHBoxLayout()
         add_files.setLayout(add_files.layout)
 
-        add_files.layout.addWidget(DragAndDrop.FileEdit("glisser vos fichier ici"))
-        add_files.layout.addWidget(QPushButton("ajout de fichier"))        
+        add_files.layout.addWidget(DragAndDrop.FileEdit("Glisser vos fichiers ici", partial(self.show_new_file, tab_left)))
+        add_files.layout.addWidget(QPushButton("Ajout de fichier(s)"))        
 
         files_vbox = QWidget()
         files_vbox.layout = QVBoxLayout()
@@ -106,30 +84,24 @@ class FirstTab(QWidget):
         label.setPixmap(pixmap)
         return label
 
-    def make_show_files(self):
-        tabs = QWidget()
-        layout = QHBoxLayout()
-        layout.addWidget
-        return self.create_scroll()
-    
-    def make_new_line_for_a_file(self):
-        widget = QWidget()
-        widget.layout = QHBoxLayout()
-        widget.setLayout(widget.layout)
+    def make_show_files(self, data):
+        show = QWidget()
+        show.layout = QVBoxLayout()
+        show.setLayout(show.layout)
+        show.layout.addWidget(self.create_scroll(data))
+        return show
 
-        label = QLabel("I am a new tab")
-        button = QPushButton("close")
+    def show_new_file(self, tab, name, data):
+        decoupe = lambda chaine : "..." + chaine[-5:] if len(chaine) > 10 else chaine
+        tab.addTab(self.make_show_files(data), decoupe(name))
 
-        widget.layout.addWidget(button)
-        widget.layout.addWidget(label)
-        return widget
 
-    def create_scroll(self):
+    def create_scroll(self, data):
         scroll_area = QScrollArea()
         #scroll_area.setWidgetResizable(True)
         scrollAreaWidgetContents = QWidget()
         grid_layout = QGridLayout(scrollAreaWidgetContents)
-        for i, element in enumerate(self.data):
+        for i, element in enumerate(data):
             name, values = element
             # first of all, place the name at the beginning of the line
             grid_layout.addWidget(QLabel(name), i, 0)
@@ -138,12 +110,12 @@ class FirstTab(QWidget):
                 sp = QDoubleSpinBox()
                 sp.setObjectName(json.dumps([i, j]))
                 sp.setValue(value)
-                sp.valueChanged.connect(self.on_update_spin_box)
+                sp.valueChanged.connect(partial(self.on_update_spin_box, data))
                 grid_layout.addWidget(sp, i, j+1)
             # last but not least, let's create a button at the end of the line
             bt = QPushButton("Tracer") 
-            bt.clicked.connect(partial(self.on_click_tracer, self.data[i]))
-            grid_layout.addWidget(bt, i, len(self.data) + 1)
+            bt.clicked.connect(partial(self.on_click_tracer, data[i]))
+            grid_layout.addWidget(bt, i, len(data) + 1)
 
         QScroller.grabGesture(
             scroll_area.viewport(), QScroller.LeftMouseButtonGesture
@@ -152,10 +124,10 @@ class FirstTab(QWidget):
         scroll_area.setWidget(scrollAreaWidgetContents)
         return scroll_area
 
-    def on_update_spin_box(self):
+    def on_update_spin_box(self, data):
         spinbox = self.sender()
         i, j = json.loads(spinbox.objectName())
-        self.data[i][1][j] = spinbox.value()
+        data[i][1][j] = spinbox.value()
 
     def update_first_tab_image(self):
         tabWidget = self.findChildren(QTabWidget)[1]
@@ -195,4 +167,4 @@ class FirstTab(QWidget):
 
             self.update_first_tab_image()
         else:
-            print("Fonction non reconnue.")
+            print("Fonction non reconnue lors du dessin.")

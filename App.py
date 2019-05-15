@@ -31,7 +31,7 @@ class App(QWidget):
         self.top = 10
         self.width = 1500  # 640
         self.height = 480
-        fileName = "json.txt"
+        fileName = "ressources/json.txt"
         self.onglets = []
         self.plots = [plt.subplots() for _ in range(3)]  # 3 subplots
 
