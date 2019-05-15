@@ -34,20 +34,18 @@ class FileEdit(QLineEdit):
     def dropEvent(self, event):
         data = event.mimeData()
         urls = data.urls()
-        print(urls)
+        sucessfully_loaded = []
+        failed = []
         for url in urls:
-            print(url.scheme())       
+            # print(url.scheme())       
             filepath = str(url.path())
-            sucessfully_loaded = []
-            failed = []
             try:
                 with open(filepath, "r") as fichier: 
                     liste = json.loads(fichier.read())
-                print(liste, "was just sucessfully loaded")
                 sucessfully_loaded.append((filepath, liste))
             except Exception as e:
                 failed.append(filepath)
-                print(e)
+                print("mamma mia", e)
         if failed:
             dialog = QMessageBox()
             if len(failed) > 1:
@@ -65,7 +63,3 @@ class FileEdit(QLineEdit):
             get_name_from_path = lambda path : path.split("/")[-1].split('.', 1)[0]
             filepath, liste = success
             self.trigger(get_name_from_path(filepath), liste)
-        #return sucessfully_loaded
-
-        #self.theReturnList = self.theReturnList + sucessfully_loaded
-        #print(self.theReturnList)

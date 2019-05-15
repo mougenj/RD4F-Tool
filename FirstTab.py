@@ -9,25 +9,37 @@ from PyQt5.QtWidgets import (QWidget,
                              QScrollArea,
                              QGridLayout,
                              QScroller,
-                             QDoubleSpinBox
+                             QDoubleSpinBox,
+                             QTabBar
                             )
 from PyQt5.QtGui import QPixmap
 import json
 import numpy as np
 from functools import partial
+import pdb
+import rlcompleter
+import time
 
 class FirstTab(QWidget):
 
     def __init__(self, plots):
         super().__init__()
+        self.plots = plots
+        self.draw_first_pictures()
         self.layout = QHBoxLayout()
         self.setLayout(self.layout)
+        self.data_onglets = []
 
-        self.plots = plots
 
         # LEFT
         tab_left = QTabWidget(tabsClosable=True)
+        def CloseTab(i):
+            tab_left.removeTab(i)
+            self.data_onglets.pop(i)
+        tab_left.tabCloseRequested.connect(CloseTab)
         tab_left.setTabPosition(QTabWidget.West)
+        #pdb.Pdb.complete=rlcompleter.Completer(locals()).complete
+        #pdb.set_trace()
 
         add_files = QWidget()
         add_files.layout = QHBoxLayout()
@@ -64,6 +76,19 @@ class FirstTab(QWidget):
 
         self.layout.addWidget(tab_right)
 
+    def draw_first_pictures(self):
+        for indice in range(len(self.plots)):
+            fig, ax = self.plots[indice]
+            if indice == 0:
+                ax.plot([], [])
+                fig.savefig("ressources/tab_right_1.png")
+            elif indice == 1:
+                ax.plot([], [])
+                fig.savefig("ressources/tab_right_2.png")
+            elif indice == 2:
+                ax.plot([], [])
+                fig.savefig("ressources/tab_right_3.png")
+
     def make_tab(self):
         tab = QWidget()
         tab.layout = QHBoxLayout()
@@ -78,6 +103,11 @@ class FirstTab(QWidget):
         return label
 
     def make_show_files(self, data):
+        onglet = {}
+        for element in data:
+            name, value = element
+            onglet[name] = value
+        self.data_onglets.append(onglet)
         show = QWidget()
         show.layout = QVBoxLayout()
         show.setLayout(show.layout)
@@ -107,7 +137,7 @@ class FirstTab(QWidget):
                 grid_layout.addWidget(sp, i, j+1)
             # last but not least, let's create a button at the end of the line
             bt = QPushButton("Tracer") 
-            bt.clicked.connect(partial(self.on_click_tracer, data[i]))
+            bt.clicked.connect(partial(self.on_click_tracer, data[i][0]))
             grid_layout.addWidget(bt, i, len(data) + 1)
 
         QScroller.grabGesture(
@@ -133,31 +163,43 @@ class FirstTab(QWidget):
                 label.setPixmap(pixmap)
 
     @pyqtSlot()
-    def on_click_tracer(self, line):
-        print('Tracons la courbe de la ligne ' + str(line))
-        name, values = line
+    def on_click_tracer(self, name):
+        start = time.time()  # 4*2 onglets utiles + 1 inutile : Temps: 4.524548768997192 (1.1296305656433105 en mutualisant les ecritures)
+        print('Tracons la courbe des lignes ' + name)
+        # effaçons les graphes pécédents
+        for indice in range(len(self.plots)):
+            fig, ax = self.plots[indice]
+            ax.cla()
         if name == "S" or name == "D":
             debut, fin, pas = 300, 2500, 0.1
             les_temperatures = np.arange(debut, fin, pas)
-            d_0 = values[0]  # 6*10**-4
-            e_d = values[1]  # 1.04
             k_b = 1.38064852 * 10**(-23) * 8.617e+18
-            les_d = d_0 * np.exp(-e_d/(k_b * les_temperatures))
+            for onglet in self.data_onglets:
+                try:
+                    values = onglet[name]
+                    d_0 = values[0]  # 6*10**-4
+                    e_d = values[1]  # 1.04
+                    les_d = d_0 * np.exp(-e_d/(k_b * les_temperatures))
+                    for indice in range(len(self.plots)):
+                        fig, ax = self.plots[indice]
+                        if indice == 0:
+                            ax.plot(les_temperatures, les_d)
+                        elif indice == 1:
+                            ax.plot(np.log(les_temperatures, np.log(les_d)))
+                        elif indice == 2:
+                            ax.plot(1000/les_temperatures, les_d)
+                except KeyError:
+                    pass
             for indice in range(len(self.plots)):
                 fig, ax = self.plots[indice]
                 if indice == 0:
-                    ax.plot(les_temperatures, les_d)
                     fig.savefig("ressources/tab_right_1.png")
                 elif indice == 1:
-                    ax.plot(np.log(les_temperatures, np.log(les_d)))
                     fig.savefig("ressources/tab_right_2.png")
                 elif indice == 2:
-                    ax.plot(1000/les_temperatures, les_d)
                     fig.savefig("ressources/tab_right_3.png")
-                else:
-                    print("trop de figure a tracer")
-                    print(indice, len(self.plots))
 
             self.update_first_tab_image()
+            print("Temps: " + str(time.time() - start))
         else:
             print("Fonction non reconnue lors du dessin.")
