@@ -1,23 +1,8 @@
-#from PyQt5.QtCore import *
-from PyQt5.QtCore import pyqtSlot
-from PyQt5.QtWidgets import (QApplication,
-                             QWidget,
-                             QPushButton,
-                             QLabel,
-                             QHBoxLayout,
+from PyQt5.QtWidgets import (QWidget,
                              QVBoxLayout, 
-                             QTabWidget,
-                             QScrollArea,
-                             QGridLayout,
-                             QScroller,
-                             QFormLayout,
-                             QDoubleSpinBox,
-                             QGroupBox)
-from PyQt5.QtGui import QIcon, QPixmap
+                             QTabWidget
+                            )
 import matplotlib.pyplot as plt
-import json
-import numpy as np
-from functools import partial
 from FirstTab import FirstTab
 from SecondTab import SecondTab
 from ThirdTab import ThirdTab
@@ -34,13 +19,7 @@ class App(QWidget):
         fileName = "ressources/json.txt"
         self.onglets = []
         self.plots = [plt.subplots() for _ in range(3)]  # 3 subplots
-
-        with open(fileName, "r") as fichier:
-            chaine = fichier.read()
-            self.data = json.loads(chaine)
-
         self.initUI()
-
 
     def initUI(self):
         self.setWindowTitle(self.title)
@@ -49,20 +28,11 @@ class App(QWidget):
         tabs = QTabWidget()#tabsClosable=True
         #tabs.setTabPosition(QTabWidget.West)
         tabs.resize(self.width, self.height)
-        tabs.addTab(self.create_fisrt_tab(), "Lecture")
-        tabs.addTab(self.create_second_tab(), "Ecriture")
-        tabs.addTab(self.create_third_tab(), "Post-traitement")
+        tabs.addTab(FirstTab(self.plots), "Lecture")
+        tabs.addTab(SecondTab(), "Ecriture")
+        tabs.addTab(ThirdTab(), "Post-traitement")
 
         layout = QVBoxLayout()  # contient les tabs
         layout.addWidget(tabs)
         self.setLayout(layout)
         self.show()
-    
-    def create_fisrt_tab(self):
-        return FirstTab(self.data, self.plots)
-    
-    def create_second_tab(self):
-        return SecondTab()
-
-    def create_third_tab(self):
-        return ThirdTab()

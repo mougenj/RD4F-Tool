@@ -29,10 +29,9 @@ def create_json_example():
 # ajouter un champs de recherche des valeurs sur le graphes en fonction de l'abscisse (qu'en est-il de s'il y a plusieurs courbes?)
 # lire le matlab founi par le client
 # gérer la fermeture des onglets et leurs conséquances sur le graphe
-# gérer le drag and drop (avertir l'utilisateur si il y a un fichier mal chargé)
-# enlever le chargement automatique du json au lancement
 # nettoyer les import
 # ne plus pouvoir modifer les box dans l'onglet lecture
+# supprimer les images de l'utilisation precedante? Ne pas les charger ?
 if __name__ == '__main__':
     create_json_example()
     #print("création de l'interface")

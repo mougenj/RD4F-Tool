@@ -2,10 +2,6 @@
 # -*- coding:utf-8 -*-
 
 from PyQt5.QtWidgets import QMessageBox, QLineEdit
-from PyQt5.QtGui import QIcon
-
-import sys
-import os
 import json
 
 class FileEdit(QLineEdit):

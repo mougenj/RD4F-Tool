@@ -1,7 +1,6 @@
 import DragAndDrop
 from PyQt5.QtCore import pyqtSlot
-from PyQt5.QtWidgets import (QApplication,
-                             QWidget,
+from PyQt5.QtWidgets import (QWidget,
                              QPushButton,
                              QLabel,
                              QHBoxLayout,
@@ -10,26 +9,20 @@ from PyQt5.QtWidgets import (QApplication,
                              QScrollArea,
                              QGridLayout,
                              QScroller,
-                             QFormLayout,
-                             QDoubleSpinBox,
-                             QGroupBox,
-                             QPlainTextEdit,
-                             QLineEdit)
-from PyQt5.QtGui import QIcon, QPixmap
-import matplotlib.pyplot as plt
+                             QDoubleSpinBox
+                            )
+from PyQt5.QtGui import QPixmap
 import json
 import numpy as np
 from functools import partial
-import DragAndDrop
 
 class FirstTab(QWidget):
 
-    def __init__(self, data, plots):
+    def __init__(self, plots):
         super().__init__()
         self.layout = QHBoxLayout()
         self.setLayout(self.layout)
 
-        self.data = data
         self.plots = plots
 
         # LEFT

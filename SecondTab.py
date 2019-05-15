@@ -1,17 +1,8 @@
 from PyQt5.QtCore import pyqtSlot
-from PyQt5.QtWidgets import (QApplication,
-                             QWidget,
+from PyQt5.QtWidgets import (QWidget,
                              QPushButton,
-                             QLabel,
-                             QHBoxLayout,
-                             QVBoxLayout, 
-                             QTabWidget,
-                             QScrollArea,
-                             QGridLayout,
-                             QScroller,
-                             QFormLayout,
-                             QDoubleSpinBox,
-                             QGroupBox)
+                             QHBoxLayout
+                            )
 from PyQt5.QtGui import QIcon, QPixmap
 import matplotlib.pyplot as plt
 import json
