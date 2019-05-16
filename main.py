@@ -30,7 +30,7 @@ def create_database():
         db = sqlite3.connect("test.sqlite")
         cursor = db.cursor()
         cursor.execute("CREATE TABLE MATERIAUX ([id] INTEGER PRIMARY KEY, [nom] text, [flux_hydrogene] text, [retrodif] number, [energie_ions] number, [num_atom_proj] integer, [masse_atomique] integer)")
-        cursor.execute("INSERT INTO TEST VALUES (3, 'blibli')")
+        #cursor.execute("INSERT INTO TEST VALUES (3, 'blibli')")
         cursor.execute("SELECT * FROM TEST")
 
         db.commit()
@@ -48,8 +48,6 @@ def create_database():
 # faire une BDD
 # lire le matlab founi par le client
 
-# ajouter un champs de recherche des valeurs sur le graphes en fonction de l'abscisse (qu'en est-il de s'il y a plusieurs courbes?)
-# pouvoir ouvrir la fenetre plt (rend caduque le point au dessus)
 # ne plus pouvoir modifer les box dans l'onglet lecture
 if __name__ == '__main__':
     create_json_example()

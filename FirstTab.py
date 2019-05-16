@@ -63,19 +63,30 @@ class FirstTab(QWidget):
 
         # RIGHT
 
-        # let's add tabs in the 1st tab, on the right
+        # let's add tabs in the 1st tab, on the right, with a button to show the image in a matplotlib window
+        bt1 = QPushButton("Voir l'image")
+        bt1.clicked.connect(partial(self.show_picture, 0))
+        bt2 = QPushButton("Voir l'image")
+        bt2.clicked.connect(partial(self.show_picture, 1))
+        bt3 = QPushButton("Voir l'image")
+        bt3.clicked.connect(partial(self.show_picture, 2))
+
         tab_right = QTabWidget()
         # 1st image
         tab_right_1 = self.make_tab()
+
         tab_right_1.layout.addWidget(self.make_pixmap("ressources/tab_right_1.png", "ressources/tab_right_1.png"))
+        tab_right_1.layout.addWidget(bt1)
         tab_right.addTab(tab_right_1, "Non log")
 
         tab_right_2 = self.make_tab()
         tab_right_2.layout.addWidget(self.make_pixmap("ressources/tab_right_2.png", "ressources/tab_right_2.png"))
+        tab_right_2.layout.addWidget(bt2)
         tab_right.addTab(tab_right_2, "log-log")
 
         tab_right_3 = self.make_tab()
         tab_right_3.layout.addWidget(self.make_pixmap("ressources/tab_right_3.png", "ressources/tab_right_3.png"))
+        tab_right_3.layout.addWidget(bt3)
         tab_right.addTab(tab_right_3, "log-1/T")
 
         self.layout.addWidget(tab_right)
@@ -95,7 +106,7 @@ class FirstTab(QWidget):
 
     def make_tab(self):
         tab = QWidget()
-        tab.layout = QHBoxLayout()
+        tab.layout = QVBoxLayout()
         tab.setLayout(tab.layout)
         return tab
 
@@ -165,6 +176,10 @@ class FirstTab(QWidget):
                 name_label = label.objectName()
                 pixmap = QPixmap(name_label)
                 label.setPixmap(pixmap)
+
+    def show_picture(self, i):
+        fig, ax = self.plots[i]
+        fig.show()
 
     @pyqtSlot()
     def on_click_tracer(self, name):
