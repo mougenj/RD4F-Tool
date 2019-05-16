@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import QApplication
 import random as rd
 import json
 import sip
+import sqlite3
 import sys
 sip.setdestroyonexit(True)
 
@@ -24,13 +25,32 @@ def create_json_example():
     with open("ressources/json.txt", "w") as fichier:
         fichier.write(chaine)
 
+def create_database():
+    if not os.path.isfile('database.sqlite'):
+        db = sqlite3.connect("test.sqlite")
+        cursor = db.cursor()
+        cursor.execute("CREATE TABLE MATERIAUX ([id] INTEGER PRIMARY KEY, [nom] text, [flux_hydrogene] text, [retrodif] number, [energie_ions] number, [num_atom_proj] integer, [masse_atomique] integer)")
+        cursor.execute("INSERT INTO TEST VALUES (3, 'blibli')")
+        cursor.execute("SELECT * FROM TEST")
+
+        db.commit()
+
+
+        rows = cursor.fetchall()
+        for row in rows:
+            print(row)
+
+        db.close()
+
 # todo:
+# AVEC LE CLIENT:
 # revoir le json et y ajouter des paramètres
-# ajouter un champs de recherche des valeurs sur le graphes en fonction de l'abscisse (qu'en est-il de s'il y a plusieurs courbes?)
+# faire une BDD
 # lire le matlab founi par le client
-# gérer la fermeture des onglets et leurs conséquances sur le graphe
+
+# ajouter un champs de recherche des valeurs sur le graphes en fonction de l'abscisse (qu'en est-il de s'il y a plusieurs courbes?)
+# pouvoir ouvrir la fenetre plt (rend caduque le point au dessus)
 # ne plus pouvoir modifer les box dans l'onglet lecture
-# ajouter des fichier via le bouton, pas uniquement le drag and drop
 if __name__ == '__main__':
     create_json_example()
     #print("création de l'interface")

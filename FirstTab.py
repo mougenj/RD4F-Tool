@@ -10,7 +10,9 @@ from PyQt5.QtWidgets import (QWidget,
                              QGridLayout,
                              QScroller,
                              QDoubleSpinBox,
-                             QTabBar
+                             QTabBar,
+                             QFileDialog,
+                             QMessageBox
                             )
 from PyQt5.QtGui import QPixmap
 import json
@@ -46,7 +48,9 @@ class FirstTab(QWidget):
         add_files.setLayout(add_files.layout)
 
         add_files.layout.addWidget(DragAndDrop.FileEdit("Glisser vos fichiers ici", partial(self.show_new_file, tab_left)))
-        add_files.layout.addWidget(QPushButton("Ajout de fichier(s)"))        
+        boutton_ajout_fichiers = QPushButton("Ajout de fichier(s)")
+        boutton_ajout_fichiers.clicked.connect(partial(self.on_click_open_files, tab_left))
+        add_files.layout.addWidget(boutton_ajout_fichiers)        
 
         files_vbox = QWidget()
         files_vbox.layout = QVBoxLayout()
@@ -203,3 +207,34 @@ class FirstTab(QWidget):
             print("Temps: " + str(time.time() - start))
         else:
             print("Fonction non reconnue lors du dessin.")
+
+    @pyqtSlot()
+    def on_click_open_files(self, tab_to_add):
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        files, _ = QFileDialog.getOpenFileNames(self,"QFileDialog.getOpenFileNames()", "","All Files (*);;Python Files (*.py)", options=options)
+        sucessfully_loaded = []
+        failed = []
+        for filepath in files:
+            try:
+                with open(filepath, "r") as fichier: 
+                    liste = json.loads(fichier.read())
+                sucessfully_loaded.append((filepath, liste))
+            except Exception as e:
+                failed.append(filepath)
+        if failed:
+            dialog = QMessageBox()
+            if len(failed) > 1:
+                dialog.setWindowTitle("Error: Invalid Files")
+            else:
+                dialog.setWindowTitle("Error: Invalid File")
+            error_text = "An error occured when loading :"
+            for failure in failed:
+                error_text += "\n" + failure
+            dialog.setText(error_text)
+            dialog.setIcon(QMessageBox.Warning)
+            dialog.exec_()
+        for success in sucessfully_loaded:
+            get_name_from_path = lambda path : path.split("/")[-1].split('.', 1)[0]
+            filepath, liste = success
+            self.show_new_file(tab_to_add, get_name_from_path(filepath), liste)
