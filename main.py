@@ -9,19 +9,47 @@ sip.setdestroyonexit(True)
 
 
 def create_json_example():
-    data = []
-    # ajout de données "sensées"
-    data.append(["D", [1, 6]])
-    data.append(["S", [1, 6]])
-    alphabet_latin = [chr(x) for x in range(ord('a'), ord('z') + 1)]
-    # ecriture de 5 nom au hasard de 9 caractere de long
-    liste_nom_equation = []
-    for _ in range(5):
-        nom = "".join([rd.choice(alphabet_latin) for _ in range(9)])
-        liste_nom_equation.append(nom)
-    for nom in liste_nom_equation:
-        data.append((nom, [rd.randint(0, 50) for _ in range(rd.randint(1, 5))]))
-    chaine = json.dumps(data, indent=4)
+    parameters = {}
+    material = {
+        "name" : "C",
+        "atomic_number" : 6,
+        "density" : 1.0,
+        "net" : None,  # reseaux TODO : traduire
+        "lattice_parameter" : 1,
+        "melting_point" : 600
+    }
+    source = {
+        "author_name" : "Touchard",
+        "year" : 2012,
+        "doi" : "45454"
+    }
+    equation = {
+        "D" : {
+            "D_0" : 1.0,
+            "E_D" : 6545
+        },
+        "S" : {
+            "S_0" : 1.0,
+            "E_S" : 6545
+        },
+        "Kr" : {
+            "Kr_0" : 1.0,
+            "E_r" : 6545
+        }
+    }
+    traps = [
+        {
+            "density" : 5,
+            "angular_frequency" : 8,
+            "energy" : 454
+        }
+        for _ in range(10)
+    ]
+    parameters["material"] = material
+    parameters["source"] = source
+    parameters["equation"] = equation
+    parameters["traps"] = traps
+    chaine = json.dumps(parameters, indent=4)
     with open("ressources/json.txt", "w") as fichier:
         fichier.write(chaine)
 
@@ -50,7 +78,7 @@ def create_database():
 
 # ne plus pouvoir modifer les box dans l'onglet lecture
 if __name__ == '__main__':
-    create_json_example()
+    # create_json_example()
     #print("création de l'interface")
     #print(sys.argv)
     app = QApplication(sys.argv)

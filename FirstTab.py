@@ -9,18 +9,19 @@ from PyQt5.QtWidgets import (QWidget,
                              QScrollArea,
                              QGridLayout,
                              QScroller,
-                             QDoubleSpinBox,
                              QTabBar,
                              QFileDialog,
-                             QMessageBox
+                             QMessageBox,
+                             QLineEdit
                             )
-from PyQt5.QtGui import QPixmap
+from PyQt5.QtGui import QPixmap, QFontMetrics
 import json
 import numpy as np
 from functools import partial
 import pdb
 import rlcompleter
 import time
+from QLineEditWidthed import QLineEditWidthed
 
 class FirstTab(QWidget):
 
@@ -133,23 +134,21 @@ class FirstTab(QWidget):
         decoupe = lambda chaine : "..." + chaine[-5:] if len(chaine) > 10 else chaine
         tab.addTab(self.make_show_files(data), decoupe(name))
 
-
-    def create_scroll(self, data):
+    def create_scroll(self, parameters):
         scroll_area = QScrollArea()
         #scroll_area.setWidgetResizable(True)
         scrollAreaWidgetContents = QWidget()
         grid_layout = QGridLayout(scrollAreaWidgetContents)
-        for i, element in enumerate(data):
-            name, values = element
-            # first of all, place the name at the beginning of the line
-            grid_layout.addWidget(QLabel(name), i, 0)
-            for j, value in enumerate(values):
-                # add a spinbox at the right place with the right value
-                sp = QDoubleSpinBox()
-                sp.setObjectName(json.dumps([i, j]))
-                sp.setValue(value)
-                sp.valueChanged.connect(partial(self.on_update_spin_box, data))
-                grid_layout.addWidget(sp, i, j+1)
+        for key in parameters:
+            print(key)
+            for subkey in parameters[key]:
+                name, values = subkey, parameters[key][subkey]
+                # first of all, place the name at the beginning of the line
+                grid_layout.addWidget(QLabel(name), i, 0)
+                for j, value in enumerate(values):
+                    # add a QLineEdit at the right place with the right value and the right width
+                    text = "{:.2e}".format(value)
+                    grid_layout.addWidget(QLineEditWidthed(text), i, j+1)
             # last but not least, let's create a button at the end of the line
             bt = QPushButton("Tracer") 
             bt.clicked.connect(partial(self.on_click_tracer, data[i][0]))
@@ -161,11 +160,6 @@ class FirstTab(QWidget):
 
         scroll_area.setWidget(scrollAreaWidgetContents)
         return scroll_area
-
-    def on_update_spin_box(self, data):
-        spinbox = self.sender()
-        i, j = json.loads(spinbox.objectName())
-        data[i][1][j] = spinbox.value()
 
     def update_first_tab_image(self):
         tabWidget = self.findChildren(QTabWidget)[1]
