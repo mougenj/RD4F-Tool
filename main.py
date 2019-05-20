@@ -105,7 +105,7 @@ def create_database():
         db.close()
 
 # todo:
-# AVEC LE CLIENT:
+# "resserrer" les champs du premier onglet
 # faire une BDD
 # lire le matlab founi par le client
 
