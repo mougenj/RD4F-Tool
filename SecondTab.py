@@ -13,16 +13,21 @@ from PyQt5.QtWidgets import (QWidget,
                              QFileDialog,
                              QMessageBox,
                              QLineEdit,
-                             QGroupBox
+                             QGroupBox,
+                             QCompleter
                             )
 from PyQt5.QtGui import QPixmap, QFontMetrics
+from PyQt5.QtCore import QStringListModel
 from ShowNewFile import ShowNewFile
+from QLineEditWidthed import QLineEditWidthed
 import json
 import numpy as np
 from functools import partial
 import pdb
 import rlcompleter
 import time
+import os
+import sqlite3
 
 class tooManyValues(Exception):
 
@@ -43,13 +48,16 @@ class SecondTab(QWidget):
         tab_left.tabCloseRequested.connect(CloseTab)
         tab_left.setTabPosition(QTabWidget.West)
 
-        button_load_files = QPushButton("Selectionner un squelette de fichier depuis la base de données")
+        search_bar = make_hbox()
+        search_bar.layout.addWidget(QLineEditWidthed("Entrez un nom de matériau pour en charger le squelette :"))
+        search_bar.layout.addWidget(SearchBar(getMaterialNameFromDatabase()))
+
         button_add_files = QPushButton("Ajout de fichier(s)")
         button_add_files.clicked.connect(partial(self.on_click_open_files, tab_left))
         button_save = QPushButton("Enregistrer le fichier")
         button_save.clicked.connect(partial(self.save, tab_left.currentIndex))
         add_files = make_vbox()
-        add_files.layout.addWidget(button_load_files)
+        add_files.layout.addWidget(search_bar)
         add_files.layout.addWidget(button_save)
         add_files.layout.addWidget(DragAndDrop.FileEdit("Glisser vos fichiers ici", partial(self.open_new_file, tab_left)))
         add_files.layout.addWidget(button_add_files)
@@ -169,11 +177,49 @@ class SecondTab(QWidget):
             self.open_new_file(tab_to_add, get_name_from_path(filepath), liste)
 
 
+class SearchBar(QLineEdit):
+
+    def __init__(self, list_words):
+        super().__init__()
+        model = QStringListModel()
+        model.setStringList(list_words)
+        completer = QCompleter()
+        completer.setModel(model)
+        self.setCompleter(completer)
+        self.returnPressed.connect(partial(self.loadDataFromDataBase, self.text))
+
+    def loadDataFromDataBase(self, functionToExecutetoGetMaterialName):
+        material_name = functionToExecutetoGetMaterialName()
+        if material_name in getMaterialNameFromDatabase():
+            print("Nous allons charger", material_name, "depuis la base dans l'interface.")
+        else:
+            print(material_name, "non trouvé dans la base.")
+
+
+def getMaterialNameFromDatabase():
+    dbname = 'database.sqlite'
+    if not os.path.isfile(dbname):
+        print("base de donnes non trouvée")
+
+    db = sqlite3.connect(dbname)
+    cursor = db.cursor()
+    cursor.execute("SELECT name FROM MATERIAL;")
+    db.commit()
+
+    rows = cursor.fetchall()
+    # première colonne uniquement, en minuscule s'il vous plait
+    rows = [x[0].lower() for x in rows]
+
+    db.close()
+    return rows
+
+
 def make_vbox():
     vbox = QWidget()
     vbox.layout = QVBoxLayout()
     vbox.setLayout(vbox.layout)
     return vbox
+
 
 def make_hbox():
     hbox = QWidget()
