@@ -2,10 +2,12 @@ from PyQt5.QtWidgets import (QWidget,
                              QVBoxLayout, 
                              QTabWidget
                             )
+from PyQt5.QtGui import QIcon
 import matplotlib.pyplot as plt
 from FirstTab import FirstTab
 from SecondTab import SecondTab
 from ThirdTab import ThirdTab
+import os
 
 class App(QWidget):
 
@@ -19,6 +21,8 @@ class App(QWidget):
         fileName = "ressources/json.txt"
         self.onglets = []
         self.plots = [plt.subplots() for _ in range(3)]  # 3 subplots
+        scriptDir = os.path.dirname(os.path.realpath(__file__))
+        self.setWindowIcon(QIcon(scriptDir + os.path.sep + "ressources" + os.path.sep + "logo.png"))
         self.initUI()
 
     def initUI(self):
@@ -31,6 +35,9 @@ class App(QWidget):
         tabs.addTab(FirstTab(self.plots), "Lecture")
         tabs.addTab(SecondTab(), "Ecriture")
         tabs.addTab(ThirdTab(), "Post-traitement")
+
+        # todo: commenter
+        tabs.setCurrentIndex(1) 
 
         layout = QVBoxLayout()  # contient les tabs
         layout.addWidget(tabs)
