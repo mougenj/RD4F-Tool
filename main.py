@@ -115,6 +115,7 @@ def create_database():
 
 if __name__ == '__main__':
     create_json_example()
+    create_database()
     # print("création de l'interface")
     app = QApplication(sys.argv)
     #print("lancement de l'interface")
