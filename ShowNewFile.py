@@ -30,6 +30,7 @@ class ShowNewFile(QWidget):
         grid = QGroupBox("equation")
         grid.layout = QGridLayout()
         grid.setLayout(grid.layout)
+        grid.setObjectName("equation")
         #grid.setFlat(False)
         for name, c1, c2 in list_data_equation:
             j = 0
@@ -46,6 +47,7 @@ class ShowNewFile(QWidget):
         grid = QGroupBox("material")
         grid.layout = QGridLayout()
         grid.setLayout(grid.layout)
+        grid.setObjectName("material")
         i = 0
         for prop in parameters["material"]:
             grid.layout.addWidget(QLabel(prop), i, 0)
@@ -61,6 +63,7 @@ class ShowNewFile(QWidget):
         grid = QGroupBox("source")
         grid.layout = QGridLayout()
         grid.setLayout(grid.layout)
+        grid.setObjectName("source")
         i = 0
         for prop in parameters["source"]:
             grid.layout.addWidget(QLabel(prop), i, 0)
@@ -76,6 +79,7 @@ class ShowNewFile(QWidget):
         grid = QGroupBox("traps")
         grid.layout = QGridLayout()
         grid.setLayout(grid.layout)
+        grid.setObjectName("traps")
         i = 0
         for trap in parameters["traps"]:
             grid.layout.addWidget(QLabel(str(i)), i, 0)
