@@ -106,12 +106,16 @@ def create_database():
 
 # todo:
 # "resserrer" les champs du premier onglet
+# choisir l'emplacement des sauvegardes
+# faire un paquet debian
+# charger des données depuis la BDD
+# envoyer un mail pour la troisiemen partie
 # faire une BDD
 # lire le matlab founi par le client
 
 if __name__ == '__main__':
     create_json_example()
-    print("création de l'interface")
+    # print("création de l'interface")
     app = QApplication(sys.argv)
     #print("lancement de l'interface")
     ex = App.App()
