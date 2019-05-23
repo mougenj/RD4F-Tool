@@ -1,5 +1,5 @@
 import DragAndDrop
-from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtCore import pyqtSlot, Qt
 from PyQt5.QtWidgets import (QWidget,
                              QPushButton,
                              QLabel,
@@ -15,7 +15,7 @@ from PyQt5.QtWidgets import (QWidget,
                              QLineEdit,
                              QGroupBox
                             )
-from PyQt5.QtGui import QPixmap, QFontMetrics
+from PyQt5.QtGui import QPixmap, QFontMetrics, QPalette
 import json
 import numpy as np
 from functools import partial
@@ -42,6 +42,7 @@ class FirstTab(QWidget):
             self.data_onglets.pop(i)
         tab_left.tabCloseRequested.connect(CloseTab)
         tab_left.setTabPosition(QTabWidget.West)
+        tab_left.setFocusPolicy(Qt.NoFocus)
         #pdb.Pdb.complete=rlcompleter.Completer(locals()).complete
         #pdb.set_trace()
 
@@ -55,7 +56,7 @@ class FirstTab(QWidget):
         add_files.layout.addWidget(boutton_ajout_fichiers)        
 
         # TODO: commenter
-        with open("/home/tcarre/LSPM-Gui/ressources/json.txt") as fichier:
+        with open("json.txt") as fichier:
             self.open_new_file(tab_left, "nom", json.loads(fichier.read()))
         files_vbox = QWidget()
         files_vbox.layout = QVBoxLayout()
@@ -89,20 +90,21 @@ class FirstTab(QWidget):
         bt3.clicked.connect(partial(self.show_picture, 2))
 
         tab_right = QTabWidget()
+        tab_right.setFocusPolicy(Qt.NoFocus)
         # 1st image
         tab_right_1 = self.make_tab()
 
-        tab_right_1.layout.addWidget(self.make_pixmap("ressources/tab_right_1.png", "ressources/tab_right_1.png"))
+        tab_right_1.layout.addWidget(self.make_pixmap("tab_right_1.png", "tab_right_1.png"))
         tab_right_1.layout.addWidget(bt1)
         tab_right.addTab(tab_right_1, "Non log")
 
         tab_right_2 = self.make_tab()
-        tab_right_2.layout.addWidget(self.make_pixmap("ressources/tab_right_2.png", "ressources/tab_right_2.png"))
+        tab_right_2.layout.addWidget(self.make_pixmap("tab_right_2.png", "tab_right_2.png"))
         tab_right_2.layout.addWidget(bt2)
         tab_right.addTab(tab_right_2, "log-log")
 
         tab_right_3 = self.make_tab()
-        tab_right_3.layout.addWidget(self.make_pixmap("ressources/tab_right_3.png", "ressources/tab_right_3.png"))
+        tab_right_3.layout.addWidget(self.make_pixmap("tab_right_3.png", "tab_right_3.png"))
         tab_right_3.layout.addWidget(bt3)
         tab_right.addTab(tab_right_3, "log-1/T")
 
@@ -113,13 +115,13 @@ class FirstTab(QWidget):
             fig, ax = self.plots[indice]
             if indice == 0:
                 ax.plot([], [])
-                fig.savefig("ressources/tab_right_1.png")
+                fig.savefig("tab_right_1.png")
             elif indice == 1:
                 ax.plot([], [])
-                fig.savefig("ressources/tab_right_2.png")
+                fig.savefig("tab_right_2.png")
             elif indice == 2:
                 ax.plot([], [])
-                fig.savefig("ressources/tab_right_3.png")
+                fig.savefig("tab_right_3.png")
 
     def make_tab(self):
         return make_vbox()
@@ -133,7 +135,9 @@ class FirstTab(QWidget):
 
     def open_new_file(self, tab, name, parameters):
         decoupe = lambda chaine : "..." + chaine[-5:] if len(chaine) > 10 else chaine
-        snf = ShowNewFile(parameters)
+        #get background color
+        color = self.palette().color(QPalette.Background)
+        snf = ShowNewFile(parameters, color)
         tab.addTab(snf, decoupe(name))
         self.data_onglets.append(snf.list_data_equation)
 
@@ -178,11 +182,11 @@ class FirstTab(QWidget):
         for indice in range(len(self.plots)):
             fig, ax = self.plots[indice]
             if indice == 0:
-                fig.savefig("ressources/tab_right_1.png")
+                fig.savefig("tab_right_1.png")
             elif indice == 1:
-                fig.savefig("ressources/tab_right_2.png")
+                fig.savefig("tab_right_2.png")
             elif indice == 2:
-                fig.savefig("ressources/tab_right_3.png")
+                fig.savefig("tab_right_3.png")
 
         self.update_first_tab_image()
         print("Temps de tracé: " + str(time.time() - start))

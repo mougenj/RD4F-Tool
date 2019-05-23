@@ -1,5 +1,5 @@
 import DragAndDrop
-from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtCore import pyqtSlot, Qt
 from PyQt5.QtWidgets import (QWidget,
                              QPushButton,
                              QLabel,
@@ -16,7 +16,7 @@ from PyQt5.QtWidgets import (QWidget,
                              QGroupBox,
                              QCompleter
                             )
-from PyQt5.QtGui import QPixmap, QFontMetrics
+from PyQt5.QtGui import QPixmap, QFontMetrics, QPalette
 from PyQt5.QtCore import QStringListModel
 from ShowNewFile import ShowNewFile
 from QLineEditWidthed import QLineEditWidthed
@@ -35,6 +35,12 @@ class tooManyValues(Exception):
         super().__init__()
 
 
+class BDDNonTrouvee(Exception):
+
+    def __init__(self):
+        super().__init__()
+
+
 class SecondTab(QWidget):
 
     def __init__(self):
@@ -47,10 +53,11 @@ class SecondTab(QWidget):
             tab_left.removeTab(i)
         tab_left.tabCloseRequested.connect(CloseTab)
         tab_left.setTabPosition(QTabWidget.West)
+        tab_left.setFocusPolicy(Qt.NoFocus)
 
         search_bar = make_hbox()
         search_bar.layout.addWidget(QLineEditWidthed("Entrez un nom de matériau pour en charger le squelette :"))
-        search_bar.layout.addWidget(SearchBar(getMaterialNameFromDatabase()))
+        search_bar.layout.addWidget(SearchBar("database.sqlite"))
 
         button_add_files = QPushButton("Ajout de fichier(s)")
         button_add_files.clicked.connect(partial(self.on_click_open_files, tab_left))
@@ -63,7 +70,7 @@ class SecondTab(QWidget):
         add_files.layout.addWidget(button_add_files)
 
         # TODO: commenter
-        with open("/home/tcarre/LSPM-Gui/ressources/json.txt") as fichier:
+        with open("json.txt") as fichier:
             self.open_new_file(tab_left, "nom", json.loads(fichier.read()))
         files_vbox = make_vbox()
         #files_vbox.layout.addWidget(tab_left)
@@ -75,7 +82,9 @@ class SecondTab(QWidget):
 
     def open_new_file(self, tab, name, parameters):
         decoupe = lambda chaine : "..." + chaine[-5:] if len(chaine) > 10 else chaine
-        snf = ShowNewFile(parameters, editable=True)
+        #get background color
+        color = self.palette().color(QPalette.Background)
+        snf = ShowNewFile(parameters, color, editable=True)
         tab.addTab(snf, decoupe(name))
 
     def save(self, functionToCallToGetIndex):
@@ -139,10 +148,23 @@ class SecondTab(QWidget):
                     "Trop de type de champs dans l'interface pour pouvoir "
                     "les écrire dans le fichier."
                 )
+        data_to_save = self.correctTypes(data_to_save)
         #pdb.Pdb.complete=rlcompleter.Completer(locals()).complete; pdb.set_trace()
-        with open("/home/tcarre/sav.txt", "w") as fichier:
+        with open("sav.txt", "w") as fichier:
             fichier.write(json.dumps(data_to_save, indent=4))
 
+    def correctTypes(self, data):
+        for i in range(len(data["traps"])):
+            for key in ("density", "energy", "angular_frequency"):
+                data["traps"][i][key] = float(data["traps"][i][key])
+        for key in data["equation"]:
+            for subkey in data["equation"][key]:
+                data["equation"][key][subkey] = float(data["equation"][key][subkey])
+        data["source"]["year"] = int(float(data["source"]["year"]))
+        for key in ("melting_point", "lattice_parameter", "density"):
+            data["material"][key] = float(data["material"][key])
+        data["material"]["atomic_number"] = int(float(data["material"]["atomic_number"]))
+        return data
         
 
     @pyqtSlot()
@@ -179,39 +201,51 @@ class SecondTab(QWidget):
 
 class SearchBar(QLineEdit):
 
-    def __init__(self, list_words):
+    def __init__(self, dbname):
         super().__init__()
+        self.dbname = dbname
+        if not os.path.isfile(self.dbname):
+            raise BDDNonTrouvee("base de donnes non trouvée")
         model = QStringListModel()
-        model.setStringList(list_words)
+        model.setStringList(self.getMaterialNameFromDatabase())
         completer = QCompleter()
         completer.setModel(model)
         self.setCompleter(completer)
-        self.returnPressed.connect(partial(self.loadDataFromDataBase, self.text))
+        self.returnPressed.connect(self.loadDataFromDataBase)
 
-    def loadDataFromDataBase(self, functionToExecutetoGetMaterialName):
-        material_name = functionToExecutetoGetMaterialName()
-        if material_name in getMaterialNameFromDatabase():
-            print("Nous allons charger", material_name, "depuis la base dans l'interface.")
-        else:
+    def loadDataFromDataBase(self):
+        material_name = self.text()
+        if not material_name in self.getMaterialNameFromDatabase():
             print(material_name, "non trouvé dans la base.")
+            return
+        print("Nous allons charger", material_name, "depuis la base dans l'interface.")
+        materialData = dataself.getDataFromMaterialName(material_name)
+        for data in materialData:
+            print(data)
+            
+
+    def getMaterialNameFromDatabase(self):
+        db = sqlite3.connect(self.dbname)
+        cursor = db.cursor()
+        cursor.execute("SELECT LOWER(NAME) FROM MATERIAL;")
+        db.commit()
+        # première colonne uniquement
+        rows = [result[0] for result in cursor.fetchall()]
+        db.close()
+        return rows
 
 
-def getMaterialNameFromDatabase():
-    dbname = 'database.sqlite'
-    if not os.path.isfile(dbname):
-        print("base de donnes non trouvée")
-
-    db = sqlite3.connect(dbname)
-    cursor = db.cursor()
-    cursor.execute("SELECT name FROM MATERIAL;")
-    db.commit()
-
-    rows = cursor.fetchall()
-    # première colonne uniquement, en minuscule s'il vous plait
-    rows = [x[0].lower() for x in rows]
-
-    db.close()
-    return rows
+    def getDataFromMaterialName(self, material_name):
+        db = sqlite3.connect(self.dbname)
+        cursor = db.cursor()
+        cursor.execute("SELECT * FROM MATERIAL WHERE LOWER(NAME) = \"" + material_name + "\";")
+        db.commit()
+        #print(cursor.description)
+        # première colonne uniquement, en minuscule s'il vous plait
+        column_name = [description[0] for description in cursor.description]
+        rows = cursor.fetchall()[0]
+        db.close()
+        return list(zip(column_name, rows))
 
 
 def make_vbox():

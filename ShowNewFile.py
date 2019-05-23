@@ -2,15 +2,20 @@ import DragAndDrop
 from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QGroupBox, QGridLayout, QLabel, QHBoxLayout, QScrollArea, QScroller
 from QLineEditWidthed import QLineEditWidthed
-
+from PyQt5.QtGui import QColor
 
 
 class ShowNewFile(QWidget):
 
-    def __init__(self, parameters, editable=False):
+    def __init__(self, parameters, color, editable=False):
         super().__init__()
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
+
+        #change color
+        p = self.palette()
+        p.setColor(self.backgroundRole(), QColor(color.red(), color.green(), color.blue()))
+        self.setPalette(p)
 
         list_data_equation = []
         for equation_type in parameters["equation"]:
@@ -31,15 +36,14 @@ class ShowNewFile(QWidget):
         grid.layout = QGridLayout()
         grid.setLayout(grid.layout)
         grid.setObjectName("equation")
-        #grid.setFlat(False)
         for name, c1, c2 in list_data_equation:
             j = 0
             grid.layout.addWidget(QLabel(name), i, j)
             for c in c1, c2:
                 hbox = make_hbox()
                 hbox.layout.addWidget(QLabel(c[0]))
-                value = "{:.2e}".format(c[1])
-                hbox.layout.addWidget(QLineEditWidthed(value, editable))  # "{:.2e}".format(value)
+                value = "{:.2e}".format(float(c[1]))
+                hbox.layout.addWidget(QLineEditWidthed(value, editable))
                 grid.layout.addWidget(hbox, i, j+1)
                 j += 1
             i += 1
@@ -55,7 +59,7 @@ class ShowNewFile(QWidget):
             if value is None:
                 value = "None"
             elif type(value) is not str:
-                value = "{:.2e}".format(value)
+                value = "{:.2e}".format(float(value))
             grid.layout.addWidget(QLineEditWidthed(value, editable), i, 1)
             i += 1
         scrollAreaWidgetContents.layout.addWidget(grid)
@@ -71,7 +75,7 @@ class ShowNewFile(QWidget):
             if value is None:
                 value = "None"
             elif type(value) is not str:
-                value = "{:.2e}".format(value)
+                value = "{:.2e}".format(float(value))
             grid.layout.addWidget(QLineEditWidthed(value, editable), i, 1)
             i += 1
         scrollAreaWidgetContents.layout.addWidget(grid)
@@ -91,7 +95,7 @@ class ShowNewFile(QWidget):
                 if value is None:
                     value = "None"
                 elif type(value) is not str:
-                    value = "{:.2e}".format(value)
+                    value = "{:.2e}".format(float(value))
                 hbox.layout.addWidget(QLineEditWidthed(value, editable))
                 grid.layout.addWidget(hbox, i, j+1)
                 j += 1
