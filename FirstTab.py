@@ -24,6 +24,7 @@ import rlcompleter
 import time
 from QLineEditWidthed import QLineEditWidthed
 from ShowNewFile import ShowNewFile
+import matplotlib.pyplot as plt
 class FirstTab(QWidget):
 
     def __init__(self, plots):
@@ -112,16 +113,16 @@ class FirstTab(QWidget):
 
     def draw_first_pictures(self):
         for indice in range(len(self.plots)):
-            fig, ax = self.plots[indice]
+            plt.figure(indice)
             if indice == 0:
-                ax.plot([], [])
-                fig.savefig("tab_right_1.png")
+                plt.plot([], [])
+                plt.savefig("tab_right_1.png")
             elif indice == 1:
-                ax.plot([], [])
-                fig.savefig("tab_right_2.png")
+                plt.plot([], [])
+                plt.savefig("tab_right_2.png")
             elif indice == 2:
-                ax.plot([], [])
-                fig.savefig("tab_right_3.png")
+                plt.plot([], [])
+                plt.savefig("tab_right_3.png")
 
     def make_tab(self):
         return make_vbox()
@@ -152,8 +153,8 @@ class FirstTab(QWidget):
                 label.setPixmap(pixmap)
 
     def show_picture(self, i):
-        fig, ax = self.plots[i]
-        fig.show()
+        plt.figure(i)
+        plt.show()
 
     @pyqtSlot()
     def on_click_tracer(self, name):
@@ -161,8 +162,8 @@ class FirstTab(QWidget):
         print('Tracons la courbe des lignes ' + name)
         # effaçons les graphes pécédents
         for indice in range(len(self.plots)):
-            fig, ax = self.plots[indice]
-            ax.cla()
+            plt.figure(indice)
+            plt.cla()
         debut, fin, pas = 300, 2500, 0.1
         les_temperatures = np.arange(debut, fin, pas)
         k_b = 1.38064852 * 10**(-23) * 8.617e+18
@@ -172,21 +173,22 @@ class FirstTab(QWidget):
                 if equation[0] == name:
                     les_d = equation[1][1] * np.exp(equation[2][1]/(k_b * les_temperatures))
                     for indice in range(len(self.plots)):
-                        fig, ax = self.plots[indice]
+                        plt.figure(indice)
                         if indice == 0:
-                            ax.plot(les_temperatures, les_d)
+                            plt.plot(les_temperatures, les_d)
                         elif indice == 1:
-                            ax.plot(np.log(les_temperatures, np.log(les_d)))
+                            plt.plot(np.log(les_temperatures, np.log(les_d)))
                         elif indice == 2:
-                            ax.plot(1000/les_temperatures, les_d)
+                            plt.plot(1000/les_temperatures, les_d)
         for indice in range(len(self.plots)):
-            fig, ax = self.plots[indice]
+            plt.figure(indice)
             if indice == 0:
-                fig.savefig("tab_right_1.png")
+                plt.savefig("tab_right_1.png")
             elif indice == 1:
-                fig.savefig("tab_right_2.png")
+                plt.savefig("tab_right_2.png")
             elif indice == 2:
-                fig.savefig("tab_right_3.png")
+                plt.savefig("tab_right_3.png")
+            plt.close()
 
         self.update_first_tab_image()
         print("Temps de tracé: " + str(time.time() - start))
