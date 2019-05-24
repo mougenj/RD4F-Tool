@@ -25,12 +25,49 @@ import time
 from QLineEditWidthed import QLineEditWidthed
 from ShowNewFile import ShowNewFile
 import matplotlib.pyplot as plt
+
+
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
+import sys
+import random as rd
+
+class PltWindow(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.figure = plt.figure()
+        self.canvas = FigureCanvas(self.figure)
+        self.toolbar = NavigationToolbar(self.canvas, self)
+
+        self.layout = QVBoxLayout()
+        self.layout.addWidget(self.toolbar)
+        self.layout.addWidget(self.canvas)
+        self.setLayout(self.layout)
+        self.plot()
+
+    def plot(self, data=None):
+        if data is None:
+            data = [rd.random() for _ in range(20)]
+            self.figure.clear()
+            ax = self.figure.add_subplot(111)
+            ax.plot(data, "o--")
+        else:
+            ax = self.figure.add_subplot(111)
+            x, y = data
+            ax.plot(x, y)
+        self.canvas.draw()
+
+    def clear(self):
+        self.figure.clear()
+
+
+
 class FirstTab(QWidget):
 
-    def __init__(self, plots):
+    def __init__(self):
         super().__init__()
-        self.plots = plots
-        self.draw_first_pictures()
+        #todo: use lists
+
         self.layout = QHBoxLayout()
         self.setLayout(self.layout)
         self.data_onglets = []
@@ -82,47 +119,21 @@ class FirstTab(QWidget):
 
         # RIGHT
 
-        # let's add tabs in the 1st tab, on the right, with a button to show the image in a matplotlib window
-        bt1 = QPushButton("Voir l'image")
-        bt1.clicked.connect(partial(self.show_picture, 0))
-        bt2 = QPushButton("Voir l'image")
-        bt2.clicked.connect(partial(self.show_picture, 1))
-        bt3 = QPushButton("Voir l'image")
-        bt3.clicked.connect(partial(self.show_picture, 2))
-
+        # let's add tabs on the right
+        self.pltwindows = [PltWindow() for _ in range(3)]
         tab_right = QTabWidget()
         tab_right.setFocusPolicy(Qt.NoFocus)
-        # 1st image
-        tab_right_1 = self.make_tab()
-
-        tab_right_1.layout.addWidget(self.make_pixmap("tab_right_1.png", "tab_right_1.png"))
-        tab_right_1.layout.addWidget(bt1)
-        tab_right.addTab(tab_right_1, "Non log")
-
-        tab_right_2 = self.make_tab()
-        tab_right_2.layout.addWidget(self.make_pixmap("tab_right_2.png", "tab_right_2.png"))
-        tab_right_2.layout.addWidget(bt2)
-        tab_right.addTab(tab_right_2, "log-log")
-
-        tab_right_3 = self.make_tab()
-        tab_right_3.layout.addWidget(self.make_pixmap("tab_right_3.png", "tab_right_3.png"))
-        tab_right_3.layout.addWidget(bt3)
-        tab_right.addTab(tab_right_3, "log-1/T")
-
+        tab_right.addTab(self.pltwindows[0], "Non log")
+        tab_right.addTab(self.pltwindows[1], "log-log")
+        tab_right.addTab(self.pltwindows[2], "log-1/T")
         self.layout.addWidget(tab_right)
 
+        self.draw_first_pictures()
+
     def draw_first_pictures(self):
-        for indice in range(len(self.plots)):
-            plt.figure(indice)
-            if indice == 0:
-                plt.plot([], [])
-                plt.savefig("tab_right_1.png")
-            elif indice == 1:
-                plt.plot([], [])
-                plt.savefig("tab_right_2.png")
-            elif indice == 2:
-                plt.plot([], [])
-                plt.savefig("tab_right_3.png")
+        for indice in range(len(self.pltwindows)):
+            data = [], []
+            self.pltwindows[indice].plot(data)
 
     def make_tab(self):
         return make_vbox()
@@ -142,55 +153,32 @@ class FirstTab(QWidget):
         tab.addTab(snf, decoupe(name))
         self.data_onglets.append(snf.list_data_equation)
 
-    def update_first_tab_image(self):
-        tabWidget = self.findChildren(QTabWidget)[1]
-        labels = tabWidget.findChildren(QLabel)
-
-        for label in labels:
-            if label.pixmap() is not None:
-                name_label = label.objectName()
-                pixmap = QPixmap(name_label)
-                label.setPixmap(pixmap)
-
-    def show_picture(self, i):
-        plt.figure(i)
-        plt.show()
-
     @pyqtSlot()
     def on_click_tracer(self, name):
         start = time.time()  # 4*2 onglets utiles + 1 inutile : Temps: 4.524548768997192 (1.1296305656433105 en mutualisant les ecritures)
         print('Tracons la courbe des lignes ' + name)
         # effaçons les graphes pécédents
-        for indice in range(len(self.plots)):
-            plt.figure(indice)
-            plt.cla()
+        for indice_figure in range(len(self.pltwindows)):
+            self.pltwindows[indice_figure].clear()
         debut, fin, pas = 300, 2500, 0.1
         les_temperatures = np.arange(debut, fin, pas)
         k_b = 1.38064852 * 10**(-23) * 8.617e+18
+
         for onglet in self.data_onglets:
             print("un nouvel onglet")
             for equation in onglet:
                 if equation[0] == name:
                     les_d = equation[1][1] * np.exp(equation[2][1]/(k_b * les_temperatures))
-                    for indice in range(len(self.plots)):
-                        plt.figure(indice)
-                        if indice == 0:
-                            plt.plot(les_temperatures, les_d)
-                        elif indice == 1:
-                            plt.plot(np.log(les_temperatures, np.log(les_d)))
-                        elif indice == 2:
-                            plt.plot(1000/les_temperatures, les_d)
-        for indice in range(len(self.plots)):
-            plt.figure(indice)
-            if indice == 0:
-                plt.savefig("tab_right_1.png")
-            elif indice == 1:
-                plt.savefig("tab_right_2.png")
-            elif indice == 2:
-                plt.savefig("tab_right_3.png")
-            plt.close()
 
-        self.update_first_tab_image()
+                    data = les_temperatures, les_d
+                    self.pltwindows[0].plot(data)
+
+                    data = np.log(les_temperatures), np.log(les_d)
+                    self.pltwindows[1].plot(data)
+
+                    data = 1000/les_temperatures, les_d
+                    self.pltwindows[2].plot(data)
+
         print("Temps de tracé: " + str(time.time() - start))
 
     @pyqtSlot()

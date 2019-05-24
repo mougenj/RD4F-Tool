@@ -52,12 +52,12 @@ class App(QWidget):
 
         #tabs.setTabPosition(QTabWidget.West)
         tabs.resize(self.width, self.height)
-        tabs.addTab(FirstTab(self.plots), "Lecture")
+        tabs.addTab(FirstTab(), "Lecture")
         tabs.addTab(SecondTab(), "Ecriture")
         tabs.addTab(ThirdTab(), "Post-traitement")
 
         # todo: commenter
-        tabs.setCurrentIndex(1) 
+        tabs.setCurrentIndex(0) 
 
         layout = QVBoxLayout()  # contient les tabs
         layout.addWidget(tabs)
