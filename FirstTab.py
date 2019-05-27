@@ -47,7 +47,7 @@ class PltWindow(QWidget):
 
     def plot(self, data=None):
         if data is None:
-            data = [rd.random() for _ in range(20)]
+            data = []
             self.figure.clear()
             ax = self.figure.add_subplot(111)
             ax.plot(data, "o--")
@@ -131,13 +131,6 @@ class FirstTab(QWidget):
         tab_right.addTab(self.pltwindows[1], "log-log")
         tab_right.addTab(self.pltwindows[2], "log-1/T")
         self.layout.addWidget(tab_right)
-
-        self.draw_first_pictures()
-
-    def draw_first_pictures(self):
-        for indice in range(len(self.pltwindows)):
-            data = [], []
-            self.pltwindows[indice].plot(data)
 
     def make_tab(self):
         return make_vbox()
