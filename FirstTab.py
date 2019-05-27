@@ -64,13 +64,14 @@ class PltWindow(QWidget):
 
 class FirstTab(QWidget):
 
-    def __init__(self):
+    def __init__(self, background):
         super().__init__()
         #todo: use lists
 
         self.layout = QHBoxLayout()
         self.setLayout(self.layout)
         self.data_onglets = []
+        self.bakground = background
 
 
         # LEFT
@@ -148,8 +149,7 @@ class FirstTab(QWidget):
     def open_new_file(self, tab, name, parameters):
         decoupe = lambda chaine : "..." + chaine[-5:] if len(chaine) > 10 else chaine
         #get background color
-        color = self.palette().color(QPalette.Background)
-        snf = ShowNewFile(parameters, color)
+        snf = ShowNewFile(parameters, self.bakground)
         tab.addTab(snf, decoupe(name))
         self.data_onglets.append(snf.list_data_equation)
 

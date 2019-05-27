@@ -43,10 +43,11 @@ class BDDNonTrouvee(Exception):
 
 class SecondTab(QWidget):
 
-    def __init__(self):
+    def __init__(self, background):
         super().__init__()
         self.layout = QHBoxLayout()
         self.setLayout(self.layout)
+        self.background = background
         
         tab_left = QTabWidget(tabsClosable=True)
         def CloseTab(i):
@@ -83,8 +84,7 @@ class SecondTab(QWidget):
     def open_new_file(self, tab, name, parameters):
         decoupe = lambda chaine : "..." + chaine[-5:] if len(chaine) > 10 else chaine
         #get background color
-        color = self.palette().color(QPalette.Background)
-        snf = ShowNewFile(parameters, color, editable=True)
+        snf = ShowNewFile(parameters, self.background, editable=True)
         tab.addTab(snf, decoupe(name))
 
     def save(self, functionToCallToGetIndex):

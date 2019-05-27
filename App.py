@@ -45,15 +45,11 @@ class App(QWidget):
         }
         """)
 
-        # brush = QBrush(QColor(168, 168, 168))
-        # # brush.setStyle(QtCore.Qt.SolidPattern)
-        # palette.setBrush(QPalette.Active, QPalette.Highlight, brush)
-        # tabs.setPalette(palette)
-
-        #tabs.setTabPosition(QTabWidget.West)
+        color = self.palette().color(QPalette.Background)
+        rgba = color.red(), color.green(), color.blue(), color.alpha()
         tabs.resize(self.width, self.height)
-        tabs.addTab(FirstTab(), "Lecture")
-        tabs.addTab(SecondTab(), "Ecriture")
+        tabs.addTab(FirstTab(rgba), "Lecture")
+        tabs.addTab(SecondTab(rgba), "Ecriture")
         tabs.addTab(ThirdTab(), "Post-traitement")
 
         # todo: commenter

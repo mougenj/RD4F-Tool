@@ -14,7 +14,8 @@ class ShowNewFile(QWidget):
 
         #change color
         p = self.palette()
-        p.setColor(self.backgroundRole(), QColor(color.red(), color.green(), color.blue()))
+        red, green, blue, alphe = color
+        p.setColor(self.backgroundRole(), QColor(red, green, blue))
         self.setPalette(p)
 
         list_data_equation = []
