@@ -43,11 +43,14 @@ class BDDNonTrouvee(Exception):
 
 class SecondTab(QWidget):
 
-    def __init__(self, background):
+    def __init__(self):
         super().__init__()
         self.layout = QHBoxLayout()
         self.setLayout(self.layout)
-        self.background = background
+        # sauvegarde de la couleur du fond
+        color = self.palette().color(QPalette.Background)
+        rgba = color.red(), color.green(), color.blue(), color.alpha()
+        self.background = rgba
         
         tab_left = QTabWidget(tabsClosable=True)
         def CloseTab(i):

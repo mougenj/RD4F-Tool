@@ -45,11 +45,10 @@ class App(QWidget):
         }
         """)
 
-        color = self.palette().color(QPalette.Background)
-        rgba = color.red(), color.green(), color.blue(), color.alpha()
+
         tabs.resize(self.width, self.height)
-        tabs.addTab(FirstTab(rgba), "Lecture")
-        tabs.addTab(SecondTab(rgba), "Ecriture")
+        tabs.addTab(FirstTab(), "Lecture")
+        tabs.addTab(SecondTab(), "Ecriture")
         tabs.addTab(ThirdTab(), "Post-traitement")
 
         # todo: commenter
