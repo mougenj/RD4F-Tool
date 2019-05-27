@@ -1,62 +1,16 @@
-import App
-from PyQt5.QtWidgets import QApplication
-import random as rd
-import json
-import sqlite3
 import os
+import random as rd
+import sqlite3
 import sys
+
 # the two import below is just an evil way to frorce cx_freeze to include these parts in the exe. Should br done in the setup.py, but I'm not sure how to do it.
 import numpy.core._methods
 import numpy.lib.format
+from PyQt5.QtWidgets import QApplication
 
+import App
+import dataFunctions
 
-def create_json_example():
-    parameters = {}
-    adatome = "hydrogene"
-    material = {
-        "name" : "Carbone",
-        "atomic_symbol" : "C",
-        "atomic_number" : 6,
-        "density" : 1.0,
-        "net" : None,  # reseaux TODO : traduire
-        "lattice_parameter" : 1,
-        "melting_point" : 600
-    }
-    source = {
-        "author_name" : "Touchard",
-        "year" : 2012,
-        "doi" : "45454"
-    }
-    equations = {
-        "D" : {
-            "D_0" : 6e-4,
-            "E_D" : 1.04
-        },
-        "S" : {
-            "S_0" : 1.0,
-            "E_S" : 6545
-        },
-        "Kr" : {
-            "Kr_0" : 1.0,
-            "E_r" : 6545
-        }
-    }
-    traps = [
-        {
-            "density" : 5,
-            "angular_frequency" : 8,
-            "energy" : 454
-        }
-        for _ in range(10)
-    ]
-    parameters["material"] = material
-    parameters["adatome"] = adatome
-    parameters["source"] = source
-    parameters["equation"] = equations
-    parameters["traps"] = traps
-    chaine = json.dumps(parameters, indent=4)
-    with open("json.txt", "w") as fichier:
-        fichier.write(chaine)
 
 def create_database():
     dbname = 'database.sqlite'
@@ -116,8 +70,9 @@ def create_database():
 # envoyer un mail pour la troisiemen partie
 # faire une BDD
 # lire le matlab founi par le client
+# pouvoir ajouter des pieges dans l'interface
 def main():
-    create_json_example()
+    dataFunctions.create_json_example()
     create_database()
     # print("création de l'interface")
     app = QApplication(sys.argv)

@@ -28,6 +28,8 @@ import rlcompleter
 import time
 import os
 import sqlite3
+import dataFunctions
+
 
 class tooManyValues(Exception):
 
@@ -61,7 +63,7 @@ class SecondTab(QWidget):
 
         search_bar = make_hbox()
         search_bar.layout.addWidget(QLineEditWidthed("Entrez un nom de matériau pour en charger le squelette :"))
-        search_bar.layout.addWidget(SearchBar("database.sqlite"))
+        search_bar.layout.addWidget(SearchBar("database.sqlite", self, tab_left))
 
         button_add_files = QPushButton("Ajout de fichier(s)")
         button_add_files.clicked.connect(partial(self.on_click_open_files, tab_left))
@@ -159,14 +161,24 @@ class SecondTab(QWidget):
     def correctTypes(self, data):
         for i in range(len(data["traps"])):
             for key in ("density", "energy", "angular_frequency"):
-                data["traps"][i][key] = float(data["traps"][i][key])
+                value = data["traps"][i][key]
+                value = float(value) if value is not None else None
+                data["traps"][i][key] = value
         for key in data["equation"]:
             for subkey in data["equation"][key]:
-                data["equation"][key][subkey] = float(data["equation"][key][subkey])
-        data["source"]["year"] = int(float(data["source"]["year"]))
+                value = data["equation"][key][subkey]
+                value = float(value) if value is not None else None
+                data["equation"][key][subkey] = float(value)
+        year = data["source"]["year"]
+        year = int(float(year)) if year is not None else None
+        data["source"]["year"] = year
         for key in ("melting_point", "lattice_parameter", "density"):
-            data["material"][key] = float(data["material"][key])
-        data["material"]["atomic_number"] = int(float(data["material"]["atomic_number"]))
+            value = data["material"][key]
+            value = float(value) if value is not None else None
+            data["material"][key] = value
+        value = data["material"]["atomic_number"]
+        value = int(float(value)) if value is not None else None
+        data["material"]["atomic_number"] = value
         return data
         
 
@@ -204,9 +216,10 @@ class SecondTab(QWidget):
 
 class SearchBar(QLineEdit):
 
-    def __init__(self, dbname):
+    def __init__(self, dbname, parent, tabs):
         super().__init__()
         self.dbname = dbname
+        self.parent = parent
         if not os.path.isfile(self.dbname):
             raise BDDNonTrouvee("base de donnes non trouvée")
         model = QStringListModel()
@@ -214,18 +227,23 @@ class SearchBar(QLineEdit):
         completer = QCompleter()
         completer.setModel(model)
         self.setCompleter(completer)
-        self.returnPressed.connect(self.loadDataFromDataBase)
+        self.returnPressed.connect(partial(self.loadDataFromDataBase, tabs))
 
-    def loadDataFromDataBase(self):
+    def loadDataFromDataBase(self, tabs):
         material_name = self.text()
         if not material_name in self.getMaterialNameFromDatabase():
             print(material_name, "non trouvé dans la base.")
             return
         print("Nous allons charger", material_name, "depuis la base dans l'interface.")
-        materialData = dataself.getDataFromMaterialName(material_name)
-        for data in materialData:
-            print(data)
-            
+        materialData = self.getDataFromMaterialName(material_name)
+        parameters = self.createPartialJSONFromDataMaterial(materialData)
+        self.parent.open_new_file(tabs, "Default", parameters)
+    
+    def createPartialJSONFromDataMaterial(self, materialData):
+        parameters = dataFunctions.create_empty_data()
+        for key, value in materialData:
+            parameters["material"][key] = value
+        return parameters
 
     def getMaterialNameFromDatabase(self):
         db = sqlite3.connect(self.dbname)

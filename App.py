@@ -52,7 +52,7 @@ class App(QWidget):
         tabs.addTab(ThirdTab(), "Post-traitement")
 
         # todo: commenter
-        tabs.setCurrentIndex(0) 
+        tabs.setCurrentIndex(1) 
 
         layout = QVBoxLayout()  # contient les tabs
         layout.addWidget(tabs)

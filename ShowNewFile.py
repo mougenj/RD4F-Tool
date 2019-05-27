@@ -33,7 +33,11 @@ class ShowNewFile(QWidget):
             list_data_equation.append(sorted_coefficients)
 
         scrollAreaWidgetContents = make_vbox()
-        name_of_area = QLabel("diffusion of " + parameters["adatome"] + " in " + parameters["material"]["name"])
+        adatome_name = parameters["material"]["adatome"]
+        adatome_name = str(adatome_name) if adatome_name is not None else "None"
+        material_name = parameters["material"]["adatome"]
+        material_name = str(material_name) if material_name is not None else "None"
+        name_of_area = QLabel("diffusion of " + adatome_name + " in " + material_name)
         myFont=QFont()
         myFont.setBold(True)
         name_of_area.setFont(myFont)
@@ -49,7 +53,10 @@ class ShowNewFile(QWidget):
             for c in c1, c2:
                 hbox = make_hbox()
                 hbox.layout.addWidget(QLabel(c[0]))
-                value = "{:.2e}".format(float(c[1]))
+                if c[1] is None:
+                    value = "None"
+                else:
+                    value =  value = "{:.2e}".format(float(c[1]))
                 hbox.layout.addWidget(QLineEditWidthed(value, editable))
                 grid.layout.addWidget(hbox, i, j+1)
                 j += 1
