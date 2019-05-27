@@ -2,7 +2,7 @@ import DragAndDrop
 from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QGroupBox, QGridLayout, QLabel, QHBoxLayout, QScrollArea, QScroller
 from QLineEditWidthed import QLineEditWidthed
-from PyQt5.QtGui import QColor
+from PyQt5.QtGui import QColor, QFont
 
 
 class ShowNewFile(QWidget):
@@ -33,6 +33,11 @@ class ShowNewFile(QWidget):
             list_data_equation.append(sorted_coefficients)
 
         scrollAreaWidgetContents = make_vbox()
+        name_of_area = QLabel("diffusion of " + parameters["adatome"] + " in " + parameters["material"]["name"])
+        myFont=QFont()
+        myFont.setBold(True)
+        name_of_area.setFont(myFont)
+        scrollAreaWidgetContents.layout.addWidget(name_of_area)
         i = 0            
         grid = QGroupBox("equation")
         grid.layout = QGridLayout()

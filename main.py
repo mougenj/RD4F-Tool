@@ -12,8 +12,10 @@ import numpy.lib.format
 
 def create_json_example():
     parameters = {}
+    adatome = "hydrogene"
     material = {
-        "name" : "C",
+        "name" : "Carbone",
+        "atomic_symbol" : "C",
         "atomic_number" : 6,
         "density" : 1.0,
         "net" : None,  # reseaux TODO : traduire
@@ -48,6 +50,7 @@ def create_json_example():
         for _ in range(10)
     ]
     parameters["material"] = material
+    parameters["adatome"] = adatome
     parameters["source"] = source
     parameters["equation"] = equations
     parameters["traps"] = traps
