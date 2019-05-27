@@ -66,9 +66,7 @@ def create_database():
 # "resserrer" les champs du premier onglet
 # choisir l'emplacement des sauvegardes
 # faire un paquet debian
-# charger des données depuis la BDD
 # envoyer un mail pour la troisiemen partie
-# faire une BDD
 # lire le matlab founi par le client
 # pouvoir ajouter des pieges dans l'interface
 def main():
