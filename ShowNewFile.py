@@ -35,7 +35,7 @@ class ShowNewFile(QWidget):
         scrollAreaWidgetContents = make_vbox()
         adatome_name = parameters["material"]["adatome"]
         adatome_name = str(adatome_name) if adatome_name is not None else "None"
-        material_name = parameters["material"]["adatome"]
+        material_name = parameters["material"]["name"]
         material_name = str(material_name) if material_name is not None else "None"
         name_of_area = QLabel("diffusion of " + adatome_name + " in " + material_name)
         myFont=QFont()
