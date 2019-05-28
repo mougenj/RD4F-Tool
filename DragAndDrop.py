@@ -3,6 +3,7 @@
 
 from PyQt5.QtWidgets import QMessageBox, QLineEdit
 import json
+from re import search
 
 class FileEdit(QLineEdit):
     """
@@ -37,8 +38,12 @@ class FileEdit(QLineEdit):
         sucessfully_loaded = []
         failed = []
         for url in urls:
-            # print(url.scheme())       
+            # print(url.scheme())
+            print(url)
             filepath = str(url.path())
+            if search(r"/[\w]+:/", filepath) is not None:
+                filepath = filepath[1::]
+            
             try:
                 with open(filepath, "r") as fichier: 
                     liste = json.loads(fichier.read())
