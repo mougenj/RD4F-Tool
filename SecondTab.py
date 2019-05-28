@@ -90,7 +90,7 @@ class SecondTab(QWidget):
         decoupe = lambda chaine : "..." + chaine[-5:] if len(chaine) > 10 else chaine
         #get background color
         snf = ShowNewFile(parameters, self.background, editable=True)
-        tab.addTab(snf, decoupe(name))
+        tab.setCurrentIndex(tab.addTab(snf, decoupe(name)))
 
     def save(self, functionToCallToGetIndex):
         index = functionToCallToGetIndex()

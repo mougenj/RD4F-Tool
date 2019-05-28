@@ -146,7 +146,7 @@ class FirstTab(QWidget):
         decoupe = lambda chaine : "..." + chaine[-5:] if len(chaine) > 10 else chaine
         #get background color
         snf = ShowNewFile(parameters, self.background)
-        tab.addTab(snf, decoupe(name))
+        tab.setCurrentIndex(tab.addTab(snf, decoupe(name)))
         self.data_onglets.append(snf.list_data_equation)
 
     @pyqtSlot()
