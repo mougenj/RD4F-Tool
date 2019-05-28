@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import (QWidget,
                              QVBoxLayout, 
                              QTabWidget,
-                             QStyle
+                             QDesktopWidget
                             )
 from PyQt5.QtGui import QIcon, QColor, QPalette, QBrush
 import matplotlib.pyplot as plt
@@ -14,26 +14,24 @@ class App(QWidget):
 
     def __init__(self):
         super().__init__()
-        self.title = 'Titre'
+        self.title = 'RDRP Database Tools'
         self.left = 10
         self.top = 10
-        self.width = 1500  # 640
-        self.height = 480
-        fileName = "json.txt"
+        self.width = 1600  # 640
+        self.height = 640
         self.onglets = []
         self.plots = [plt.subplots() for _ in range(3)]  # 3 subplots
         scriptDir = os.path.dirname(os.path.realpath(__file__))
-        self.setWindowIcon(QIcon(scriptDir + os.path.sep + os.path.sep + "logo.png"))
+        self.setWindowIcon(QIcon(scriptDir + os.path.sep + "ressources" +  os.path.sep + "logo.png"))
         self.initUI()
+        self.center()
 
     def initUI(self):
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
 
-        tabs = QTabWidget()#tabsClosable=True
-        #tabs.tabBar().setTabTextColor(1, QColor(0, 0, 0))
-        #self.setStyle(Style_tweaks())
-        tabs.setFocusPolicy(Qt.NoFocus)
+        tabs = QTabWidget()
+        tabs.setFocusPolicy(Qt.NoFocus)  # prevent the "horrible orange box effect" on Ubuntu
         tabs.setStyleSheet(tabs.styleSheet() + """
         QTabBar::tab:!selected {
             color: rgb(242, 241, 240);
@@ -50,9 +48,7 @@ class App(QWidget):
         tabs.addTab(FirstTab(), "Lecture")
         tabs.addTab(SecondTab(), "Ecriture")
         tabs.addTab(ThirdTab(), "Post-traitement")
-
-        # todo: commenter
-        tabs.setCurrentIndex(1) 
+        tabs.setCurrentIndex(0) #  todo: commenter
 
         layout = QVBoxLayout()  # contient les tabs
         layout.addWidget(tabs)
@@ -61,18 +57,13 @@ class App(QWidget):
         p = self.palette()
         p.setColor(self.backgroundRole(), QColor(0, 113, 134))
         self.setPalette(p)
-        #set haeder
         self.show()
-
-
-
-class Style_tweaks(QStyle):
-
-    def __init__(self):
-        super().__init__()
-
-    def drawPrimitive(self, element, option, painter, widget):
-        print(element)
-        if element == QStyle.PE_FrameFocusRect:
-            return
-        super().drawPrimitive(element, option, painter, widget)
+    
+    def center(self):
+        # see answer of BPL on https://stackoverflow.com/questions/39046059/pyqt-location-of-the-window
+        ag = QDesktopWidget().availableGeometry()
+        sg = QDesktopWidget().screenGeometry()
+        widget = self.geometry()
+        maxX = ag.width() - widget.width()
+        maxY = 2 * ag.height() - sg.height() - widget.height()
+        self.move(maxX/2, maxY/2)
