@@ -19,8 +19,6 @@ from PyQt5.QtGui import QPixmap, QFontMetrics, QPalette
 import json
 import numpy as np
 from functools import partial
-import pdb
-import rlcompleter
 import time
 from QLineEditWidthed import QLineEditWidthed
 from ShowNewFile import ShowNewFile
@@ -85,8 +83,6 @@ class FirstTab(QWidget):
         tab_left.tabCloseRequested.connect(CloseTab)
         tab_left.setTabPosition(QTabWidget.West)
         tab_left.setFocusPolicy(Qt.NoFocus)
-        #pdb.Pdb.complete=rlcompleter.Completer(locals()).complete
-        #pdb.set_trace()
 
         add_files = QWidget()
         add_files.layout = QHBoxLayout()
