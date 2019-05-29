@@ -2,7 +2,7 @@ import DragAndDrop
 from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QGroupBox, QGridLayout, QLabel, QHBoxLayout, QScrollArea, QScroller, QPushButton, QApplication
 from QLineEditWidthed import QLineEditWidthed
-from PyQt5.QtGui import QColor, QFont
+from PyQt5.QtGui import QColor, QFont, QIcon
 import pdb
 import rlcompleter
 from functools import partial
@@ -117,6 +117,8 @@ class ShowNewFile(QWidget):
                 hbox.layout.addWidget(QLineEditWidthed(value, editable))
                 grid.layout.addWidget(hbox, i, j+1)
                 j += 1
+            if self.editable:
+                self.add_remove_bt(grid, i, j+1)
             i += 1
         
         scroll_area = QScrollArea()
@@ -128,29 +130,44 @@ class ShowNewFile(QWidget):
         if self.editable:
             bt_add_new_trap = QPushButton("ajouter une ligne de pièges")
             scrollAreaWidgetContents.layout.addWidget(bt_add_new_trap)
-            bt_add_new_trap.clicked.connect(partial(on_clik_bt_add_new_trap, scroll_area, grid, bt_add_new_trap, self))
+            bt_add_new_trap.clicked.connect(partial(self.on_clik_bt_add_new_trap, scroll_area, grid, bt_add_new_trap, self))
         # pdb.Pdb.complete=rlcompleter.Completer(locals()).complete; pdb.set_trace()
 
 
         self.layout.addWidget(scroll_area)
         self.list_data_equation = list_data_equation
+    
+    def add_remove_bt(self, grid, i, j):
+        remove_bt = QPushButton()
+        img = QIcon("ressources/trash-alt-solid.svg")
+        remove_bt.setIcon(img)
+        remove_bt.clicked.connect(partial(self.on_click_remove_bt_trap, grid, i))
+        grid.layout.addWidget(remove_bt, i, j)
 
+    def on_clik_bt_add_new_trap(self, qscroll, grid, bt, thing):
+        i = grid.layout.rowCount()
 
-def on_clik_bt_add_new_trap(qscroll, grid, bt, thing):
-    i = grid.layout.rowCount()
+        grid.layout.addWidget(QLabel(str(i)), i, 0)
+        j = 0
+        for prop in ("energy", "density", "angular_frequency"):
+            hbox = make_hbox()
+            hbox.layout.addWidget(QLabel(prop))
+            hbox.layout.addWidget(QLineEditWidthed("None", True))
+            grid.layout.addWidget(hbox, i, j+1)
+            j += 1
+        self.add_remove_bt(grid, i, j+1)
+        qscroll.widget().resize(qscroll.widget().sizeHint())
+        QApplication.processEvents()
+        vbar = qscroll.verticalScrollBar()
+        vbar.setValue(vbar.maximum())
 
-    grid.layout.addWidget(QLabel(str(i)), i, 0)
-    j = 0
-    for prop in ("energy", "density", "angular_frequency"):
-        hbox = make_hbox()
-        hbox.layout.addWidget(QLabel(prop))
-        hbox.layout.addWidget(QLineEditWidthed("None", True))
-        grid.layout.addWidget(hbox, i, j+1)
-        j += 1
-    qscroll.widget().resize(qscroll.widget().sizeHint())
-    QApplication.processEvents()
-    vbar = qscroll.verticalScrollBar()
-    vbar.setValue(vbar.maximum())
+    def on_click_remove_bt_trap(self, grid, i):
+        for j in range(grid.layout.rowCount()):
+            try:
+                grid.layout.itemAtPosition(i, j).widget().setParent(None)
+            except Exception as e:
+                print(e)
+
 
 def make_vbox():
     vbox = QWidget()

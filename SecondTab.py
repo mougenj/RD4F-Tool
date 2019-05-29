@@ -133,8 +133,13 @@ class SecondTab(QWidget):
                             dictionnary_of_this_trap[label] = value
                         except AttributeError as e:  # attrape le bouton d'ajout
                             print(e)
-
-                    data_to_save["traps"].append(dictionnary_of_this_trap)
+                    # when a row is deleted from the grid, the number of
+                    # the total row don't decrease, and thus the next row
+                    # is added below a row that don't exists.
+                    # that is why it is mandatory to check if the dictionnnary
+                    # is empty (to remove the deleted rows)
+                    if not dictionnary_of_this_trap == {}:
+                        data_to_save["traps"].append(dictionnary_of_this_trap)
             elif gb.objectName() == "equation":
                 for row in range(gb.layout.rowCount()):
                     equation_type = gb.layout.itemAtPosition(row, 0).widget().text()
