@@ -12,6 +12,8 @@ import App
 import dataFunctions
 
 
+# import pdb; import rlcompleter; pdb.Pdb.complete=rlcompleter.Completer(locals()).complete; pdb.set_trace()
+
 def create_database():
     dbname = 'database.sqlite'
     if os.path.isfile(dbname):
