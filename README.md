@@ -1,2 +1,2 @@
 # LSPM-Gui
-Un interface graphique commandée par le LSPM
+Une interface graphique commandée par le LSPM
