@@ -35,6 +35,46 @@ class App(QMainWindow):
         self.setWindowIcon(QIcon(scriptDir + os.path.sep + "ressources" +  os.path.sep + "logo.png"))
         # menu part
         bar = self.menuBar()
+        barp = bar.palette()
+        # import pdb; import rlcompleter; pdb.Pdb.complete=rlcompleter.Completer(locals()).complete; pdb.set_trace()
+        color = barp.text().color()
+        txtcolor = "rgb(" + str(color.red()) + ", " + str(color.green()) + ", " + str(color.blue()) + ")"
+        color = barp.button().color()
+
+        list_color = [color.red(), color.green(), color.blue()]
+        backcolor = "rgb("
+        backcolor += ", ".join([str(c) for c in list_color])
+        backcolor += ")"
+
+        backcolor_darker = "rgb("
+        backcolor_darker += ", ".join([str(int(c*9/10)) for c in list_color])
+        backcolor_darker += ")"
+
+        self.setStyleSheet("""
+        QMenuBar {
+            background-color: """ + backcolor + """ ;
+            color: """ + txtcolor + """;
+        }
+
+        QMenuBar::item {
+            background-color: """ + backcolor + """ ;
+            color: """ + txtcolor + """;
+        }
+
+        QMenuBar::item::selected {
+            background-color: """ + backcolor_darker + """;
+        }
+
+        QMenu {
+            background-color: """ + backcolor + """ ;
+            color: """ + txtcolor + """;         
+        }
+
+        QMenu::item::selected {
+            background-color: """ + backcolor_darker + """;
+        }
+    """)
+        
         helpAction = QAction('Show help', self)
         helpAction.setShortcut('Ctrl+H')
         # helpAction.setStatusTip('Open Directory')
@@ -52,6 +92,11 @@ class App(QMainWindow):
         p = self.palette()
         p.setColor(self.backgroundRole(), QColor(0, 113, 134))
         self.setPalette(p)
+
+        barp.setColor(bar.backgroundRole(), color)
+        bar.setPalette(barp)
+        color = barp.button().color()
+        print(color.blue())
         self.show()
 
     def center(self):
