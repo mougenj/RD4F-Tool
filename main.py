@@ -70,7 +70,6 @@ def create_database():
 # faire un paquet debian
 # envoyer un mail pour la troisiemen partie
 # lire le matlab founi par le client
-# pouvoir ajouter des pieges dans l'interface
 def main():
     dataFunctions.create_json_example()
     create_database()
