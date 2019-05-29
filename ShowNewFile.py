@@ -1,8 +1,11 @@
 import DragAndDrop
 from PyQt5.QtCore import pyqtSlot
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QGroupBox, QGridLayout, QLabel, QHBoxLayout, QScrollArea, QScroller
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QGroupBox, QGridLayout, QLabel, QHBoxLayout, QScrollArea, QScroller, QPushButton
 from QLineEditWidthed import QLineEditWidthed
 from PyQt5.QtGui import QColor, QFont
+import pdb
+import rlcompleter
+from functools import partial
 
 
 class ShowNewFile(QWidget):
@@ -11,6 +14,7 @@ class ShowNewFile(QWidget):
         super().__init__()
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
+        self.editable = editable
 
         #change color
         p = self.palette()
@@ -114,7 +118,18 @@ class ShowNewFile(QWidget):
                 grid.layout.addWidget(hbox, i, j+1)
                 j += 1
             i += 1
+        
+        on_clik_bt_add_new_trap(grid)
+        on_clik_bt_add_new_trap(grid)
+        on_clik_bt_add_new_trap(grid)
+        on_clik_bt_add_new_trap(grid)
+        
         scrollAreaWidgetContents.layout.addWidget(grid)
+        if self.editable:
+            bt_add_new_trap = QPushButton("ajouter une ligne de pièges")
+            scrollAreaWidgetContents.layout.addWidget(bt_add_new_trap)
+            bt_add_new_trap.clicked.connect(partial(on_clik_bt_add_new_trap, grid))
+        pdb.Pdb.complete=rlcompleter.Completer(locals()).complete; pdb.set_trace()
 
 
         scroll_area = QScrollArea()
@@ -123,6 +138,18 @@ class ShowNewFile(QWidget):
 
         self.layout.addWidget(scroll_area)
         self.list_data_equation = list_data_equation
+
+def on_clik_bt_add_new_trap(grid):
+    i = grid.layout.rowCount()
+
+    grid.layout.addWidget(QLabel(str(i)), i, 0)
+    j = 0
+    for prop in ("energy", "density", "angular_frequency"):
+        hbox = make_hbox()
+        hbox.layout.addWidget(QLabel(prop))
+        hbox.layout.addWidget(QLineEditWidthed("None", True))
+        grid.layout.addWidget(hbox, i, j+1)
+        j += 1
 
 
 def make_vbox():

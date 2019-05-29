@@ -117,20 +117,23 @@ class SecondTab(QWidget):
                     data_to_save["source"][label] = value
             elif gb.objectName() == "traps":
                 for row in range(gb.layout.rowCount()):
-                    gb.layout.itemAtPosition(row, 0).widget().text()  # inutile
                     dictionnary_of_this_trap = {}
                     for column in range(1, 4):
-                        hb = gb.layout.itemAtPosition(row, column).widget()
-                        if hb.layout.count() > 2:
-                            raise tooManyValues(
-                                "Trop de valeur dans le champs des pieges pour"
-                                " pouvoir lire correctement le fichier. Il "
-                                "faut compléter la fonction de lecture du"
-                                " formulaire."
-                            )
-                        label = hb.layout.itemAt(0).widget().text()
-                        value = hb.layout.itemAt(1).widget().text()
-                        dictionnary_of_this_trap[label] = value
+                        try:
+                            hb = gb.layout.itemAtPosition(row, column).widget()
+                            if hb.layout.count() > 2:
+                                raise tooManyValues(
+                                    "Trop de valeur dans le champs des pieges pour"
+                                    " pouvoir lire correctement le fichier. Il "
+                                    "faut compléter la fonction de lecture du"
+                                    " formulaire."
+                                )
+                            label = hb.layout.itemAt(0).widget().text()
+                            value = hb.layout.itemAt(1).widget().text()
+                            dictionnary_of_this_trap[label] = value
+                        except AttributeError as e:  # attrape le bouton d'ajout
+                            print(e)
+
                     data_to_save["traps"].append(dictionnary_of_this_trap)
             elif gb.objectName() == "equation":
                 for row in range(gb.layout.rowCount()):
@@ -161,9 +164,14 @@ class SecondTab(QWidget):
     def correctTypes(self, data):
         for i in range(len(data["traps"])):
             for key in ("density", "energy", "angular_frequency"):
-                value = data["traps"][i][key]
-                value = float(value) if value is not None else None
-                data["traps"][i][key] = value
+                try:
+                    value = data["traps"][i][key]
+                    if value == "None":
+                        value = None
+                    value = float(value) if value is not None else None
+                    data["traps"][i][key] = value
+                except KeyError as e:  # attrape le bouton d'ajout
+                    print(e)
         for key in data["equation"]:
             for subkey in data["equation"][key]:
                 value = data["equation"][key][subkey]
