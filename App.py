@@ -96,7 +96,6 @@ class App(QMainWindow):
         barp.setColor(bar.backgroundRole(), color)
         bar.setPalette(barp)
         color = barp.button().color()
-        print(color.blue())
         self.show()
 
     def center(self):

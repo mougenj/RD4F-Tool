@@ -33,8 +33,8 @@ import dataFunctions
 
 class tooManyValues(Exception):
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, msg):
+        super().__init__(msg)
 
 
 class BDDNonTrouvee(Exception):
@@ -62,22 +62,22 @@ class SecondTab(QWidget):
         tab_left.setFocusPolicy(Qt.NoFocus)
 
         search_bar = make_hbox()
-        search_bar.layout.addWidget(QLineEditWidthed("Entrez un nom de matériau pour en charger le squelette :"))
+        search_bar.layout.addWidget(QLineEditWidthed("Choose a name of a material to load it from the database :"))
         search_bar.layout.addWidget(SearchBar("database.sqlite", self, tab_left))
 
-        button_add_files = QPushButton("Ajout de fichier(s)")
+        button_add_files = QPushButton("Add file(s)")
         button_add_files.clicked.connect(partial(self.on_click_open_files, tab_left))
-        button_save = QPushButton("Enregistrer le fichier")
+        button_save = QPushButton("Save the file")
         button_save.clicked.connect(partial(self.save, tab_left.currentIndex))
         add_files = make_vbox()
         add_files.layout.addWidget(search_bar)
         add_files.layout.addWidget(button_save)
-        add_files.layout.addWidget(DragAndDrop.FileEdit("Glisser vos fichiers ici", partial(self.open_new_file, tab_left)))
+        add_files.layout.addWidget(DragAndDrop.FileEdit("Drop your files here", partial(self.open_new_file, tab_left)))
         add_files.layout.addWidget(button_add_files)
 
         # TODO: commenter
         with open("json.txt") as fichier:
-            self.open_new_file(tab_left, "nom", json.loads(fichier.read()))
+            self.open_new_file(tab_left, "Exemple", json.loads(fichier.read()))
         files_vbox = make_vbox()
         #files_vbox.layout.addWidget(tab_left)
         files_vbox.layout.addWidget(add_files)
@@ -102,71 +102,71 @@ class SecondTab(QWidget):
         }
         tabs = self.findChild(QTabWidget)
         snf = tabs.widget(index)
-        scroll_area = snf.findChild(QScrollArea)
+        tabs_to_save = snf.findChild(QTabWidget)
 
-        for gb in scroll_area.findChildren(QGroupBox):
-            if gb.objectName() == "material":
-                for row in range(gb.layout.rowCount()):
-                    label = gb.layout.itemAtPosition(row, 0).widget().text()
-                    value = gb.layout.itemAtPosition(row, 1).widget().text()
-                    data_to_save["material"][label] = value
-            elif gb.objectName() == "source":
-                for row in range(gb.layout.rowCount()):
-                    label = gb.layout.itemAtPosition(row, 0).widget().text()
-                    value = gb.layout.itemAtPosition(row, 1).widget().text()
-                    data_to_save["source"][label] = value
-            elif gb.objectName() == "traps":
-                for row in range(gb.layout.rowCount()):
-                    dictionnary_of_this_trap = {}
-                    for column in range(1, 4):
-                        try:
-                            hb = gb.layout.itemAtPosition(row, column).widget()
+        for scroller in tabs_to_save.findChildren(QScrollArea):
+            the_grid_is_inside = scroller.findChildren(QWidget)
+            for grid in the_grid_is_inside:
+    
+                if grid.objectName() == "material":
+                    for row in range(grid.layout.rowCount()):
+                        label = grid.layout.itemAtPosition(row, 0).widget().text()
+                        value = grid.layout.itemAtPosition(row, 1).widget().text()
+                        data_to_save["material"][label] = value
+                elif grid.objectName() == "source":
+                    for row in range(grid.layout.rowCount()):
+                        label = grid.layout.itemAtPosition(row, 0).widget().text()
+                        value = grid.layout.itemAtPosition(row, 1).widget().text()
+                        data_to_save["source"][label] = value
+                elif grid.objectName() == "traps":
+                    for row in range(grid.layout.rowCount()):
+                        dictionnary_of_this_trap = {}
+                        for column in range(1, 4):
+                            try:
+                                hb = grid.layout.itemAtPosition(row, column).widget()
+                                if hb.layout.count() > 2:
+                                    raise tooManyValues(
+                                        "Trop de valeur dans le champs des pieges pour"
+                                        " pouvoir lire correctement le fichier. Il "
+                                        "faut compléter la fonction de lecture du"
+                                        " formulaire."
+                                    )
+                                label = hb.layout.itemAt(0).widget().text()
+                                value = hb.layout.itemAt(1).widget().text()
+                                dictionnary_of_this_trap[label] = value
+                            except AttributeError as e:  # attrape le bouton d'ajout
+                                print(e)
+                        # when a row is deleted from the grid, the number of
+                        # the total row don't decrease, and thus the next row
+                        # is added below a row that don't exists.
+                        # that is why it is mandatory to check if the dictionnnary
+                        # is empty (to remove the deleted rows)
+                        if not dictionnary_of_this_trap == {}:
+                            data_to_save["traps"].append(dictionnary_of_this_trap)
+                elif grid.objectName() == "equation":
+                    for row in range(grid.layout.rowCount()):
+                        equation_type = grid.layout.itemAtPosition(row, 0).widget().text()
+                        data_to_save["equation"][equation_type] = {}
+                        for column in range(1, 3):
+                            hb = grid.layout.itemAtPosition(row, column).widget()
                             if hb.layout.count() > 2:
                                 raise tooManyValues(
-                                    "Trop de valeur dans le champs des pieges pour"
-                                    " pouvoir lire correctement le fichier. Il "
-                                    "faut compléter la fonction de lecture du"
-                                    " formulaire."
+                                    "Trop de valeur dans le champs des equation"
+                                    " pour pouvoir lire correctement le fichier."
+                                    " Il faut compléter la fonction de lecture"
+                                    " du formulaire."
                                 )
                             label = hb.layout.itemAt(0).widget().text()
                             value = hb.layout.itemAt(1).widget().text()
-                            dictionnary_of_this_trap[label] = value
-                        except AttributeError as e:  # attrape le bouton d'ajout
-                            print(e)
-                    # when a row is deleted from the grid, the number of
-                    # the total row don't decrease, and thus the next row
-                    # is added below a row that don't exists.
-                    # that is why it is mandatory to check if the dictionnnary
-                    # is empty (to remove the deleted rows)
-                    if not dictionnary_of_this_trap == {}:
-                        data_to_save["traps"].append(dictionnary_of_this_trap)
-            elif gb.objectName() == "equation":
-                for row in range(gb.layout.rowCount()):
-                    equation_type = gb.layout.itemAtPosition(row, 0).widget().text()
-                    data_to_save["equation"][equation_type] = {}
-                    for column in range(1, 3):
-                        hb = gb.layout.itemAtPosition(row, column).widget()
-                        if hb.layout.count() > 2:
-                            raise tooManyValues(
-                                "Trop de valeur dans le champs des equation"
-                                " pour pouvoir lire correctement le fichier."
-                                " Il faut compléter la fonction de lecture"
-                                " du formulaire."
-                            )
-                        label = hb.layout.itemAt(0).widget().text()
-                        value = hb.layout.itemAt(1).widget().text()
-                        data_to_save["equation"][equation_type][label] = value
-            else:
-                raise tooManyValues(
-                    "Trop de type de champs dans l'interface pour pouvoir "
-                    "les écrire dans le fichier."
-                )
+                            data_to_save["equation"][equation_type][label] = value
+
         data_to_save = self.correctTypes(data_to_save)
         #pdb.Pdb.complete=rlcompleter.Completer(locals()).complete; pdb.set_trace()
         with open("sav.txt", "w") as fichier:
             fichier.write(json.dumps(data_to_save, indent=4))
 
     def correctTypes(self, data):
+        print(data)
         for i in range(len(data["traps"])):
             for key in ("density", "energy", "angular_frequency"):
                 try:
@@ -193,7 +193,6 @@ class SecondTab(QWidget):
         value = int(float(value)) if value is not None else None
         data["material"]["atomic_number"] = value
         return data
-        
 
     @pyqtSlot()
     def on_click_open_files(self, tab_to_add):
@@ -245,9 +244,9 @@ class SearchBar(QLineEdit):
     def loadDataFromDataBase(self, tabs):
         material_name = self.text()
         if not material_name in self.getMaterialNameFromDatabase():
-            print(material_name, "non trouvé dans la base.")
+            print(material_name, "not found in the database")
             return
-        print("Nous allons charger", material_name, "depuis la base dans l'interface.")
+        print("Let's load", material_name, "from the database.")
         materialData = self.getDataFromMaterialName(material_name)
         parameters = self.createPartialJSONFromDataMaterial(materialData)
         self.parent.open_new_file(tabs, "Default", parameters)

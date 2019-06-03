@@ -61,13 +61,14 @@ class AboutWindow(QMainWindow):
         central_widget.layout.addWidget(logo)
 
         text_area = make_vbox()
+        # todo: demander une confirmation de la traduction
         description = """
         <html>
         <h1>RDRP Database Tools</h1>
         <h3>"Reaction-Diffusion modelling for Retention and Permation Database Tools"</h3>
         <p><b>Version 1.0</b></p>
         <br/>
-        <p> Interface graphique développée par le <a href=\"www.lspm.cnrs.fr/\">LSPM</a> (Laboratoire des Sciences des Procédés et des Matériaux).</p>
+        <p> Graphical User Interface made by the <a href=\"www.lspm.cnrs.fr/\">LSPM</a> (Laboratory of Sceinces of Processes and Materials).</p>
         </html>"""
         desc_label = QLabel(description)
         desc_label.setTextInteractionFlags(Qt.LinksAccessibleByMouse)

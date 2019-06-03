@@ -41,10 +41,10 @@ class MainWidget(QWidget):
         }
         """)
 
-        tabs.addTab(FirstTab(), "Lecture")
-        tabs.addTab(SecondTab(), "Ecriture")
-        tabs.addTab(ThirdTab(), "Post-traitement")
-        tabs.setCurrentIndex(0)  # todo: commenter
+        tabs.addTab(FirstTab(), "Read")
+        tabs.addTab(SecondTab(), "Write")
+        tabs.addTab(ThirdTab(), "Post-traitement")  # todo: traduire
+        tabs.setCurrentIndex(0)
 
         layout = QVBoxLayout()  # contient les tabs
         layout.addWidget(tabs)

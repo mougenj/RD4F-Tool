@@ -1,9 +1,10 @@
 import DragAndDrop
 from PyQt5.QtCore import pyqtSlot
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QGroupBox, QGridLayout, QLabel, QHBoxLayout, QScrollArea, QScroller, QPushButton, QApplication
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QGroupBox, QGridLayout, QLabel, QHBoxLayout, QScrollArea, QScroller, QPushButton, QApplication, QTabWidget
 from QLineEditWidthed import QLineEditWidthed
 from PyQt5.QtGui import QColor, QFont, QIcon
 import pdb
+from PyQt5.QtCore import Qt
 import rlcompleter
 from functools import partial
 
@@ -12,15 +13,27 @@ class ShowNewFile(QWidget):
 
     def __init__(self, parameters, color, editable=False):
         super().__init__()
-        self.layout = QVBoxLayout()
-        self.setLayout(self.layout)
         self.editable = editable
+
+        tabs = QTabWidget()
+        tabs.setFocusPolicy(Qt.NoFocus)  # prevent the "horrible orange box effect" on Ubuntu
+        tabs.setStyleSheet(tabs.styleSheet() + """
+        QTabBar::tab:!selected {
+            color: rgb(242, 241, 240);
+            background-color: rgb(0, 126, 148);
+        }
+
+        QTabBar::tab:selected {
+            color: rgb(0, 126, 148);
+        }
+        """)
 
         #change color
         p = self.palette()
         red, green, blue, alpha = color
         p.setColor(self.backgroundRole(), QColor(red, green, blue, alpha))
         self.setPalette(p)
+        
         
 
         list_data_equation = []
@@ -36,7 +49,6 @@ class ShowNewFile(QWidget):
             sorted_coefficients.append((second_coef_type, parameters["equation"][equation_type][second_coef_type]))
             list_data_equation.append(sorted_coefficients)
 
-        scrollAreaWidgetContents = make_vbox()
         adatome_name = parameters["material"]["adatome"]
         adatome_name = str(adatome_name) if adatome_name is not None else "None"
         material_name = parameters["material"]["name"]
@@ -45,15 +57,16 @@ class ShowNewFile(QWidget):
         myFont=QFont()
         myFont.setBold(True)
         name_of_area.setFont(myFont)
-        scrollAreaWidgetContents.layout.addWidget(name_of_area)
-        i = 0            
-        grid = QGroupBox("equation")
-        grid.layout = QGridLayout()
-        grid.setLayout(grid.layout)
-        grid.setObjectName("equation")
+        #tabs.addTab(make_scroll(name_of_area), "1er")
+        
+        i = 0
+        gridEquation = QWidget()
+        gridEquation.layout = QGridLayout()
+        gridEquation.setLayout(gridEquation.layout)
+        gridEquation.setObjectName("equation")
         for name, c1, c2 in list_data_equation:
             j = 0
-            grid.layout.addWidget(QLabel(name), i, j)
+            gridEquation.layout.addWidget(QLabel(name), i, j)
             for c in c1, c2:
                 hbox = make_hbox()
                 hbox.layout.addWidget(QLabel(c[0]))
@@ -62,49 +75,50 @@ class ShowNewFile(QWidget):
                 else:
                     value =  value = "{:.2e}".format(float(c[1]))
                 hbox.layout.addWidget(QLineEditWidthed(value, editable))
-                grid.layout.addWidget(hbox, i, j+1)
+                gridEquation.layout.addWidget(hbox, i, j+1)
                 j += 1
             i += 1
-        scrollAreaWidgetContents.layout.addWidget(grid)
-        grid = QGroupBox("material")
-        grid.layout = QGridLayout()
-        grid.setLayout(grid.layout)
-        grid.setObjectName("material")
+        tabs.addTab(make_scroll(gridEquation), "Equation")
+        
+        gridMaterial = QWidget()
+        gridMaterial.layout = QGridLayout()
+        gridMaterial.setLayout(gridMaterial.layout)
+        gridMaterial.setObjectName("material")
         i = 0
         for prop in parameters["material"]:
-            grid.layout.addWidget(QLabel(prop), i, 0)
+            gridMaterial.layout.addWidget(QLabel(prop), i, 0)
             value = parameters["material"][prop]
             if value is None:
                 value = "None"
             elif type(value) is not str:
                 value = "{:.2e}".format(float(value))
-            grid.layout.addWidget(QLineEditWidthed(value, editable), i, 1)
+            gridMaterial.layout.addWidget(QLineEditWidthed(value, editable), i, 1)
             i += 1
-        scrollAreaWidgetContents.layout.addWidget(grid)
+        tabs.addTab(make_scroll(gridMaterial), "Material")
 
-        grid = QGroupBox("source")
-        grid.layout = QGridLayout()
-        grid.setLayout(grid.layout)
-        grid.setObjectName("source")
+        gridSource = QWidget()
+        gridSource.layout = QGridLayout()
+        gridSource.setLayout(gridSource.layout)
+        gridSource.setObjectName("source")
         i = 0
         for prop in parameters["source"]:
-            grid.layout.addWidget(QLabel(prop), i, 0)
+            gridSource.layout.addWidget(QLabel(prop), i, 0)
             value = parameters["source"][prop]
             if value is None:
                 value = "None"
             elif type(value) is not str:
                 value = "{:.2e}".format(float(value))
-            grid.layout.addWidget(QLineEditWidthed(value, editable), i, 1)
+            gridSource.layout.addWidget(QLineEditWidthed(value, editable), i, 1)
             i += 1
-        scrollAreaWidgetContents.layout.addWidget(grid)
+        tabs.addTab(make_scroll(gridSource), "Source")
 
-        grid = QGroupBox("traps")
-        grid.layout = QGridLayout()
-        grid.setLayout(grid.layout)
-        grid.setObjectName("traps")
+        gridTraps = QWidget()
+        gridTraps.layout = QGridLayout()
+        gridTraps.setLayout(gridTraps.layout)
+        gridTraps.setObjectName("traps")
         i = 0
         for trap in parameters["traps"]:
-            grid.layout.addWidget(QLabel(str(i)), i, 0)
+            gridTraps.layout.addWidget(QLabel(str(i)), i, 0)
             j = 0
             for prop in trap:
                 hbox = make_hbox()
@@ -115,27 +129,26 @@ class ShowNewFile(QWidget):
                 elif type(value) is not str:
                     value = "{:.2e}".format(float(value))
                 hbox.layout.addWidget(QLineEditWidthed(value, editable))
-                grid.layout.addWidget(hbox, i, j+1)
+                gridTraps.layout.addWidget(hbox, i, j+1)
                 j += 1
             if self.editable:
-                self.add_remove_bt(grid, i, j+1)
+                self.add_remove_bt(gridTraps, i, j+1)
             i += 1
-        
-        scroll_area = QScrollArea()
-        scroll_area.setWidgetResizable(True)
-        scroll_area.setWidget(scrollAreaWidgetContents)
-        QScroller.grabGesture(scroll_area.viewport(), QScroller.LeftMouseButtonGesture)
-        
-        scrollAreaWidgetContents.layout.addWidget(grid)
+        vbox = make_vbox()
+        vbox.layout.addWidget(gridTraps)
+        scroll_area = make_scroll(vbox)
         if self.editable:
-            bt_add_new_trap = QPushButton("ajouter une ligne de pièges")
-            scrollAreaWidgetContents.layout.addWidget(bt_add_new_trap)
-            bt_add_new_trap.clicked.connect(partial(self.on_clik_bt_add_new_trap, scroll_area, grid, bt_add_new_trap, self))
+            bt_add_new_trap = QPushButton("Add a trap")
+            vbox.layout.addWidget(bt_add_new_trap)
+            i += 1
+            bt_add_new_trap.clicked.connect(partial(self.on_clik_bt_add_new_trap, scroll_area, gridTraps, bt_add_new_trap, self))
+        tabs.addTab(scroll_area, "Traps")
         # pdb.Pdb.complete=rlcompleter.Completer(locals()).complete; pdb.set_trace()
-
-
-        self.layout.addWidget(scroll_area)
+        
         self.list_data_equation = list_data_equation
+        layout = QVBoxLayout()  # contient les tabs
+        layout.addWidget(tabs)
+        self.setLayout(layout)
     
     def add_remove_bt(self, grid, i, j):
         remove_bt = QPushButton()
@@ -162,11 +175,12 @@ class ShowNewFile(QWidget):
         vbar.setValue(vbar.maximum())
 
     def on_click_remove_bt_trap(self, grid, i):
-        for j in range(grid.layout.rowCount()):
+        for j in range(grid.layout.columnCount()):
             try:
                 grid.layout.itemAtPosition(i, j).widget().setParent(None)
             except Exception as e:
                 print(e)
+    
 
 
 def make_vbox():
@@ -181,3 +195,13 @@ def make_hbox():
     hbox.layout = QHBoxLayout()
     hbox.setLayout(hbox.layout)
     return hbox
+
+
+def make_scroll(scrollAreaWidgetContents):
+    scroll_area = QScrollArea()
+    scroll_area.setWidgetResizable(True)
+    scroll_area.setWidget(scrollAreaWidgetContents)
+    QScroller.grabGesture(scroll_area.viewport(), QScroller.LeftMouseButtonGesture)
+    print()
+    print()
+    return scroll_area

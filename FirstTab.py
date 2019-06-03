@@ -13,7 +13,8 @@ from PyQt5.QtWidgets import (QWidget,
                              QFileDialog,
                              QMessageBox,
                              QLineEdit,
-                             QGroupBox
+                             QGroupBox,
+                             QSizePolicy
                             )
 from PyQt5.QtGui import QPixmap, QFontMetrics, QPalette
 import json
@@ -43,7 +44,7 @@ class PltWindow(QWidget):
         self.setLayout(self.layout)
         self.plot()
 
-    def plot(self, data=None):
+    def plot(self, data=None, xlog = False, ylog = False):
         if data is None:
             data = []
             self.figure.clear()
@@ -51,6 +52,10 @@ class PltWindow(QWidget):
             ax.plot(data, "o--")
         else:
             ax = self.figure.add_subplot(111)
+            if xlog:
+                ax.set_xscale("log", nonposx='clip')
+            if ylog:
+                ax.set_yscale("log", nonposy='clip')
             x, y = data
             ax.plot(x, y)
         self.canvas.draw()
@@ -109,12 +114,23 @@ class FirstTab(QWidget):
         bt_s.clicked.connect(partial(self.on_click_tracer, "S"))
         bt_kr = QPushButton("Tracer les Kr") 
         bt_kr.clicked.connect(partial(self.on_click_tracer, "Kr"))
-        tab_center = self.make_tab()
-        tab_center.layout.addWidget(QLabel("Dessiner les courbes :"))
-        tab_center.layout.addWidget(bt_d)
-        tab_center.layout.addWidget(bt_s)
-        tab_center.layout.addWidget(bt_kr)
-        self.layout.addWidget(tab_center)
+        
+        # group_box_settings = QGroupBox(self)
+        # group_box_settings.setTitle("Draw")
+        # grid = QGridLayout()
+        # grid.addWidget(bt_d, 1, 0)
+        # grid.addWidget(bt_s, 2, 0)
+        # grid.addWidget(bt_kr, 3, 0)
+        # group_box_settings.setLayout(grid)
+
+        hbox = make_vbox()
+        for _ in range(10):
+            hbox.layout.addWidget(QLabel(" "))
+        hbox.layout.addWidget(QLabel("Draw Curves"))
+        hbox.layout.addWidget(bt_d)
+        hbox.layout.addWidget(bt_s)
+        hbox.layout.addWidget(bt_kr)
+        self.layout.addWidget(hbox)
 
 
         # RIGHT
@@ -165,8 +181,8 @@ class FirstTab(QWidget):
                     data = les_temperatures, les_d
                     self.pltwindows[0].plot(data)
 
-                    data = np.log(les_temperatures), np.log(les_d)
-                    self.pltwindows[1].plot(data)
+                    data = les_temperatures, les_d
+                    self.pltwindows[1].plot(data, xlog=True, ylog=True)
 
                     data = 1000/les_temperatures, les_d
                     self.pltwindows[2].plot(data)

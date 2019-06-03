@@ -68,8 +68,11 @@ def create_database():
 # "resserrer" les champs du premier onglet
 # choisir l'emplacement des sauvegardes
 # faire un paquet debian
-# envoyer un mail pour la troisiemen partie
+# troisiemen partie
 # lire le matlab founi par le client
+# ecrire l'aide
+# tout traduire
+# replacer les boutons de dessins
 def main():
     dataFunctions.create_json_example()
     create_database()
