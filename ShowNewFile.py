@@ -59,26 +59,7 @@ class ShowNewFile(QWidget):
         name_of_area.setFont(myFont)
         #tabs.addTab(make_scroll(name_of_area), "1er")
         
-        i = 0
-        gridEquation = QWidget()
-        gridEquation.layout = QGridLayout()
-        gridEquation.setLayout(gridEquation.layout)
-        gridEquation.setObjectName("equation")
-        for name, c1, c2 in list_data_equation:
-            j = 0
-            gridEquation.layout.addWidget(QLabel(name), i, j)
-            for c in c1, c2:
-                hbox = make_hbox()
-                hbox.layout.addWidget(QLabel(c[0]))
-                if c[1] is None:
-                    value = "None"
-                else:
-                    value =  value = "{:.2e}".format(float(c[1]))
-                hbox.layout.addWidget(QLineEditWidthed(value, editable))
-                gridEquation.layout.addWidget(hbox, i, j+1)
-                j += 1
-            i += 1
-        tabs.addTab(make_scroll(gridEquation), "Equation")
+        tabs.addTab(make_scroll(self.make_vbox_from_data_equation(list_data_equation)), "Coefficients values")
         
         gridMaterial = QWidget()
         gridMaterial.layout = QGridLayout()
@@ -182,6 +163,55 @@ class ShowNewFile(QWidget):
             except Exception as e:
                 print(e)
     
+    def make_vbox_from_data_equation(self, list_data_equation):
+        equations_container = make_vbox()
+        equations_container.setObjectName("equation")
+        for name, c1, c2 in list_data_equation:
+            coef1 = "None" if c1[1] is None else "{:.2e}".format(float(c1[1]))
+            coef2 = "None" if c2[1] is None else "{:.2e}".format(float(c2[1]))
+            coef2kJmol = "None" if c2[1] is None else "{:.2e}".format(float(c2[1]/0.0104))
+            equation_container = QGroupBox()
+            if name == "D":
+                equation_container.setTitle("for interstitial diffusivity D = D_0 * exp(-E_D/(Kb*T))")
+                equation_container.setObjectName("diffusivity")
+                grid_data_coef = QGridLayout()
+                grid_data_coef.addWidget(QLabel("D_0"), 0, 0)
+                grid_data_coef.addWidget(QLineEditWidthed(coef1, self.editable), 0, 1)
+                grid_data_coef.addWidget(QLabel("(m²/s)"), 0, 2)
+                grid_data_coef.addWidget(QLabel("E_D"), 1, 0)
+                grid_data_coef.addWidget(QLineEditWidthed(coef2, self.editable), 1, 1)
+                grid_data_coef.addWidget(QLabel("(eV)"), 1, 2)
+                grid_data_coef.addWidget(QLineEditWidthed(coef2kJmol, self.editable), 1, 3)
+                grid_data_coef.addWidget(QLabel("(kJ/mol)"), 1, 4)
+            elif name == "S":
+                equation_container.setTitle("for solubility S = S_0 * exp(-E_S/(Kb*T))")
+                equation_container.setObjectName("solubility")
+                grid_data_coef = QGridLayout()
+                grid_data_coef.addWidget(QLabel("S_0"), 0, 0)
+                grid_data_coef.addWidget(QLineEditWidthed(coef1, self.editable), 0, 1)
+                grid_data_coef.addWidget(QLabel("(m²/s)"), 0, 2)
+                grid_data_coef.addWidget(QLabel("E_S"), 1, 0)
+                grid_data_coef.addWidget(QLineEditWidthed(coef2, self.editable), 1, 1)
+                grid_data_coef.addWidget(QLabel("(eV)"), 1, 2)
+                grid_data_coef.addWidget(QLineEditWidthed(coef2kJmol, self.editable), 1, 3)
+                grid_data_coef.addWidget(QLabel("(kJ/mol)"), 1, 4)
+            elif name == "Kr":
+                equation_container.setTitle("for combination Kr = Kr_0 * exp(-E_r/(Kb*T))")  # todo: check translation
+                equation_container.setObjectName("combination")
+                grid_data_coef = QGridLayout()
+                grid_data_coef.addWidget(QLabel("Kr_0"), 0, 0)
+                grid_data_coef.addWidget(QLineEditWidthed(coef1, self.editable), 0, 1)
+                grid_data_coef.addWidget(QLabel("(m²/s)"), 0, 2)
+                grid_data_coef.addWidget(QLabel("E_r"), 1, 0)
+                grid_data_coef.addWidget(QLineEditWidthed(coef2, self.editable), 1, 1)
+                grid_data_coef.addWidget(QLabel("(eV)"), 1, 2)
+                grid_data_coef.addWidget(QLineEditWidthed(coef2kJmol, self.editable), 1, 3)
+                grid_data_coef.addWidget(QLabel("(kJ/mol)"), 1, 4)
+            else:
+                print("WARNING : I cant't show the equation named", name, "because it is not in ['D', 'S', 'Kr'].")
+            equation_container.setLayout(grid_data_coef)
+            equations_container.layout.addWidget(equation_container)
+        return equations_container
 
 
 def make_vbox():

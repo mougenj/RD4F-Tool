@@ -104,8 +104,8 @@ class FirstTab(QWidget):
         add_files.layout.addWidget(boutton_ajout_fichiers)        
 
         # TODO: commenter
-        with open("json.txt") as fichier:
-            self.open_new_file(tab_left, "nom", json.loads(fichier.read()))
+        with open("Touchard-2012.txt") as fichier:
+            self.open_new_file(tab_left, "Touchard-2012.txt", json.loads(fichier.read()))
         files_vbox = QWidget()
         files_vbox.layout = QVBoxLayout()
         files_vbox.setLayout(files_vbox.layout)
@@ -167,6 +167,7 @@ class FirstTab(QWidget):
         tab.setCurrentIndex(tab.addTab(snf, decoupe(name)))
         self.data_onglets.append(snf.list_data_equation)
         self.data_sources.append(snf.list_data_source)
+
     @pyqtSlot()
     def on_click_tracer(self, name):
         start = time.time()  # 4*2 onglets utiles + 1 inutile : Temps: 4.524548768997192 (1.1296305656433105 en mutualisant les ecritures)

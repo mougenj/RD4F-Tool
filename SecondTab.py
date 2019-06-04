@@ -93,6 +93,9 @@ class SecondTab(QWidget):
         tab.setCurrentIndex(tab.addTab(snf, decoupe(name)))
 
     def save(self, functionToCallToGetIndex):
+        """
+            Save a file (ie: a tab) to a json file. Each file is represented by 4 sub tabs.)
+        """
         index = functionToCallToGetIndex()
         data_to_save = {
             "material" :{},
@@ -105,9 +108,35 @@ class SecondTab(QWidget):
         tabs_to_save = snf.findChild(QTabWidget)
 
         for scroller in tabs_to_save.findChildren(QScrollArea):
-            the_grid_is_inside = scroller.findChildren(QWidget)
-            for grid in the_grid_is_inside:
-    
+            filtre = ["traps", "material", "source", "equation"]
+            vbox_or_grid = [x for x in scroller.findChildren(QWidget) if x.objectName() in filtre]
+            if len(vbox_or_grid) != 1:
+                print("WARNING :", len(vbox_or_grid), "widget are named", filtre, "in a tab.")
+            vbox_or_grid = vbox_or_grid[0]  # we extract the only element in it
+            
+            if vbox_or_grid.objectName() == "equation":
+                vbox = vbox_or_grid
+                groupboxes = vbox.findChildren(QGroupBox)
+                for groupbox in groupboxes:
+                    grid_layout = groupbox.findChild(QGridLayout)
+                    coef1 = grid_layout.itemAtPosition(0, 0).widget().text()
+                    val1 = grid_layout.itemAtPosition(0, 1).widget().text()
+                    coef2 = grid_layout.itemAtPosition(1, 0).widget().text()
+                    val2 = grid_layout.itemAtPosition(1, 1).widget().text()
+                    if groupbox.objectName() == "diffusivity":
+                        equation_type = "D"
+                    elif groupbox.objectName() == "solubility":
+                        equation_type = "S"
+                    elif groupbox.objectName() == "combination":
+                        equation_type = "Kr"
+                    else:
+                        print("WARNING : I don't know how to save", groupbox.objectName())
+
+                    data_to_save["equation"][equation_type] = {}
+                    data_to_save["equation"][equation_type][coef1] = val1
+                    data_to_save["equation"][equation_type][coef2] = val2
+            else:
+                grid = vbox_or_grid
                 if grid.objectName() == "material":
                     for row in range(grid.layout.rowCount()):
                         label = grid.layout.itemAtPosition(row, 0).widget().text()
@@ -143,22 +172,8 @@ class SecondTab(QWidget):
                         # is empty (to remove the deleted rows)
                         if not dictionnary_of_this_trap == {}:
                             data_to_save["traps"].append(dictionnary_of_this_trap)
-                elif grid.objectName() == "equation":
-                    for row in range(grid.layout.rowCount()):
-                        equation_type = grid.layout.itemAtPosition(row, 0).widget().text()
-                        data_to_save["equation"][equation_type] = {}
-                        for column in range(1, 3):
-                            hb = grid.layout.itemAtPosition(row, column).widget()
-                            if hb.layout.count() > 2:
-                                raise tooManyValues(
-                                    "Trop de valeur dans le champs des equation"
-                                    " pour pouvoir lire correctement le fichier."
-                                    " Il faut compléter la fonction de lecture"
-                                    " du formulaire."
-                                )
-                            label = hb.layout.itemAt(0).widget().text()
-                            value = hb.layout.itemAt(1).widget().text()
-                            data_to_save["equation"][equation_type][label] = value
+                else:
+                    print("WARNING: I don't know how to save the grid named", grid.objectName())
 
         data_to_save = self.correctTypes(data_to_save)
         #pdb.Pdb.complete=rlcompleter.Completer(locals()).complete; pdb.set_trace()
