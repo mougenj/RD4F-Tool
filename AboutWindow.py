@@ -68,7 +68,7 @@ class AboutWindow(QMainWindow):
         <h3>"Reaction-Diffusion modelling for Retention and Permation Database Tools"</h3>
         <p><b>Version 1.0</b></p>
         <br/>
-        <p> Graphical User Interface made by the <a href=\"www.lspm.cnrs.fr/\">LSPM</a> (Laboratory of Sceinces of Processes and Materials).</p>
+        <p> A Graphical User Interface made by the <a href=\"www.lspm.cnrs.fr/\">LSPM</a> (Laboratory of Sciences of Processes and Materials).</p>
         </html>"""
         desc_label = QLabel(description)
         desc_label.setTextInteractionFlags(Qt.LinksAccessibleByMouse)
