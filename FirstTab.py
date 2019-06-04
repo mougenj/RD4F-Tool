@@ -44,7 +44,7 @@ class PltWindow(QWidget):
         self.setLayout(self.layout)
         self.plot()
 
-    def plot(self, data=None, xlog = False, ylog = False):
+    def plot(self, data=None, name="", xlog = False, ylog = False, x_label="", y_label=""):
         if data is None:
             data = []
             self.figure.clear()
@@ -57,7 +57,10 @@ class PltWindow(QWidget):
             if ylog:
                 ax.set_yscale("log", nonposy='clip')
             x, y = data
-            ax.plot(x, y)
+            ax.plot(x, y, label=name)
+            ax.legend()
+            ax.set_xlabel(x_label)
+            ax.set_ylabel(y_label)
         self.canvas.draw()
 
     def clear(self):
@@ -74,6 +77,7 @@ class FirstTab(QWidget):
         self.layout = QHBoxLayout()
         self.setLayout(self.layout)
         self.data_onglets = []
+        self.data_sources = []
         # sauvegarde de la couleur du fond
         color = self.palette().color(QPalette.Background)
         rgba = color.red(), color.green(), color.blue(), color.alpha()
@@ -85,6 +89,7 @@ class FirstTab(QWidget):
         def CloseTab(i):
             tab_left.removeTab(i)
             self.data_onglets.pop(i)
+            self.data_sources.pop(i)
         tab_left.tabCloseRequested.connect(CloseTab)
         tab_left.setTabPosition(QTabWidget.West)
         tab_left.setFocusPolicy(Qt.NoFocus)
@@ -93,8 +98,8 @@ class FirstTab(QWidget):
         add_files.layout = QHBoxLayout()
         add_files.setLayout(add_files.layout)
 
-        add_files.layout.addWidget(DragAndDrop.FileEdit("Glisser vos fichiers ici", partial(self.open_new_file, tab_left)))
-        boutton_ajout_fichiers = QPushButton("Ajout de fichier(s)")
+        add_files.layout.addWidget(DragAndDrop.FileEdit("Drop your files here", partial(self.open_new_file, tab_left)))
+        boutton_ajout_fichiers = QPushButton("Add file(s)")
         boutton_ajout_fichiers.clicked.connect(partial(self.on_click_open_files, tab_left))
         add_files.layout.addWidget(boutton_ajout_fichiers)        
 
@@ -108,11 +113,11 @@ class FirstTab(QWidget):
         files_vbox.layout.addWidget(add_files)
 
         self.layout.addWidget(files_vbox)
-        bt_d = QPushButton("Tracer les D")
+        bt_d = QPushButton("Diffusion")
         bt_d.clicked.connect(partial(self.on_click_tracer, "D"))
-        bt_s = QPushButton("Tracer les S")
+        bt_s = QPushButton("Solubility")
         bt_s.clicked.connect(partial(self.on_click_tracer, "S"))
-        bt_kr = QPushButton("Tracer les Kr") 
+        bt_kr = QPushButton("Combination coefficients")  # todo: demander pour la traduction
         bt_kr.clicked.connect(partial(self.on_click_tracer, "Kr"))
         
         # group_box_settings = QGroupBox(self)
@@ -124,9 +129,9 @@ class FirstTab(QWidget):
         # group_box_settings.setLayout(grid)
 
         hbox = make_vbox()
-        for _ in range(10):
+        for _ in range(10):  # todo: find another way to place the widget down
             hbox.layout.addWidget(QLabel(" "))
-        hbox.layout.addWidget(QLabel("Draw Curves"))
+        hbox.layout.addWidget(QLabel("Coefficients"))
         hbox.layout.addWidget(bt_d)
         hbox.layout.addWidget(bt_s)
         hbox.layout.addWidget(bt_kr)
@@ -136,12 +141,13 @@ class FirstTab(QWidget):
         # RIGHT
 
         # let's add tabs on the right
-        self.pltwindows = [PltWindow() for _ in range(3)]
+        self.pltwindows = [PltWindow() for _ in range(4)]
         tab_right = QTabWidget()
         tab_right.setFocusPolicy(Qt.NoFocus)
-        tab_right.addTab(self.pltwindows[0], "Non log")
-        tab_right.addTab(self.pltwindows[1], "log-log")
-        tab_right.addTab(self.pltwindows[2], "log-1/T")
+        tab_right.addTab(self.pltwindows[0], "Log - Natural")
+        tab_right.addTab(self.pltwindows[1], "Log - 1/T")
+        tab_right.addTab(self.pltwindows[2], "Natural - Natural")
+        tab_right.addTab(self.pltwindows[3], "Log - Log")
         self.layout.addWidget(tab_right)
 
     def make_tab(self):
@@ -160,7 +166,7 @@ class FirstTab(QWidget):
         snf = ShowNewFile(parameters, self.background)
         tab.setCurrentIndex(tab.addTab(snf, decoupe(name)))
         self.data_onglets.append(snf.list_data_equation)
-
+        self.data_sources.append(snf.list_data_source)
     @pyqtSlot()
     def on_click_tracer(self, name):
         start = time.time()  # 4*2 onglets utiles + 1 inutile : Temps: 4.524548768997192 (1.1296305656433105 en mutualisant les ecritures)
@@ -172,20 +178,22 @@ class FirstTab(QWidget):
         les_temperatures = np.arange(debut, fin, pas)
         k_b = 1.38064852 * 10**(-23) * 8.617e+18
 
-        for onglet in self.data_onglets:
-            print("un nouvel onglet")
+        for onglet, source in zip(self.data_onglets, self.data_sources):
             for equation in onglet:
                 if equation[0] == name:
                     les_d = equation[1][1] * np.exp(equation[2][1]/(k_b * les_temperatures))
+                    legend = source["author_name"] + " - " + str(source["year"])
+                    data = les_temperatures, les_d
+                    self.pltwindows[0].plot(data, legend, ylog=True, x_label="Temperature (K)", y_label="" + " (logscale)")
+
+                    data = 1 / les_temperatures, les_d
+                    self.pltwindows[1].plot(data, legend, ylog=True, x_label="1/Temperature ($K^{-1}$)", y_label="" + " (logscale)")
 
                     data = les_temperatures, les_d
-                    self.pltwindows[0].plot(data)
-
-                    data = les_temperatures, les_d
-                    self.pltwindows[1].plot(data, xlog=True, ylog=True)
+                    self.pltwindows[2].plot(data, legend, x_label="Temperature (K)", y_label="")
 
                     data = 1000/les_temperatures, les_d
-                    self.pltwindows[2].plot(data)
+                    self.pltwindows[3].plot(data, legend, xlog=True, ylog=True, x_label="Temperature (K)" + " (logscale)",y_label=""  + " (logscale)")
 
         print("Temps de tracé: " + str(time.time() - start))
 

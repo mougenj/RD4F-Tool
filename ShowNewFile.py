@@ -101,6 +101,7 @@ class ShowNewFile(QWidget):
         gridSource.setLayout(gridSource.layout)
         gridSource.setObjectName("source")
         i = 0
+        self.list_data_source = parameters["source"]
         for prop in parameters["source"]:
             gridSource.layout.addWidget(QLabel(prop), i, 0)
             value = parameters["source"][prop]
@@ -202,6 +203,4 @@ def make_scroll(scrollAreaWidgetContents):
     scroll_area.setWidgetResizable(True)
     scroll_area.setWidget(scrollAreaWidgetContents)
     QScroller.grabGesture(scroll_area.viewport(), QScroller.LeftMouseButtonGesture)
-    print()
-    print()
     return scroll_area
