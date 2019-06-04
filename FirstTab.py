@@ -58,6 +58,7 @@ class PltWindow(QWidget):
                 ax.set_yscale("log", nonposy='clip')
             x, y = data
             ax.plot(x, y, label=name)
+            ax.axvline(x=300, linestyle="--", color="red")
             ax.legend()
             ax.set_xlabel(x_label)
             ax.set_ylabel(y_label)
@@ -78,6 +79,11 @@ class FirstTab(QWidget):
         self.setLayout(self.layout)
         self.data_onglets = []
         self.data_sources = []
+        self.start_validity_range = 300  # K
+        self.end_validity_ranges = []  # K
+        self.template_validity_range = "validity range : [300; {}]"
+        self.validity_range = ""
+        self.qlabel_validity_range = QLabel()
         # sauvegarde de la couleur du fond
         color = self.palette().color(QPalette.Background)
         rgba = color.red(), color.green(), color.blue(), color.alpha()
@@ -90,6 +96,15 @@ class FirstTab(QWidget):
             tab_left.removeTab(i)
             self.data_onglets.pop(i)
             self.data_sources.pop(i)
+            self.end_validity_ranges.pop(i)
+            if self.end_validity_ranges:
+                mini = min(self.end_validity_ranges)
+                self.validity_range = self.template_validity_range.format(mini)
+            else:
+                self.validity_range = ""
+            self.qlabel_validity_range.setText(self.validity_range)
+            
+
         tab_left.tabCloseRequested.connect(CloseTab)
         tab_left.setTabPosition(QTabWidget.West)
         tab_left.setFocusPolicy(Qt.NoFocus)
@@ -119,18 +134,17 @@ class FirstTab(QWidget):
         bt_s.clicked.connect(partial(self.on_click_tracer, "S"))
         bt_kr = QPushButton("Combination coefficients")  # todo: demander pour la traduction
         bt_kr.clicked.connect(partial(self.on_click_tracer, "Kr"))
-        
-        # group_box_settings = QGroupBox(self)
-        # group_box_settings.setTitle("Draw")
-        # grid = QGridLayout()
-        # grid.addWidget(bt_d, 1, 0)
-        # grid.addWidget(bt_s, 2, 0)
-        # grid.addWidget(bt_kr, 3, 0)
-        # group_box_settings.setLayout(grid)
 
         hbox = make_vbox()
         for _ in range(10):  # todo: find another way to place the widget down
             hbox.layout.addWidget(QLabel(" "))
+            if self.end_validity_ranges:
+                mini = min(self.end_validity_ranges)
+                self.validity_range = self.template_validity_range.format(mini)
+            else:
+                self.validity_range = ""
+        self.qlabel_validity_range.setText(self.validity_range)
+        hbox.layout.addWidget(self.qlabel_validity_range)
         hbox.layout.addWidget(QLabel("Coefficients"))
         hbox.layout.addWidget(bt_d)
         hbox.layout.addWidget(bt_s)
@@ -167,6 +181,14 @@ class FirstTab(QWidget):
         tab.setCurrentIndex(tab.addTab(snf, decoupe(name)))
         self.data_onglets.append(snf.list_data_equation)
         self.data_sources.append(snf.list_data_source)
+        self.end_validity_ranges.append(parameters["material"]["melting_point"])
+        if self.end_validity_ranges:
+            mini = min(self.end_validity_ranges)
+            self.validity_range = self.template_validity_range.format(mini)
+        else:
+            self.validity_range = ""
+        self.qlabel_validity_range.setText(self.validity_range)
+
 
     @pyqtSlot()
     def on_click_tracer(self, name):
