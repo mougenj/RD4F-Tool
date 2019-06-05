@@ -39,7 +39,7 @@ class tooManyValues(Exception):
 
 class BDDNonTrouvee(Exception):
 
-    def __init__(self):
+    def __init__(self, msg):
         super().__init__()
 
 
