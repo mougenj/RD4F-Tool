@@ -89,7 +89,10 @@ class ShowNewFile(QWidget):
             if value is None:
                 value = "None"
             elif type(value) is not str:
-                value = "{:.2e}".format(float(value))
+                if prop == "year":
+                    value = str(int(value))
+                else:
+                    value = "{:.2e}".format(float(value))
             gridSource.layout.addWidget(QLineEditWidthed(value, editable), i, 1)
             i += 1
         tabs.addTab(make_scroll(gridSource), "Source")
