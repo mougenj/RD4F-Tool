@@ -62,7 +62,7 @@ class SecondTab(QWidget):
         tab_left.setFocusPolicy(Qt.NoFocus)
 
         search_bar = make_hbox()
-        search_bar.layout.addWidget(QLineEditWidthed("Choose a name of a material to load it from the database :"))
+        search_bar.layout.addWidget(QLabel("Choose a name of a material to load it from the database :"))
         search_bar.layout.addWidget(SearchBar("database.sqlite", self, tab_left))
 
         button_add_files = QPushButton("Add file(s)")
@@ -84,7 +84,7 @@ class SecondTab(QWidget):
 
         self.layout.addWidget(tab_left)
         self.layout.addWidget(files_vbox)
-        self.save(tab_left.currentIndex)
+        #self.save(tab_left.currentIndex)
 
     def open_new_file(self, tab, name, parameters):
         decoupe = lambda chaine : "..." + chaine[-10:] if len(chaine) > 10 else chaine
@@ -176,8 +176,11 @@ class SecondTab(QWidget):
                     print("WARNING: I don't know how to save the grid named", grid.objectName())
 
         data_to_save = self.correctTypes(data_to_save)
+        filename = QFileDialog.getSaveFileName(None, "Save File")[0]
+        if filename[-4::] != ".txt":
+            filename += ".txt"
         #pdb.Pdb.complete=rlcompleter.Completer(locals()).complete; pdb.set_trace()
-        with open("sav.txt", "w") as fichier:
+        with open(filename, "w") as fichier:
             fichier.write(json.dumps(data_to_save, indent=4))
 
     def correctTypes(self, data):
