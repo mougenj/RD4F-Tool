@@ -87,7 +87,7 @@ class SecondTab(QWidget):
         self.save(tab_left.currentIndex)
 
     def open_new_file(self, tab, name, parameters):
-        decoupe = lambda chaine : "..." + chaine[-5:] if len(chaine) > 10 else chaine
+        decoupe = lambda chaine : "..." + chaine[-10:] if len(chaine) > 10 else chaine
         #get background color
         snf = ShowNewFile(parameters, self.background, editable=True)
         tab.setCurrentIndex(tab.addTab(snf, decoupe(name)))
@@ -181,7 +181,6 @@ class SecondTab(QWidget):
             fichier.write(json.dumps(data_to_save, indent=4))
 
     def correctTypes(self, data):
-        print(data)
         for i in range(len(data["traps"])):
             for key in ("density", "energy", "angular_frequency"):
                 try:
