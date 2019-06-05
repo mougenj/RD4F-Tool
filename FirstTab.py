@@ -44,7 +44,7 @@ class PltWindow(QWidget):
         self.setLayout(self.layout)
         self.plot()
 
-    def plot(self, data=None, name="", xlog = False, ylog = False, x_label="", y_label=""):
+    def plot(self, data=None, name="", xlog = False, ylog = False, x_label="", y_label="", xlim="", xlimmax=""):
         if data is None:
             data = []
             self.figure.clear()
@@ -58,7 +58,10 @@ class PltWindow(QWidget):
                 ax.set_yscale("log", nonposy='clip')
             x, y = data
             ax.plot(x, y, label=name)
-            ax.axvline(x=300, linestyle="--", color="red")
+            if xlim:
+                ax.axvline(x=xlim, linestyle="--", color="red", label="300 K")
+            if xlimmax[0]:
+                ax.axvline(x=xlimmax[0], linestyle="--", color="green", label=str(xlimmax[1]) + " K")
             ax.legend()
             ax.set_xlabel(x_label)
             ax.set_ylabel(y_label)
@@ -97,12 +100,7 @@ class FirstTab(QWidget):
             self.data_onglets.pop(i)
             self.data_sources.pop(i)
             self.end_validity_ranges.pop(i)
-            if self.end_validity_ranges:
-                mini = min(self.end_validity_ranges)
-                self.validity_range = self.template_validity_range.format(mini)
-            else:
-                self.validity_range = ""
-            self.qlabel_validity_range.setText(self.validity_range)
+            self.majValidityRange()
             
 
         tab_left.tabCloseRequested.connect(CloseTab)
@@ -121,6 +119,8 @@ class FirstTab(QWidget):
         # TODO: commenter
         with open("Touchard-2012.txt") as fichier:
             self.open_new_file(tab_left, "Touchard-2012.txt", json.loads(fichier.read()))
+        with open("sav.txt") as fichier:
+            self.open_new_file(tab_left, "sav.txt", json.loads(fichier.read()))
         files_vbox = QWidget()
         files_vbox.layout = QVBoxLayout()
         files_vbox.setLayout(files_vbox.layout)
@@ -138,11 +138,7 @@ class FirstTab(QWidget):
         hbox = make_vbox()
         for _ in range(10):  # todo: find another way to place the widget down
             hbox.layout.addWidget(QLabel(" "))
-            if self.end_validity_ranges:
-                mini = min(self.end_validity_ranges)
-                self.validity_range = self.template_validity_range.format(mini)
-            else:
-                self.validity_range = ""
+            self.majValidityRange()
         self.qlabel_validity_range.setText(self.validity_range)
         hbox.layout.addWidget(self.qlabel_validity_range)
         hbox.layout.addWidget(QLabel("Coefficients"))
@@ -163,6 +159,17 @@ class FirstTab(QWidget):
         tab_right.addTab(self.pltwindows[2], "Natural - Natural")
         tab_right.addTab(self.pltwindows[3], "Log - Log")
         self.layout.addWidget(tab_right)
+    
+    def majValidityRange(self):
+        if self.end_validity_ranges:
+            mini = min(self.end_validity_ranges)
+            self.validity_range = self.template_validity_range.format(mini)
+            self.qlabel_validity_range.setText(self.validity_range)
+            return mini
+        else:
+            self.validity_range = ""
+            self.qlabel_validity_range.setText(self.validity_range)
+            return None
 
     def make_tab(self):
         return make_vbox()
@@ -175,18 +182,14 @@ class FirstTab(QWidget):
         return label
 
     def open_new_file(self, tab, name, parameters):
-        decoupe = lambda chaine : "..." + chaine[-5:] if len(chaine) > 10 else chaine
+        decoupe = lambda chaine : "..." + chaine[-10:] if len(chaine) > 10 else chaine
         #get background color
         snf = ShowNewFile(parameters, self.background)
         tab.setCurrentIndex(tab.addTab(snf, decoupe(name)))
         self.data_onglets.append(snf.list_data_equation)
         self.data_sources.append(snf.list_data_source)
         self.end_validity_ranges.append(parameters["material"]["melting_point"])
-        if self.end_validity_ranges:
-            mini = min(self.end_validity_ranges)
-            self.validity_range = self.template_validity_range.format(mini)
-        else:
-            self.validity_range = ""
+        self.majValidityRange()
         self.qlabel_validity_range.setText(self.validity_range)
 
 
@@ -201,22 +204,36 @@ class FirstTab(QWidget):
         les_temperatures = np.arange(debut, fin, pas)
         k_b = 1.38064852 * 10**(-23) * 8.617e+18
 
+        value_x_max = self.majValidityRange()
+        xlim=300
         for onglet, source in zip(self.data_onglets, self.data_sources):
             for equation in onglet:
                 if equation[0] == name:
                     les_d = equation[1][1] * np.exp(equation[2][1]/(k_b * les_temperatures))
                     legend = source["author_name"] + " - " + str(source["year"])
                     data = les_temperatures, les_d
-                    self.pltwindows[0].plot(data, legend, ylog=True, x_label="Temperature (K)", y_label="" + " (logscale)")
+                    self.pltwindows[0].plot(data, legend, ylog=True, x_label="Temperature (K)", y_label="" + " (logscale)", xlim=xlim, xlimmax=(value_x_max, value_x_max))
 
                     data = 1 / les_temperatures, les_d
-                    self.pltwindows[1].plot(data, legend, ylog=True, x_label="1/Temperature ($K^{-1}$)", y_label="" + " (logscale)")
+                    if xlim != 0:
+                        xlim_divided = 1 / xlim
+                    else:
+                        xlim_divided = 0
+
+                    if value_x_max != 0:
+                        value_x_max_divided = 1 / value_x_max
+                    else:
+                        value_x_max_divided = 0
+
+                    self.pltwindows[1].plot(data, legend, ylog=True, x_label="1/Temperature ($K^{-1}$)", y_label="" + " (logscale)", xlim=xlim_divided, xlimmax=(value_x_max_divided, value_x_max))
 
                     data = les_temperatures, les_d
-                    self.pltwindows[2].plot(data, legend, x_label="Temperature (K)", y_label="")
+                    self.pltwindows[2].plot(data, legend, x_label="Temperature (K)", y_label="", xlim=xlim, xlimmax=(value_x_max, value_x_max))
 
-                    data = 1000/les_temperatures, les_d
-                    self.pltwindows[3].plot(data, legend, xlog=True, ylog=True, x_label="Temperature (K)" + " (logscale)",y_label=""  + " (logscale)")
+                    data = les_temperatures, les_d
+                    self.pltwindows[3].plot(data, legend, xlog=True, ylog=True, x_label="Temperature (K)" + " (logscale)",y_label=""  + " (logscale)", xlim=xlim, xlimmax=(value_x_max, value_x_max))
+                    # since the curves was plot, we nedd to not plot the xilm and the xlimmax anymore
+                    xlim, value_x_max = 0, 0
 
         print("Temps de tracé: " + str(time.time() - start))
 
@@ -224,7 +241,7 @@ class FirstTab(QWidget):
     def on_click_open_files(self, tab_to_add):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        files, _ = QFileDialog.getOpenFileNames(self,"QFileDialog.getOpenFileNames()", "","All Files (*);;Python Files (*.py)", options=options)
+        files, _ = QFileDialog.getOpenFileNames(self, "QFileDialog.getOpenFileNames()", "","All Files (*);;Python Files (*.py)", options=options)
         sucessfully_loaded = []
         failed = []
         for filepath in files:
