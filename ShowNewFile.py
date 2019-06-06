@@ -13,7 +13,7 @@ class ShowNewFile(QWidget):
 
     def __init__(self, parameters, color, editable=False):
         super().__init__()
-        self.editable = True
+        self.editable = editable
         """
             Here is a little hack: in the QTreeWidget (see below), we will add
             some QTreeWidgetItem. Each one of them will be removable. But each
@@ -165,12 +165,13 @@ class ShowNewFile(QWidget):
         energy_trap = QTreeWidgetItem(trap_tree)
         tree.setItemWidget(energy_trap, 0, QLineEditWidthed("{:.2e}".format(float(value)), self.editable))
 
-        remove_energy_bt = QPushButton()
-        remove_energy_bt.setIcon(QIcon("ressources/trash-alt-solid.svg"))
-        remove_energy_bt.clicked.connect(partial(self.on_click_remove_energy_bt, trap_tree, trap_tree.nb_energy_created))
-        # add the button to the tree
-        
-        tree.setItemWidget(energy_trap, 1, remove_energy_bt)
+        if self.editable:
+            remove_energy_bt = QPushButton()
+            remove_energy_bt.setIcon(QIcon("ressources/trash-alt-solid.svg"))
+            remove_energy_bt.clicked.connect(partial(self.on_click_remove_energy_bt, trap_tree, trap_tree.nb_energy_created))
+            # add the button to the tree
+            tree.setItemWidget(energy_trap, 1, remove_energy_bt)
+            
         trap_tree.correspondence_index_position_energy.append(trap_tree.nb_energy_created)
         trap_tree.nb_energy_created += 1
         

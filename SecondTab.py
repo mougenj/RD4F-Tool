@@ -84,7 +84,7 @@ class SecondTab(QWidget):
 
         self.layout.addWidget(tab_left)
         self.layout.addWidget(files_vbox)
-        #self.save(tab_left.currentIndex)
+        # self.save(tab_left.currentIndex)
 
     def open_new_file(self, tab, name, parameters):
         decoupe = lambda chaine : "..." + chaine[-10:] if len(chaine) > 10 else chaine
@@ -107,15 +107,16 @@ class SecondTab(QWidget):
         snf = tabs.widget(index)
         tabs_to_save = snf.findChild(QTabWidget)
 
-        for scroller in tabs_to_save.findChildren(QScrollArea):
-            filtre = ["traps", "material", "source", "equation"]
-            vbox_or_grid = [x for x in scroller.findChildren(QWidget) if x.objectName() in filtre]
-            if len(vbox_or_grid) != 1:
-                print("WARNING :", len(vbox_or_grid), "widget are named", filtre, "in a tab.")
-            vbox_or_grid = vbox_or_grid[0]  # we extract the only element in it
+        def searchForChild(parent, filtre):
+            children = [x for x in parent.findChildren(QWidget) if x.objectName() in filtre]
+            return children
+
+        for tab_data_container in searchForChild(tabs_to_save, ["traps", "material", "source", "equation"]):
+            # if len(tab_data_container) != 1:  # todo: re-add this warning, as it is useful
+            #     print("WARNING :", len(tab_data_container), "widget are named", filtre, "in a tab.")
             
-            if vbox_or_grid.objectName() == "equation":
-                vbox = vbox_or_grid
+            if tab_data_container.objectName() == "equation":
+                vbox = tab_data_container
                 groupboxes = vbox.findChildren(QGroupBox)
                 for groupbox in groupboxes:
                     grid_layout = groupbox.findChild(QGridLayout)
@@ -130,50 +131,48 @@ class SecondTab(QWidget):
                     elif groupbox.objectName() == "combination":
                         equation_type = "Kr"
                     else:
-                        print("WARNING : I don't know how to save", groupbox.objectName())
-
+                        print("WARNING : I don't know how to save the coefficient named", groupbox.objectName())
                     data_to_save["equation"][equation_type] = {}
                     data_to_save["equation"][equation_type][coef1] = val1
                     data_to_save["equation"][equation_type][coef2] = val2
+
+            elif tab_data_container.objectName() == "traps":
+                for i in range(tab_data_container.topLevelItemCount()):
+                    trap_tree = tab_data_container.topLevelItem(i)
+                    dictionnary_of_this_trap = {
+                        "Density" : trap_tree.text(0),
+                        "Angular frequency": trap_tree.text(1),
+                        "energy" : []
+                    }
+                    # when a row is deleted from the grid, the number of
+                    # the total row don't decrease, and thus the next row
+                    # is added below a row that don't exists.
+                    # that is why it is mandatory to check if the dictionnnary
+                    # is empty (to remove the deleted rows)
+                    for j in range(trap_tree.childCount()):
+                        energy_tree = trap_tree.child(j)
+                        line = tab_data_container.itemWidget(energy_tree, 0)
+                        if line:
+                            dictionnary_of_this_trap["energy"].append(line.text())
+                    if not dictionnary_of_this_trap == {}:
+                        data_to_save["traps"].append(dictionnary_of_this_trap)
+                
+            elif tab_data_container.objectName() == "material":
+                grid = tab_data_container
+                for row in range(grid.layout.rowCount()):
+                    label = grid.layout.itemAtPosition(row, 0).widget().text()
+                    value = grid.layout.itemAtPosition(row, 1).widget().text()
+                    data_to_save["material"][label] = value
+
+            elif tab_data_container.objectName() == "source":
+                grid = tab_data_container
+                for row in range(grid.layout.rowCount()):
+                    label = grid.layout.itemAtPosition(row, 0).widget().text()
+                    value = grid.layout.itemAtPosition(row, 1).widget().text()
+                    data_to_save["source"][label] = value
+
             else:
-                grid = vbox_or_grid
-                if grid.objectName() == "material":
-                    for row in range(grid.layout.rowCount()):
-                        label = grid.layout.itemAtPosition(row, 0).widget().text()
-                        value = grid.layout.itemAtPosition(row, 1).widget().text()
-                        data_to_save["material"][label] = value
-                elif grid.objectName() == "source":
-                    for row in range(grid.layout.rowCount()):
-                        label = grid.layout.itemAtPosition(row, 0).widget().text()
-                        value = grid.layout.itemAtPosition(row, 1).widget().text()
-                        data_to_save["source"][label] = value
-                elif grid.objectName() == "traps":
-                    for row in range(grid.layout.rowCount()):
-                        dictionnary_of_this_trap = {}
-                        for column in range(1, 4):
-                            try:
-                                hb = grid.layout.itemAtPosition(row, column).widget()
-                                if hb.layout.count() > 2:
-                                    raise tooManyValues(
-                                        "Trop de valeur dans le champs des pieges pour"
-                                        " pouvoir lire correctement le fichier. Il "
-                                        "faut compléter la fonction de lecture du"
-                                        " formulaire."
-                                    )
-                                label = hb.layout.itemAt(0).widget().text()
-                                value = hb.layout.itemAt(1).widget().text()
-                                dictionnary_of_this_trap[label] = value
-                            except AttributeError as e:  # attrape le bouton d'ajout
-                                print(e)
-                        # when a row is deleted from the grid, the number of
-                        # the total row don't decrease, and thus the next row
-                        # is added below a row that don't exists.
-                        # that is why it is mandatory to check if the dictionnnary
-                        # is empty (to remove the deleted rows)
-                        if not dictionnary_of_this_trap == {}:
-                            data_to_save["traps"].append(dictionnary_of_this_trap)
-                else:
-                    print("WARNING: I don't know how to save the grid named", grid.objectName())
+                print("WARNING: I don't know how to save the grid named", grid.objectName())
 
         data_to_save = self.correctTypes(data_to_save)
         filename = QFileDialog.getSaveFileName(None, "Save File")[0]
@@ -185,15 +184,26 @@ class SecondTab(QWidget):
 
     def correctTypes(self, data):
         for i in range(len(data["traps"])):
-            for key in ("density", "energy", "angular_frequency"):
+            for key in ("density", "angular_frequency"):
                 try:
                     value = data["traps"][i][key]
                     if value == "None":
                         value = None
-                    value = float(value) if value is not None else None
+                    else:
+                        value = float(value)
                     data["traps"][i][key] = value
                 except KeyError as e:  # attrape le bouton d'ajout
                     print(e)
+            # energy part
+            energy_list = data["traps"][i]["energy"]
+            corrected_energy_list = []
+            for value in energy_list:
+                if value == "None":
+                    value = None
+                else:
+                    value = float(value)
+                corrected_energy_list.append(value)
+            data["traps"][i]["energy"] = corrected_energy_list
         for key in data["equation"]:
             for subkey in data["equation"][key]:
                 value = data["equation"][key][subkey]
