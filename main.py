@@ -74,7 +74,7 @@ def create_database():
 # tout traduire
 # replacer les boutons de dessins
 def main():
-    #dataFunctions.create_json_example()
+    dataFunctions.create_json_example()
     #create_database()
     # print("création de l'interface")
     app = QApplication(sys.argv)

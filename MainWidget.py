@@ -42,7 +42,7 @@ class MainWidget(QWidget):
         """)
 
         tabs.addTab(FirstTab(), "Read")
-        tabs.addTab(SecondTab(), "Write")
+        #tabs.addTab(SecondTab(), "Write")
         tabs.addTab(ThirdTab(), "Post-traitement")  # todo: traduire
         tabs.setCurrentIndex(0)
 

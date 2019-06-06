@@ -117,9 +117,11 @@ class FirstTab(QWidget):
         add_files.layout.addWidget(boutton_ajout_fichiers)        
 
         # TODO: commenter
+        """
         with open("Touchard-2012.txt") as fichier:
             self.open_new_file(tab_left, "Touchard-2012.txt", json.loads(fichier.read()))
-        with open("sav.txt") as fichier:
+        """
+        with open("json.txt") as fichier:
             self.open_new_file(tab_left, "sav.txt", json.loads(fichier.read()))
         files_vbox = QWidget()
         files_vbox.layout = QVBoxLayout()

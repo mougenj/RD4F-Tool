@@ -36,7 +36,7 @@ def create_json_example():
         {
             "density" : 5,
             "angular_frequency" : 8,
-            "energy" : 454
+            "energy" : [454, 48, 98]
         }
         for _ in range(10)
     ]
