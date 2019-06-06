@@ -1,6 +1,6 @@
 import DragAndDrop
 from PyQt5.QtCore import pyqtSlot
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QGroupBox, QGridLayout, QLabel, QHBoxLayout, QScrollArea, QScroller, QPushButton, QApplication, QTabWidget
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QGroupBox, QGridLayout, QLabel, QHBoxLayout, QScrollArea, QScroller, QPushButton, QApplication, QTabWidget, QTreeWidget, QTreeWidgetItem
 from QLineEditWidthed import QLineEditWidthed
 from PyQt5.QtGui import QColor, QFont, QIcon
 import pdb
@@ -13,7 +13,17 @@ class ShowNewFile(QWidget):
 
     def __init__(self, parameters, color, editable=False):
         super().__init__()
-        self.editable = editable
+        self.editable = True
+        """
+            Here is a little hack: in the QTreeWidget (see below), we will add
+            some QTreeWidgetItem. Each one of them will be removable. But each
+            time we remove a QTreeWidgetItem, the index of the QTreeWidgetItem
+            below it will be reindexed. So, we need to remember how many
+            QTreeWidgetItem were deleted to calculate the old index.
+        """
+        self.nb_deleted = 0
+        self.nb_created = 0
+        self.correspondence_index_position = []
 
         tabs = QTabWidget()
         tabs.setFocusPolicy(Qt.NoFocus)  # prevent the "horrible orange box effect" on Ubuntu
@@ -57,7 +67,6 @@ class ShowNewFile(QWidget):
         myFont=QFont()
         myFont.setBold(True)
         name_of_area.setFont(myFont)
-        #tabs.addTab(make_scroll(name_of_area), "1er")
         
         tabs.addTab(make_scroll(self.make_vbox_from_data_equation(list_data_equation)), "Coefficients values")
         
@@ -96,76 +105,51 @@ class ShowNewFile(QWidget):
             gridSource.layout.addWidget(QLineEditWidthed(value, editable), i, 1)
             i += 1
         tabs.addTab(make_scroll(gridSource), "Source")
-
-        gridTraps = QWidget()
-        gridTraps.layout = QGridLayout()
-        gridTraps.setLayout(gridTraps.layout)
-        gridTraps.setObjectName("traps")
-        i = 0
+        
+        tree = QTreeWidget()
+        tree.setColumnCount(3)
+        tree.setHeaderLabels(["Density", "Angular frequency"])
+        tree.setObjectName("traps")
         for trap in parameters["traps"]:
-            gridTraps.layout.addWidget(QLabel(str(i)), i, 0)
-            j = 0
-            for prop in trap:
-                hbox = make_hbox()
-                hbox.layout.addWidget(QLabel(prop))
-                value = trap[prop]
-                if value is None:
-                    value = "None"
-                elif type(value) is not str:
-                    value = "{:.2e}".format(float(value))
-                hbox.layout.addWidget(QLineEditWidthed(value, editable))
-                gridTraps.layout.addWidget(hbox, i, j+1)
-                j += 1
-            if self.editable:
-                self.add_remove_bt(gridTraps, i, j+1)
-            i += 1
+            tree_item_for_this_trap = self.create_subtree_for_a_trap(tree, trap)
+            for energy in trap["energy"]:
+                sub_tree = QTreeWidgetItem(tree_item_for_this_trap)
+                sub_tree.setText(0, "{:.2e}".format(float(energy)))
         vbox = make_vbox()
-        vbox.layout.addWidget(gridTraps)
-        scroll_area = make_scroll(vbox)
+        vbox.layout.addWidget(tree)
         if self.editable:
             bt_add_new_trap = QPushButton("Add a trap")
             vbox.layout.addWidget(bt_add_new_trap)
-            i += 1
-            bt_add_new_trap.clicked.connect(partial(self.on_clik_bt_add_new_trap, scroll_area, gridTraps, bt_add_new_trap, self))
-        tabs.addTab(scroll_area, "Traps")
-        # pdb.Pdb.complete=rlcompleter.Completer(locals()).complete; pdb.set_trace()
+            bt_add_new_trap.clicked.connect(partial(self.create_subtree_for_a_trap, tree, trap))
+        tabs.addTab(vbox, "Traps")
         
         self.list_data_equation = list_data_equation
         layout = QVBoxLayout()  # contient les tabs
         layout.addWidget(tabs)
         self.setLayout(layout)
     
-    def add_remove_bt(self, grid, i, j):
-        remove_bt = QPushButton()
-        img = QIcon("ressources/trash-alt-solid.svg")
-        remove_bt.setIcon(img)
-        remove_bt.clicked.connect(partial(self.on_click_remove_bt_trap, grid, i))
-        grid.layout.addWidget(remove_bt, i, j)
+    def create_subtree_for_a_trap(self, tree, trap):
+        self.correspondence_index_position.append(self.nb_created)
+        tree_item_for_this_trap = QTreeWidgetItem(tree)
+        tree_item_for_this_trap.setText(0, "{:.2e}".format(float(trap["density"])))
+        tree_item_for_this_trap.setText(1, "{:.2e}".format(float(trap["angular_frequency"])))
+        if self.editable:
+            # lets create a button that remove a trap
+            remove_bt = QPushButton()
+            img = QIcon("ressources/trash-alt-solid.svg")
+            remove_bt.setIcon(img)
+            remove_bt.clicked.connect(partial(self.on_click_remove_bt_trap, tree, self.nb_created))
+            # increment the creation counter
+            self.nb_created += 1
+            # add the button to the tree
+            tree.setItemWidget(tree_item_for_this_trap, 2, remove_bt)
 
-    def on_clik_bt_add_new_trap(self, qscroll, grid, bt, thing):
-        i = grid.layout.rowCount()
+    def on_click_remove_bt_trap(self, tree, initial_index):
+        index_to_delete = self.correspondence_index_position.index(initial_index)
+        self.correspondence_index_position.pop(index_to_delete)
+        tree.takeTopLevelItem(index_to_delete)
+        self.nb_deleted += 1
 
-        grid.layout.addWidget(QLabel(str(i)), i, 0)
-        j = 0
-        for prop in ("energy", "density", "angular_frequency"):
-            hbox = make_hbox()
-            hbox.layout.addWidget(QLabel(prop))
-            hbox.layout.addWidget(QLineEditWidthed("None", True))
-            grid.layout.addWidget(hbox, i, j+1)
-            j += 1
-        self.add_remove_bt(grid, i, j+1)
-        qscroll.widget().resize(qscroll.widget().sizeHint())
-        QApplication.processEvents()
-        vbar = qscroll.verticalScrollBar()
-        vbar.setValue(vbar.maximum())
-
-    def on_click_remove_bt_trap(self, grid, i):
-        for j in range(grid.layout.columnCount()):
-            try:
-                grid.layout.itemAtPosition(i, j).widget().setParent(None)
-            except Exception as e:
-                print(e)
-    
     def make_vbox_from_data_equation(self, list_data_equation):
         equations_container = make_vbox()
         equations_container.setObjectName("equation")
