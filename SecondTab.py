@@ -187,7 +187,7 @@ class SecondTab(QWidget):
             for key in ("density", "angular_frequency"):
                 try:
                     value = data["traps"][i][key]
-                    if value == "None":
+                    if value == "None" or value == "":
                         value = None
                     else:
                         value = float(value)
@@ -198,7 +198,7 @@ class SecondTab(QWidget):
             energy_list = data["traps"][i]["energy"]
             corrected_energy_list = []
             for value in energy_list:
-                if value == "None":
+                if value == "None" or value == "":
                     value = None
                 else:
                     value = float(value)
@@ -207,17 +207,29 @@ class SecondTab(QWidget):
         for key in data["equation"]:
             for subkey in data["equation"][key]:
                 value = data["equation"][key][subkey]
-                value = float(value) if value is not None else None
-                data["equation"][key][subkey] = float(value)
+                if value == "None" or value == "":
+                    value = None
+                else:
+                    value = float(value)
+                data["equation"][key][subkey] = value
         year = data["source"]["year"]
-        year = int(float(year)) if year is not None else None
+        if year == "None" or year == "":
+            year = None
+        else:
+            year = int(float(year))
         data["source"]["year"] = year
         for key in ("melting_point", "lattice_parameter", "density"):
             value = data["material"][key]
-            value = float(value) if value is not None else None
+            if value == "None" or value == "":
+                value = None
+            else:
+                value = float(value)
             data["material"][key] = value
         value = data["material"]["atomic_number"]
-        value = int(float(value)) if value is not None else None
+        if value == "None" or value == "":
+            value = None
+        else:
+            value = float(value)
         data["material"]["atomic_number"] = value
         return data
 
@@ -275,7 +287,8 @@ class SearchBar(QLineEdit):
             return
         print("Let's load", material_name, "from the database.")
         materialData = self.getDataFromMaterialName(material_name)
-        parameters = self.createPartialJSONFromDataMaterial(materialData)
+        parameters = self.createPartialJSONF
+        romDataMaterial(materialData)
         self.parent.open_new_file(tabs, "Default", parameters)
     
     def createPartialJSONFromDataMaterial(self, materialData):

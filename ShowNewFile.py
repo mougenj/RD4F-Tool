@@ -1,6 +1,6 @@
 import DragAndDrop
 from PyQt5.QtCore import pyqtSlot
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QGroupBox, QGridLayout, QLabel, QHBoxLayout, QScrollArea, QScroller, QPushButton, QApplication, QTabWidget, QTreeWidget, QTreeWidgetItem
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QGroupBox, QGridLayout, QLabel, QHBoxLayout, QScrollArea, QScroller, QPushButton, QApplication, QTabWidget, QTreeWidget, QTreeWidgetItem, QHeaderView
 from QLineEditWidthed import QLineEditWidthed
 from PyQt5.QtGui import QColor, QFont, QIcon
 import pdb
@@ -24,6 +24,7 @@ class ShowNewFile(QWidget):
         self.nb_created = 0
         self.correspondence_index_position = []
 
+        self.setMinimumSize(690, 500)
         tabs = QTabWidget()
         tabs.setFocusPolicy(Qt.NoFocus)  # prevent the "horrible orange box effect" on Ubuntu
         tabs.setStyleSheet(tabs.styleSheet() + """
@@ -106,13 +107,26 @@ class ShowNewFile(QWidget):
         tabs.addTab(make_scroll(gridSource), "Source")
         
         tree = QTreeWidget()
-        tree.setColumnCount(4)
-        tree.setHeaderLabels([
-            "Density",
-            "Angular frequency",
-            "Delete this trap",
-            "Add an energy"
-        ])
+        
+        if self.editable:
+            tree.setColumnCount(4)
+            tree.setHeaderLabels([
+                "Density",
+                "Angular frequency",
+                "Delete this trap",
+                "Add an energy to this trap"
+            ])
+        else:
+            tree.setColumnCount(2)
+            tree.setHeaderLabels([
+                "Density",
+                "Angular frequency"
+            ])
+        tree.header().resizeSection(0, 150)
+        tree.header().resizeSection(1, 150)
+        tree.header().resizeSection(2, 150)
+        tree.header().resizeSection(3, 200)
+        tree.header().setStretchLastSection(False)
         tree.setObjectName("traps")
         for trap in parameters["traps"]:
             tree_item_for_this_trap = self.create_subtree_for_a_trap(tree, trap)
@@ -193,7 +207,7 @@ class ShowNewFile(QWidget):
             coef2kJmol = "None" if c2[1] is None else "{:.2e}".format(float(c2[1]/0.0104))
             equation_container = QGroupBox()
             if name == "D":
-                equation_container.setTitle("for interstitial diffusivity D = D_0 * exp(-E_D/(Kb*T))")
+                equation_container.setTitle("For interstitial diffusivity D = D_0 * exp(-E_D/(Kb*T))")
                 equation_container.setObjectName("diffusivity")
                 grid_data_coef = QGridLayout()
                 grid_data_coef.addWidget(QLabel("D_0"), 0, 0)
@@ -205,7 +219,7 @@ class ShowNewFile(QWidget):
                 grid_data_coef.addWidget(QLineEditWidthed(coef2kJmol, self.editable), 1, 3)
                 grid_data_coef.addWidget(QLabel("(kJ/mol)"), 1, 4)
             elif name == "S":
-                equation_container.setTitle("for solubility S = S_0 * exp(-E_S/(Kb*T))")
+                equation_container.setTitle("For solubility S = S_0 * exp(-E_S/(Kb*T))")
                 equation_container.setObjectName("solubility")
                 grid_data_coef = QGridLayout()
                 grid_data_coef.addWidget(QLabel("S_0"), 0, 0)
@@ -217,7 +231,7 @@ class ShowNewFile(QWidget):
                 grid_data_coef.addWidget(QLineEditWidthed(coef2kJmol, self.editable), 1, 3)
                 grid_data_coef.addWidget(QLabel("(kJ/mol)"), 1, 4)
             elif name == "Kr":
-                equation_container.setTitle("for combination Kr = Kr_0 * exp(-E_r/(Kb*T))")  # todo: check translation
+                equation_container.setTitle("For combination Kr = Kr_0 * exp(-E_r/(Kb*T))")  # todo: check translation
                 equation_container.setObjectName("combination")
                 grid_data_coef = QGridLayout()
                 grid_data_coef.addWidget(QLabel("Kr_0"), 0, 0)
