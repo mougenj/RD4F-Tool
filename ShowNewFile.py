@@ -136,6 +136,8 @@ class ShowNewFile(QWidget):
         tree_item_for_this_trap = QTreeWidgetItem(tree)
         tree_item_for_this_trap.setText(0, "{:.2e}".format(float(trap["density"])))
         tree_item_for_this_trap.setText(1, "{:.2e}".format(float(trap["angular_frequency"])))
+        tree_item_for_this_trap.correspondence_index_position_energy = []
+        tree_item_for_this_trap.nb_energy_created = 0
         
         if self.editable:
             # lets create a button that remove a trap
@@ -162,6 +164,21 @@ class ShowNewFile(QWidget):
     def addEnergyToATrap(self, tree, trap_tree, value=""):
         energy_trap = QTreeWidgetItem(trap_tree)
         tree.setItemWidget(energy_trap, 0, QLineEditWidthed("{:.2e}".format(float(value)), self.editable))
+
+        remove_energy_bt = QPushButton()
+        remove_energy_bt.setIcon(QIcon("ressources/trash-alt-solid.svg"))
+        remove_energy_bt.clicked.connect(partial(self.on_click_remove_energy_bt, trap_tree, trap_tree.nb_energy_created))
+        # add the button to the tree
+        
+        tree.setItemWidget(energy_trap, 1, remove_energy_bt)
+        trap_tree.correspondence_index_position_energy.append(trap_tree.nb_energy_created)
+        trap_tree.nb_energy_created += 1
+        
+
+    def on_click_remove_energy_bt(self, trap_tree, initial_index):
+        index_to_delete = trap_tree.correspondence_index_position_energy.index(initial_index)
+        trap_tree.correspondence_index_position_energy.pop(index_to_delete)
+        trap_tree.removeChild(trap_tree.child(index_to_delete))
 
 
     def make_vbox_from_data_equation(self, list_data_equation):
