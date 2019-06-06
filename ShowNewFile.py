@@ -134,8 +134,10 @@ class ShowNewFile(QWidget):
     def create_subtree_for_a_trap(self, tree, trap):
         self.correspondence_index_position.append(self.nb_created)
         tree_item_for_this_trap = QTreeWidgetItem(tree)
-        tree_item_for_this_trap.setText(0, "{:.2e}".format(float(trap["density"])))
-        tree_item_for_this_trap.setText(1, "{:.2e}".format(float(trap["angular_frequency"])))
+        density_line = QLineEditWidthed("{:.2e}".format(float(trap["density"])), self.editable)
+        tree.setItemWidget(tree_item_for_this_trap, 0, density_line)
+        angular_frequency_line = QLineEditWidthed("{:.2e}".format(float(trap["angular_frequency"])), self.editable)
+        tree.setItemWidget(tree_item_for_this_trap, 1, angular_frequency_line)
         tree_item_for_this_trap.correspondence_index_position_energy = []
         tree_item_for_this_trap.nb_energy_created = 0
         

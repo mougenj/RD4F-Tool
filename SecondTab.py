@@ -140,8 +140,8 @@ class SecondTab(QWidget):
                 for i in range(tab_data_container.topLevelItemCount()):
                     trap_tree = tab_data_container.topLevelItem(i)
                     dictionnary_of_this_trap = {
-                        "Density" : trap_tree.text(0),
-                        "Angular frequency": trap_tree.text(1),
+                        "Density" : tab_data_container.itemWidget(trap_tree, 0).text(),
+                        "Angular frequency": tab_data_container.itemWidget(trap_tree, 1).text(),
                         "energy" : []
                     }
                     # when a row is deleted from the grid, the number of
