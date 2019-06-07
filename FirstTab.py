@@ -58,10 +58,12 @@ class PltWindow(QWidget):
                 ax.set_yscale("log", nonposy='clip')
             x, y = data
             ax.plot(x, y, label=name)
+            """
             if xlim:
                 ax.axvline(x=xlim, linestyle="--", color="red", label="300 K")
             if xlimmax[0]:
                 ax.axvline(x=xlimmax[0], linestyle="--", color="green", label=str(xlimmax[1]) + " K")
+            """
             ax.legend()
             ax.set_xlabel(x_label)
             ax.set_ylabel(y_label)
