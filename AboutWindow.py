@@ -11,7 +11,7 @@ from PyQt5.QtWidgets import (QWidget,
                              QHBoxLayout,
                              QLabel
                             )
-from PyQt5.QtGui import QIcon, QColor, QPalette, QBrush, QPixmap, QFont
+from PyQt5.QtGui import QIcon, QColor, QPalette, QBrush, QPixmap, QFont, QDesktopServices
 import matplotlib.pyplot as plt
 from FirstTab import FirstTab
 from SecondTab import SecondTab
@@ -68,7 +68,7 @@ class AboutWindow(QMainWindow):
         <h3>"Reaction-Diffusion modelling for Retention and Permation Database Tools"</h3>
         <p><b>Version 1.0</b></p>
         <br/>
-        <p> A Graphical User Interface made by the <a href=\"www.lspm.cnrs.fr/\">LSPM</a> (Laboratory of Sciences of Processes and Materials).</p>
+        <p> A Graphical User Interface made by the <a href="www.lspm.cnrs.fr/">LSPM</a> (Laboratory of Sciences of Processes and Materials).</p>
         </html>"""
         desc_label = QLabel(description)
         desc_label.setTextInteractionFlags(Qt.LinksAccessibleByMouse)

@@ -66,7 +66,7 @@ def create_database():
 
 # todo:
 # "resserrer" les champs du premier onglet
-# voir lors de la non selection d'une equation: faut-il ajouter un squelette vide dans la partie ecriture?
+# voir lors de la non selection d'une equation: faut-il ajouter un squelette vide dans la partie ecriture? -> OUI
 # faire un paquet debian
 # troisiemen partie
 # lire le matlab founi par le client

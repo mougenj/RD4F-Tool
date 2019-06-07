@@ -289,8 +289,7 @@ class SearchBar(QLineEdit):
             return
         print("Let's load", material_name, "from the database.")
         materialData = self.getDataFromMaterialName(material_name)
-        parameters = self.createPartialJSONF
-        romDataMaterial(materialData)
+        parameters = self.createPartialJSONFromDataMaterial(materialData)
         self.parent.open_new_file(tabs, "Default", parameters)
     
     def createPartialJSONFromDataMaterial(self, materialData):

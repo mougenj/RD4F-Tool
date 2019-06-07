@@ -38,7 +38,7 @@ def create_json_example():
             "angular_frequency" : 8,
             "energy" : [454, 48, 98]
         }
-        for _ in range(10)
+        for _ in range(1)
     ]
     parameters["material"] = material
     parameters["source"] = source
@@ -83,9 +83,9 @@ def create_empty_data():
         {
             "density" : None,
             "angular_frequency" : None,
-            "energy" : None
+            "energy" : []
         }
-        for _ in range(10)
+        for _ in range(1)
     ]
     parameters["material"] = material
     parameters["source"] = source

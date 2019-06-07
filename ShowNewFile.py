@@ -107,7 +107,12 @@ class ShowNewFile(QWidget):
         tabs.addTab(make_scroll(gridSource), "Source")
         
         tree = QTreeWidget()
-        
+        tree.setItemsExpandable(False)
+        tabs.setStyleSheet(tabs.styleSheet() + """
+        QTreeWidget::item {
+            margin: 3px 0;
+        }
+        """)
         if self.editable:
             tree.setColumnCount(4)
             tree.setHeaderLabels([
@@ -137,7 +142,8 @@ class ShowNewFile(QWidget):
         if self.editable:
             bt_add_new_trap = QPushButton("Add a trap")
             vbox.layout.addWidget(bt_add_new_trap)
-            bt_add_new_trap.clicked.connect(partial(self.create_subtree_for_a_trap, tree, trap))
+            empy_trap = {"density":None, "angular_frequency":None, "energy":[]}
+            bt_add_new_trap.clicked.connect(partial(self.create_subtree_for_a_trap, tree, empy_trap))
         tabs.addTab(vbox, "Traps")
         
         self.list_data_equation = list_data_equation
@@ -149,10 +155,21 @@ class ShowNewFile(QWidget):
     def create_subtree_for_a_trap(self, tree, trap):
         self.correspondence_index_position.append(self.nb_created)
         tree_item_for_this_trap = QTreeWidgetItem(tree)
-        density_line = QLineEditWidthed("{:.2e}".format(float(trap["density"])), self.editable)
+
+        if trap["density"]:
+            density = "{:.2e}".format(float(trap["density"]))
+        else:
+            density = "None"
+        density_line = QLineEditWidthed(density, self.editable)
         tree.setItemWidget(tree_item_for_this_trap, 0, density_line)
-        angular_frequency_line = QLineEditWidthed("{:.2e}".format(float(trap["angular_frequency"])), self.editable)
+
+        if trap["angular_frequency"]:
+            angular_frequency = "{:.2e}".format(float(trap["angular_frequency"]))
+        else:
+            angular_frequency = "None"
+        angular_frequency_line = QLineEditWidthed(angular_frequency, self.editable)
         tree.setItemWidget(tree_item_for_this_trap, 1, angular_frequency_line)
+
         tree_item_for_this_trap.correspondence_index_position_energy = []
         tree_item_for_this_trap.nb_energy_created = 0
         
@@ -172,7 +189,9 @@ class ShowNewFile(QWidget):
             # add the button to the tree
             tree.setItemWidget(tree_item_for_this_trap, 3, add_energy_bt)
         # increment the creation counter
+        tree_item_for_this_trap.setExpanded(True)
         self.nb_created += 1
+
         return tree_item_for_this_trap
 
     def on_click_remove_bt_trap(self, tree, initial_index):
@@ -187,8 +206,8 @@ class ShowNewFile(QWidget):
         if self.editable:
             remove_energy_bt = QPushButton("delete energy")
             remove_energy_bt.setIcon(QIcon("ressources/trash-alt-solid.svg"))
-            remove_energy_bt.setMinimumSize(120, 28);
-            remove_energy_bt.setMaximumSize(120, 28);
+            # remove_energy_bt.setMinimumSize(120, 0);
+            # remove_energy_bt.setMaximumSize(120, 28);
             remove_energy_bt.clicked.connect(partial(self.on_click_remove_energy_bt, trap_tree, trap_tree.nb_energy_created))
             # add the button to the tree
             tree.setItemWidget(energy_trap, 1, remove_energy_bt)
