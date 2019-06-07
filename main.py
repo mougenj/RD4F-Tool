@@ -66,13 +66,12 @@ def create_database():
 
 # todo:
 # "resserrer" les champs du premier onglet
-# choisir l'emplacement des sauvegardes
+# voir lors de la non selection d'une equation: faut-il ajouter un squelette vide dans la partie ecriture?
 # faire un paquet debian
 # troisiemen partie
 # lire le matlab founi par le client
 # ecrire l'aide
-# tout traduire
-# replacer les boutons de dessins
+# ajouter des boutons pour charger des données depuis la base, au lieu de taper le nom
 def main():
     dataFunctions.create_json_example()
     #create_database()
