@@ -69,22 +69,53 @@ class ShowNewFile(QWidget):
         name_of_area.setFont(myFont)
         
         tabs.addTab(make_scroll(self.make_vbox_from_data_equation(list_data_equation)), "Coefficients values")
+
+        material_container = make_vbox()
+        material_container.setObjectName("material")
+        gb_material = QGroupBox()
+        gb_material.setTitle("material")
+        gb_material.setObjectName("gb_material")
+        grid_material = QGridLayout()
+        grid_material.setObjectName("grid_material")
+        gb_material.layout = grid_material
+        gb_material.setLayout(gb_material.layout)
+
+        gb_adatome = QGroupBox()
+        gb_adatome.setTitle("adatome")
+        gb_adatome.setObjectName("gb_adatome")
+        grid_adatome = QGridLayout()
+        grid_adatome.setObjectName("grid_adatome")
+        gb_adatome.layout = grid_adatome
+        gb_adatome.setLayout(gb_adatome.layout)
+
+        material_container.layout.addWidget(gb_adatome)
+        material_container.layout.addWidget(gb_material)
+
+        adatome_counter = 0
+        for key in ["adatome"]:
+            try:
+                value = parameters["material"][key]
+                value = str(value)
+                line = QLineEditWidthed(value, editable)
+                grid_adatome.addWidget(QLabel(key), adatome_counter, 0)
+                grid_adatome.addWidget(line, adatome_counter, 1);
+                adatome_counter += 1
+            except KeyError:
+                print("There is no key named", key, "in the file loaded, thus it is not possible to diplay this information.")
         
-        gridMaterial = QWidget()
-        gridMaterial.layout = QGridLayout()
-        gridMaterial.setLayout(gridMaterial.layout)
-        gridMaterial.setObjectName("material")
-        i = 0
-        for prop in parameters["material"]:
-            gridMaterial.layout.addWidget(QLabel(prop), i, 0)
-            value = parameters["material"][prop]
-            if value is None:
-                value = "None"
-            elif type(value) is not str:
-                value = "{:.2e}".format(float(value))
-            gridMaterial.layout.addWidget(QLineEditWidthed(value, editable), i, 1)
-            i += 1
-        tabs.addTab(make_scroll(gridMaterial), "Material")
+        material_counter = 0
+        for key in ("lattice_parameter", "atomic_number", "density", "atomic_symbol", "melting_point", "name", "net"):
+            try:
+                value = parameters["material"][key]
+                value = str(value)
+                line = QLineEditWidthed(value, editable)
+                grid_material.addWidget(QLabel(key), material_counter, 0)
+                grid_material.addWidget(line, material_counter, 1);
+                material_counter += 1
+            except KeyError:
+                print("There is no key named", key, "in the file loaded, thus it is not possible to diplay this information.")
+
+        tabs.addTab(make_scroll(material_container), "Material")
 
         gridSource = QWidget()
         gridSource.layout = QGridLayout()

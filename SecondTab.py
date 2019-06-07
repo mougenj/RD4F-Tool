@@ -1,5 +1,5 @@
 import DragAndDrop
-from PyQt5.QtCore import pyqtSlot, Qt
+from PyQt5.QtCore import pyqtSlot, Qt, QObject
 from PyQt5.QtWidgets import (QWidget,
                              QPushButton,
                              QLabel,
@@ -14,7 +14,7 @@ from PyQt5.QtWidgets import (QWidget,
                              QMessageBox,
                              QLineEdit,
                              QGroupBox,
-                             QCompleter
+                             QCompleter,
                             )
 from PyQt5.QtGui import QPixmap, QFontMetrics, QPalette
 from PyQt5.QtCore import QStringListModel
@@ -108,7 +108,7 @@ class SecondTab(QWidget):
         tabs_to_save = snf.findChild(QTabWidget)
 
         def searchForChild(parent, filtre):
-            children = [x for x in parent.findChildren(QWidget) if x.objectName() in filtre]
+            children = [x for x in parent.findChildren(QObject) if x.objectName() in filtre]
             return children
 
         for tab_data_container in searchForChild(tabs_to_save, ["traps", "material", "source", "equation"]):
@@ -146,11 +146,6 @@ class SecondTab(QWidget):
                         "angular_frequency": tab_data_container.itemWidget(trap_tree, 1).text(),
                         "energy" : []
                     }
-                    # when a row is deleted from the grid, the number of
-                    # the total row don't decrease, and thus the next row
-                    # is added below a row that don't exists.
-                    # that is why it is mandatory to check if the dictionnnary
-                    # is empty (to remove the deleted rows)
                     for j in range(trap_tree.childCount()):
                         energy_tree = trap_tree.child(j)
                         line = tab_data_container.itemWidget(energy_tree, 0)
@@ -160,12 +155,29 @@ class SecondTab(QWidget):
                         data_to_save["traps"].append(dictionnary_of_this_trap)
                 
             elif tab_data_container.objectName() == "material":
-                grid = tab_data_container
-                for row in range(grid.layout.rowCount()):
-                    label = grid.layout.itemAtPosition(row, 0).widget().text()
-                    value = grid.layout.itemAtPosition(row, 1).widget().text()
-                    data_to_save["material"][label] = value
+                vbox = tab_data_container 
+                for groupbox in searchForChild(vbox, ["gb_material", "gb_adatome"]):
+                    # grids = searchForChild(groupbox, ["grid_material", "grid_adatome"])
 
+                    # print("here are the every children")
+                    # everychild = groupbox.findChildren(QWidget)
+                    # for achild in everychild:
+                    #     print(achild, achild.objectName())
+                    # if len(grids) == 0:
+                    #     print("WARNING: I can't find nothing in the groupbox named", groupbox.objectName(), ".")
+                    # if len(grids) > 1:
+                    #     print("WARNING: I found", len(grids), " grid in the groupbox named", groupbox.objectName(), ".")
+                    #     print("I am going to use only one of them.")
+                    # for grid in grids:
+                    #     print(grid.objectName())
+                    # grid = grids[0]
+                    # print(grid)
+                    for row in range(groupbox.layout.rowCount()):
+                        print(groupbox.objectName(), row)
+                        label = groupbox.layout.itemAtPosition(row, 0).widget().text()
+                        value = groupbox.layout.itemAtPosition(row, 1).widget().text()
+                        data_to_save["material"][label] = value
+                        
             elif tab_data_container.objectName() == "source":
                 grid = tab_data_container
                 for row in range(grid.layout.rowCount()):
@@ -185,6 +197,7 @@ class SecondTab(QWidget):
             fichier.write(json.dumps(data_to_save, indent=4))
 
     def correctTypes(self, data):
+        print(data)
         for i in range(len(data["traps"])):
             for key in ("density", "angular_frequency"):
                 try:
@@ -206,6 +219,7 @@ class SecondTab(QWidget):
                     value = float(value)
                 corrected_energy_list.append(value)
             data["traps"][i]["energy"] = corrected_energy_list
+
         for key in data["equation"]:
             for subkey in data["equation"][key]:
                 value = data["equation"][key][subkey]
@@ -214,12 +228,14 @@ class SecondTab(QWidget):
                 else:
                     value = float(value)
                 data["equation"][key][subkey] = value
+        
         year = data["source"]["year"]
         if year == "None" or year == "":
             year = None
         else:
             year = int(float(year))
         data["source"]["year"] = year
+
         for key in ("melting_point", "lattice_parameter", "density"):
             value = data["material"][key]
             if value == "None" or value == "":
