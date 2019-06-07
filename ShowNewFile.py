@@ -1,6 +1,6 @@
 import DragAndDrop
 from PyQt5.QtCore import pyqtSlot
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QGroupBox, QGridLayout, QLabel, QHBoxLayout, QScrollArea, QScroller, QPushButton, QApplication, QTabWidget, QTreeWidget, QTreeWidgetItem, QHeaderView
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QGroupBox, QGridLayout, QLabel, QHBoxLayout, QScrollArea, QScroller, QPushButton, QApplication, QTabWidget, QTreeWidget, QTreeWidgetItem, QHeaderView, QCheckBox
 from QLineEditWidthed import QLineEditWidthed
 from PyQt5.QtGui import QColor, QFont, QIcon
 import pdb
@@ -144,6 +144,7 @@ class ShowNewFile(QWidget):
         layout = QVBoxLayout()  # contient les tabs
         layout.addWidget(tabs)
         self.setLayout(layout)
+        # tabs.setCurrentIndex(3)
     
     def create_subtree_for_a_trap(self, tree, trap):
         self.correspondence_index_position.append(self.nb_created)
@@ -159,12 +160,14 @@ class ShowNewFile(QWidget):
             # lets create a button that remove a trap
             remove_bt = QPushButton()
             remove_bt.setIcon(QIcon("ressources/trash-alt-solid.svg"))
+            remove_bt.setMaximumSize(50, 50)
             remove_bt.clicked.connect(partial(self.on_click_remove_bt_trap, tree, self.nb_created))
             # add the button to the tree
             tree.setItemWidget(tree_item_for_this_trap, 2, remove_bt)
             # lets create a button that add energy to trap
             add_energy_bt = QPushButton()
             add_energy_bt.setIcon(QIcon("ressources/plus-circle-solid.svg"))
+            add_energy_bt.setMaximumSize(50, 50)
             add_energy_bt.clicked.connect(partial(self.addEnergyToATrap, tree, tree_item_for_this_trap))
             # add the button to the tree
             tree.setItemWidget(tree_item_for_this_trap, 3, add_energy_bt)
@@ -182,8 +185,10 @@ class ShowNewFile(QWidget):
         tree.setItemWidget(energy_trap, 0, QLineEditWidthed("{:.2e}".format(float(value)), self.editable))
 
         if self.editable:
-            remove_energy_bt = QPushButton()
+            remove_energy_bt = QPushButton("delete energy")
             remove_energy_bt.setIcon(QIcon("ressources/trash-alt-solid.svg"))
+            remove_energy_bt.setMinimumSize(120, 28);
+            remove_energy_bt.setMaximumSize(120, 28);
             remove_energy_bt.clicked.connect(partial(self.on_click_remove_energy_bt, trap_tree, trap_tree.nb_energy_created))
             # add the button to the tree
             tree.setItemWidget(energy_trap, 1, remove_energy_bt)
@@ -213,11 +218,16 @@ class ShowNewFile(QWidget):
                 grid_data_coef.addWidget(QLabel("D_0"), 0, 0)
                 grid_data_coef.addWidget(QLineEditWidthed(coef1, self.editable), 0, 1)
                 grid_data_coef.addWidget(QLabel("(m²/s)"), 0, 2)
+                if self.editable:
+                    checkbox = QCheckBox("Take it into account")
+                    checkbox.setChecked(True)
+                    grid_data_coef.addWidget(checkbox, 0, 4)
                 grid_data_coef.addWidget(QLabel("E_D"), 1, 0)
                 grid_data_coef.addWidget(QLineEditWidthed(coef2, self.editable), 1, 1)
                 grid_data_coef.addWidget(QLabel("(eV)"), 1, 2)
                 grid_data_coef.addWidget(QLineEditWidthed(coef2kJmol, self.editable), 1, 3)
                 grid_data_coef.addWidget(QLabel("(kJ/mol)"), 1, 4)
+
             elif name == "S":
                 equation_container.setTitle("For solubility S = S_0 * exp(-E_S/(Kb*T))")
                 equation_container.setObjectName("solubility")
@@ -225,6 +235,10 @@ class ShowNewFile(QWidget):
                 grid_data_coef.addWidget(QLabel("S_0"), 0, 0)
                 grid_data_coef.addWidget(QLineEditWidthed(coef1, self.editable), 0, 1)
                 grid_data_coef.addWidget(QLabel("(m²/s)"), 0, 2)
+                if self.editable:
+                    checkbox = QCheckBox("Take it into account")
+                    checkbox.setChecked(True)
+                    grid_data_coef.addWidget(checkbox, 0, 4)
                 grid_data_coef.addWidget(QLabel("E_S"), 1, 0)
                 grid_data_coef.addWidget(QLineEditWidthed(coef2, self.editable), 1, 1)
                 grid_data_coef.addWidget(QLabel("(eV)"), 1, 2)
@@ -237,6 +251,10 @@ class ShowNewFile(QWidget):
                 grid_data_coef.addWidget(QLabel("Kr_0"), 0, 0)
                 grid_data_coef.addWidget(QLineEditWidthed(coef1, self.editable), 0, 1)
                 grid_data_coef.addWidget(QLabel("(m²/s)"), 0, 2)
+                if self.editable:
+                    checkbox = QCheckBox("Take it into account")
+                    checkbox.setChecked(True)
+                    grid_data_coef.addWidget(checkbox, 0, 4)
                 grid_data_coef.addWidget(QLabel("E_r"), 1, 0)
                 grid_data_coef.addWidget(QLineEditWidthed(coef2, self.editable), 1, 1)
                 grid_data_coef.addWidget(QLabel("(eV)"), 1, 2)

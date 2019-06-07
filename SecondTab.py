@@ -124,24 +124,26 @@ class SecondTab(QWidget):
                     val1 = grid_layout.itemAtPosition(0, 1).widget().text()
                     coef2 = grid_layout.itemAtPosition(1, 0).widget().text()
                     val2 = grid_layout.itemAtPosition(1, 1).widget().text()
-                    if groupbox.objectName() == "diffusivity":
-                        equation_type = "D"
-                    elif groupbox.objectName() == "solubility":
-                        equation_type = "S"
-                    elif groupbox.objectName() == "combination":
-                        equation_type = "Kr"
-                    else:
-                        print("WARNING : I don't know how to save the coefficient named", groupbox.objectName())
-                    data_to_save["equation"][equation_type] = {}
-                    data_to_save["equation"][equation_type][coef1] = val1
-                    data_to_save["equation"][equation_type][coef2] = val2
+                    checkbox = grid_layout.itemAtPosition(0, 4).widget()
+                    if checkbox.isChecked():
+                        if groupbox.objectName() == "diffusivity":
+                            equation_type = "D"
+                        elif groupbox.objectName() == "solubility":
+                            equation_type = "S"
+                        elif groupbox.objectName() == "combination":
+                            equation_type = "Kr"
+                        else:
+                            print("WARNING : I don't know how to save the coefficient named", groupbox.objectName())
+                        data_to_save["equation"][equation_type] = {}
+                        data_to_save["equation"][equation_type][coef1] = val1
+                        data_to_save["equation"][equation_type][coef2] = val2
 
             elif tab_data_container.objectName() == "traps":
                 for i in range(tab_data_container.topLevelItemCount()):
                     trap_tree = tab_data_container.topLevelItem(i)
                     dictionnary_of_this_trap = {
-                        "Density" : tab_data_container.itemWidget(trap_tree, 0).text(),
-                        "Angular frequency": tab_data_container.itemWidget(trap_tree, 1).text(),
+                        "density" : tab_data_container.itemWidget(trap_tree, 0).text(),
+                        "angular_frequency": tab_data_container.itemWidget(trap_tree, 1).text(),
                         "energy" : []
                     }
                     # when a row is deleted from the grid, the number of
