@@ -56,6 +56,11 @@ class App(QMainWindow):
             color: """ + txtcolor + """;
         }
 
+        QTreeWidget {
+            background-color: """ + backcolor + """ ;
+            color: """ + txtcolor + """;
+        }
+
         QMenuBar::item {
             background-color: """ + backcolor + """ ;
             color: """ + txtcolor + """;
