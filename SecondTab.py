@@ -60,6 +60,7 @@ class SecondTab(QWidget):
         tab_left.tabCloseRequested.connect(CloseTab)
         tab_left.setTabPosition(QTabWidget.West)
         tab_left.setFocusPolicy(Qt.NoFocus)
+        self.tab_left = tab_left
 
         search_bar = make_hbox()
         search_bar.layout.addWidget(QLabel("Choose a name of a material to load it from the database :"))
@@ -71,6 +72,7 @@ class SecondTab(QWidget):
         button_save.clicked.connect(partial(self.save, tab_left.currentIndex))
         add_files = make_vbox()
         add_files.layout.addWidget(search_bar)
+        add_files.layout.addWidget(SearchButtons("database.sqlite", self, tab_left))
         add_files.layout.addWidget(button_save)
         add_files.layout.addWidget(DragAndDrop.FileEdit("Drop your files here", partial(self.open_new_file, tab_left)))
         add_files.layout.addWidget(button_add_files)
@@ -307,6 +309,69 @@ class SearchBar(QLineEdit):
         materialData = self.getDataFromMaterialName(material_name)
         parameters = self.createPartialJSONFromDataMaterial(materialData)
         self.parent.open_new_file(tabs, "Default", parameters)
+    
+    def createPartialJSONFromDataMaterial(self, materialData):
+        parameters = dataFunctions.create_empty_data()
+        for key, value in materialData:
+            parameters["material"][key] = value
+        return parameters
+
+    def getMaterialNameFromDatabase(self):
+        db = sqlite3.connect(self.dbname)
+        cursor = db.cursor()
+        cursor.execute("SELECT LOWER(NAME) FROM MATERIAL;")
+        db.commit()
+        # première colonne uniquement
+        rows = [result[0] for result in cursor.fetchall()]
+        db.close()
+        return rows
+
+
+    def getDataFromMaterialName(self, material_name):
+        db = sqlite3.connect(self.dbname)
+        cursor = db.cursor()
+        cursor.execute("SELECT * FROM MATERIAL WHERE LOWER(NAME) = \"" + material_name + "\";")
+        db.commit()
+        #print(cursor.description)
+        # première colonne uniquement, en minuscule s'il vous plait
+        column_name = [description[0] for description in cursor.description]
+        rows = cursor.fetchall()[0]
+        db.close()
+        return list(zip(column_name, rows))
+
+
+class SearchButtons(QWidget):
+
+    def __init__(self, dbname, parent, tabs):
+        super().__init__()
+        self.dbname = dbname
+        self.layout = QGridLayout()
+        self.setLayout(self.layout)
+        self.parent = parent
+        if not os.path.isfile(self.dbname):
+            raise BDDNonTrouvee("base de donnes non trouvée")
+        col_index = 0
+        lin_index = 0
+        for name in self.getMaterialNameFromDatabase():
+            bt = QPushButton(name)
+            bt.clicked.connect(partial(self.loadDataFromDataBase, bt, tabs))
+            self.layout.addWidget(bt, lin_index, col_index)
+            lin_index += 1
+            if lin_index == 3:
+                lin_index = 0
+                col_index += 1
+
+    def loadDataFromDataBase(self, bt, tabs):
+        material_name = bt.text()
+        if not material_name in self.getMaterialNameFromDatabase():
+            print(material_name, "not found in the database")
+            return
+        print("Let's load", material_name, "from the database.")
+        materialData = self.getDataFromMaterialName(material_name)
+        parameters = self.createPartialJSONFromDataMaterial(materialData)
+        self.parent.open_new_file(tabs, "Default", parameters)
+        # show the new contant
+        self.parent.tab_left.currentWidget().tabs.setCurrentIndex(1)
     
     def createPartialJSONFromDataMaterial(self, materialData):
         parameters = dataFunctions.create_empty_data()

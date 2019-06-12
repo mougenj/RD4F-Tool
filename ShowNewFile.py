@@ -182,6 +182,7 @@ class ShowNewFile(QWidget):
         layout = QVBoxLayout()  # contient les tabs
         layout.addWidget(tabs)
         self.setLayout(layout)
+        self.tabs = tabs
         # tabs.setCurrentIndex(3)
     
     def create_subtree_for_a_trap(self, tree, trap):

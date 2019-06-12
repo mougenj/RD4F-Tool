@@ -31,28 +31,47 @@ def create_database():
             "[atomic_number] INTEGER,"
             "[melting_point] number)"
         )
-        """
-        cursor.execute(
-            "CREATE TABLE SOURCE ("
-            "[doi] text PRIMARY KEY,"
-            "[year] text,"
-            "[author_name] number)"
-        )
-        cursot.execute(
-            "CREATE TABLE EQUATION"
-            "[id] INTEGER PRIMARY KEY,"
-            "[type] text,"
-            "[coef1] number,"
-            "[coef2] number,"
-            "CHECK(type IN ('Kr', 'D', 'S'))"
-
-        )
-        """
         cursor.execute(
             "INSERT INTO MATERIAL"
             "(id, name, lattice_parameter, density, net, atomic_number, melting_point)"
             "VALUES"
             "(1, \"Carbone\", 0.3, 0.5, \"CFC\", 6,  3553.85);")
+        db.commit()
+        cursor.execute(
+            "INSERT INTO MATERIAL"
+            "(id, name, lattice_parameter, density, net, atomic_number, melting_point)"
+            "VALUES"
+            "(2, \"Acier\", 0.3, 0.5, \"changeme\", 6,  3553.85);")
+        db.commit()
+        cursor.execute(
+            "INSERT INTO MATERIAL"
+            "(id, name, lattice_parameter, density, net, atomic_number, melting_point)"
+            "VALUES"
+            "(3, \"AAA\", 0.3, 0.5, \"AAA\", 6,  3553.85);")
+        db.commit()
+        cursor.execute(
+            "INSERT INTO MATERIAL"
+            "(id, name, lattice_parameter, density, net, atomic_number, melting_point)"
+            "VALUES"
+            "(4, \"Carbone\", 0.3, 0.5, \"CFC\", 6,  3553.85);")
+        db.commit()
+        cursor.execute(
+            "INSERT INTO MATERIAL"
+            "(id, name, lattice_parameter, density, net, atomic_number, melting_point)"
+            "VALUES"
+            "(5, \"Carbone\", 0.3, 0.5, \"CFC\", 6,  3553.85);")
+        db.commit()
+        cursor.execute(
+            "INSERT INTO MATERIAL"
+            "(id, name, lattice_parameter, density, net, atomic_number, melting_point)"
+            "VALUES"
+            "(6, \"Carbone\", 0.3, 0.5, \"CFC\", 6,  3553.85);")
+        db.commit()
+        cursor.execute(
+            "INSERT INTO MATERIAL"
+            "(id, name, lattice_parameter, density, net, atomic_number, melting_point)"
+            "VALUES"
+            "(7, \"Carbone\", 0.3, 0.5, \"CFC\", 6,  3553.85);")
         db.commit()
 
         cursor.execute("SELECT * FROM MATERIAL")
@@ -74,7 +93,7 @@ def create_database():
 # ajouter des boutons pour charger des données depuis la base, au lieu de taper le nom
 def main():
     dataFunctions.create_json_example()
-    #create_database()
+    create_database()
     # print("création de l'interface")
     app = QApplication(sys.argv)
     #print("lancement de l'interface")
