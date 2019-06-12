@@ -62,9 +62,9 @@ class SecondTab(QWidget):
         tab_left.setFocusPolicy(Qt.NoFocus)
         self.tab_left = tab_left
 
-        search_bar = make_hbox()
+        search_bar = make_vbox()
         search_bar.layout.addWidget(QLabel("Choose a name of a material to load it from the database :"))
-        search_bar.layout.addWidget(SearchBar("database.sqlite", self, tab_left))
+        search_bar.layout.addWidget(SearchButtons("database.sqlite", self, tab_left))
 
         button_add_files = QPushButton("Add file(s)")
         button_add_files.clicked.connect(partial(self.on_click_open_files, tab_left))
@@ -72,7 +72,6 @@ class SecondTab(QWidget):
         button_save.clicked.connect(partial(self.save, tab_left.currentIndex))
         add_files = make_vbox()
         add_files.layout.addWidget(search_bar)
-        add_files.layout.addWidget(SearchButtons("database.sqlite", self, tab_left))
         add_files.layout.addWidget(button_save)
         add_files.layout.addWidget(DragAndDrop.FileEdit("Drop your files here", partial(self.open_new_file, tab_left)))
         add_files.layout.addWidget(button_add_files)
@@ -81,7 +80,6 @@ class SecondTab(QWidget):
         with open("json.txt") as fichier:
             self.open_new_file(tab_left, "Exemple", json.loads(fichier.read()))
         files_vbox = make_vbox()
-        #files_vbox.layout.addWidget(tab_left)
         files_vbox.layout.addWidget(add_files)
 
         self.layout.addWidget(tab_left)
@@ -283,61 +281,6 @@ class SecondTab(QWidget):
             get_name_from_path = lambda path : path.split("/")[-1].split('.', 1)[0]
             filepath, liste = success
             self.open_new_file(tab_to_add, get_name_from_path(filepath), liste)
-
-
-class SearchBar(QLineEdit):
-
-    def __init__(self, dbname, parent, tabs):
-        super().__init__()
-        self.dbname = dbname
-        self.parent = parent
-        if not os.path.isfile(self.dbname):
-            raise BDDNonTrouvee("base de donnes non trouvée")
-        model = QStringListModel()
-        model.setStringList(self.getMaterialNameFromDatabase())
-        completer = QCompleter()
-        completer.setModel(model)
-        self.setCompleter(completer)
-        self.returnPressed.connect(partial(self.loadDataFromDataBase, tabs))
-
-    def loadDataFromDataBase(self, tabs):
-        material_name = self.text()
-        if not material_name in self.getMaterialNameFromDatabase():
-            print(material_name, "not found in the database")
-            return
-        print("Let's load", material_name, "from the database.")
-        materialData = self.getDataFromMaterialName(material_name)
-        parameters = self.createPartialJSONFromDataMaterial(materialData)
-        self.parent.open_new_file(tabs, "Default", parameters)
-    
-    def createPartialJSONFromDataMaterial(self, materialData):
-        parameters = dataFunctions.create_empty_data()
-        for key, value in materialData:
-            parameters["material"][key] = value
-        return parameters
-
-    def getMaterialNameFromDatabase(self):
-        db = sqlite3.connect(self.dbname)
-        cursor = db.cursor()
-        cursor.execute("SELECT LOWER(NAME) FROM MATERIAL;")
-        db.commit()
-        # première colonne uniquement
-        rows = [result[0] for result in cursor.fetchall()]
-        db.close()
-        return rows
-
-
-    def getDataFromMaterialName(self, material_name):
-        db = sqlite3.connect(self.dbname)
-        cursor = db.cursor()
-        cursor.execute("SELECT * FROM MATERIAL WHERE LOWER(NAME) = \"" + material_name + "\";")
-        db.commit()
-        #print(cursor.description)
-        # première colonne uniquement, en minuscule s'il vous plait
-        column_name = [description[0] for description in cursor.description]
-        rows = cursor.fetchall()[0]
-        db.close()
-        return list(zip(column_name, rows))
 
 
 class SearchButtons(QWidget):
