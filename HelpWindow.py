@@ -45,10 +45,10 @@ class HelpWindow(QMainWindow):
         self.move(maxX/2, maxY/2)
     
     def initUI(self):
-        central_widget = make_vbox()
+        central_widget = makeWidget.make_vbox()
         central_widget.setLayout(central_widget.layout)
 
-        text_area = make_vbox()
+        text_area = makeWidget.make_vbox()
         # todo: demander une confirmation de la traduction
         description = """
         <html>
@@ -93,17 +93,3 @@ class HelpWindow(QMainWindow):
         p.setColor(central_widget.backgroundRole(), QColor(0, 0, 0))
         central_widget.setPalette(p)
         self.setCentralWidget(central_widget)
-
-
-def make_vbox():
-    vbox = QWidget()
-    vbox.layout = QVBoxLayout()
-    vbox.setLayout(vbox.layout)
-    return vbox
-
-
-def make_hbox():
-    hbox = QWidget()
-    hbox.layout = QHBoxLayout()
-    hbox.setLayout(hbox.layout)
-    return hbox
