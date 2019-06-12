@@ -7,6 +7,7 @@ import pdb
 from PyQt5.QtCore import Qt
 import rlcompleter
 from functools import partial
+import makeWidget
 
 
 class ShowNewFile(QWidget):
@@ -68,9 +69,9 @@ class ShowNewFile(QWidget):
         myFont.setBold(True)
         name_of_area.setFont(myFont)
         
-        tabs.addTab(make_scroll(self.make_vbox_from_data_equation(list_data_equation)), "Coefficients values")
+        tabs.addTab(makeWidget.make_scroll(self.make_vbox_from_data_equation(list_data_equation)), "Coefficients values")
 
-        material_container = make_vbox()
+        material_container = makeWidget.make_vbox()
         material_container.setObjectName("material")
         gb_material = QGroupBox()
         gb_material.setTitle("material")
@@ -115,7 +116,7 @@ class ShowNewFile(QWidget):
             except KeyError:
                 print("There is no key named", key, "in the file loaded, thus it is not possible to diplay this information.")
 
-        tabs.addTab(make_scroll(material_container), "Material")
+        tabs.addTab(makeWidget.make_scroll(material_container), "Material")
 
         gridSource = QWidget()
         gridSource.layout = QGridLayout()
@@ -135,7 +136,7 @@ class ShowNewFile(QWidget):
                     value = "{:.2e}".format(float(value))
             gridSource.layout.addWidget(QLineEditWidthed(value, editable), i, 1)
             i += 1
-        tabs.addTab(make_scroll(gridSource), "Source")
+        tabs.addTab(makeWidget.make_scroll(gridSource), "Source")
         
         tree = QTreeWidget()
         tree.setItemsExpandable(False)
@@ -168,7 +169,7 @@ class ShowNewFile(QWidget):
             tree_item_for_this_trap = self.create_subtree_for_a_trap(tree, trap)
             for energy in trap["energy"]:
                 self.addEnergyToATrap(tree, tree_item_for_this_trap, energy)
-        vbox = make_vbox()
+        vbox = makeWidget.make_vbox()
         vbox.layout.addWidget(tree)
         if self.editable:
             bt_add_new_trap = QPushButton("Add a trap")
@@ -254,7 +255,7 @@ class ShowNewFile(QWidget):
 
 
     def make_vbox_from_data_equation(self, list_data_equation):
-        equations_container = make_vbox()
+        equations_container = makeWidget.make_vbox()
         equations_container.setObjectName("equation")
         for name, c1, c2 in list_data_equation:
             coef1 = "None" if c1[1] is None else "{:.2e}".format(float(c1[1]))
@@ -317,23 +318,4 @@ class ShowNewFile(QWidget):
         return equations_container
 
 
-def make_vbox():
-    vbox = QWidget()
-    vbox.layout = QVBoxLayout()
-    vbox.setLayout(vbox.layout)
-    return vbox
 
-
-def make_hbox():
-    hbox = QWidget()
-    hbox.layout = QHBoxLayout()
-    hbox.setLayout(hbox.layout)
-    return hbox
-
-
-def make_scroll(scrollAreaWidgetContents):
-    scroll_area = QScrollArea()
-    scroll_area.setWidgetResizable(True)
-    scroll_area.setWidget(scrollAreaWidgetContents)
-    QScroller.grabGesture(scroll_area.viewport(), QScroller.LeftMouseButtonGesture)
-    return scroll_area
