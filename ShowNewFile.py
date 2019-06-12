@@ -124,18 +124,62 @@ class ShowNewFile(QWidget):
         gridSource.setObjectName("source")
         i = 0
         self.list_data_source = parameters["source"]
-        for prop in parameters["source"]:
-            gridSource.layout.addWidget(QLabel(prop), i, 0)
+        # author_name
+        prop = "author_name"
+        gridSource.layout.addWidget(QLabel(prop), i, 0)
+        value = parameters["source"][prop]
+        if value is None:
+            value = "None"
+        elif type(value) is not str:
+            value = "{:.2e}".format(float(value))
+        gridSource.layout.addWidget(QLineEditWidthed(value, editable), i, 1)
+        i += 1
+        # DOI
+        prop = "doi"
+        gridSource.layout.addWidget(QLabel(prop), i, 0)
+        doi_api_success = False
+        to_insert = None
+        if not self.editable:
+            try:
+                import signal
+                from crossref.restful import Works
+
+                def handler(signum, frame):
+                    raise Exception
+
+                def request_doi_api():
+                    works = Works()
+                    value = works.doi(parameters["source"][prop])["link"][0]["URL"]
+                    to_insert = QLabel("<html><a href=\"" + value + "\">" + value + "</a></html>")
+                    return to_insert
+                    
+                signal.signal(signal.SIGALRM, handler)
+                signal.alarm(1)  # 1 sec max to call the api
+                to_insert = request_doi_api()
+                signal.alarm(0)  # cancel alarm
+                doi_api_success = True
+            except:
+                pass
+        if not doi_api_success:
             value = parameters["source"][prop]
             if value is None:
                 value = "None"
             elif type(value) is not str:
-                if prop == "year":
-                    value = str(int(value))
-                else:
-                    value = "{:.2e}".format(float(value))
-            gridSource.layout.addWidget(QLineEditWidthed(value, editable), i, 1)
-            i += 1
+                value = "{:.2e}".format(float(value))
+            to_insert = QLineEditWidthed(value, editable)
+        gridSource.layout.addWidget(to_insert, i, 1)
+        i += 1
+        # YEAR
+        prop = "year"
+        gridSource.layout.addWidget(QLabel(prop), i, 0)
+        value = parameters["source"][prop]
+        if value is None:
+            value = "None"
+        elif type(value) is not str:
+            value = str(int(value))
+        gridSource.layout.addWidget(QLineEditWidthed(value, editable), i, 1)
+        i += 1
+
         tabs.addTab(makeWidget.make_scroll(gridSource), "Source")
         
         tree = QTreeWidget()

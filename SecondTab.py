@@ -63,7 +63,7 @@ class SecondTab(QWidget):
         self.tab_left = tab_left
 
         search_bar = make_vbox()
-        search_bar.layout.addWidget(QLabel("Choose a name of a material to load it from the database :"))
+        search_bar.layout.addWidget(QLabel("<html><center>Choose a name of a material to load it from the database :</center></html>"))
         search_bar.layout.addWidget(SearchButtons("database.sqlite", self, tab_left))
 
         button_add_files = QPushButton("Add file(s)")
@@ -299,10 +299,10 @@ class SearchButtons(QWidget):
             bt = QPushButton(name)
             bt.clicked.connect(partial(self.loadDataFromDataBase, bt, tabs))
             self.layout.addWidget(bt, lin_index, col_index)
-            lin_index += 1
-            if lin_index == 3:
-                lin_index = 0
-                col_index += 1
+            col_index += 1
+            if col_index == 3:
+                col_index = 0
+                lin_index += 1
 
     def loadDataFromDataBase(self, bt, tabs):
         material_name = bt.text()
