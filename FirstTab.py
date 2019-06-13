@@ -124,7 +124,7 @@ class FirstTab(QWidget):
             self.open_new_file(tab_left, "Touchard-2012.txt", json.loads(fichier.read()))
         """
         with open("json.txt") as fichier:
-            self.open_new_file(tab_left, "sav.txt", json.loads(fichier.read()))
+            self.open_new_file(tab_left, "json.txt", json.loads(fichier.read()))
         files_vbox = QWidget()
         files_vbox.layout = QVBoxLayout()
         files_vbox.setLayout(files_vbox.layout)
@@ -213,31 +213,34 @@ class FirstTab(QWidget):
         for onglet, source in zip(self.data_onglets, self.data_sources):
             for equation in onglet:
                 if equation[0] == name:
-                    les_d = equation[1][1] * np.exp(equation[2][1]/(k_b * les_temperatures))
-                    legend = source["author_name"] + " - " + str(source["year"])
-                    data = les_temperatures, les_d
-                    self.pltwindows[0].plot(data, legend, ylog=True, x_label="Temperature (K)", y_label="" + " (logscale)", xlim=xlim, xlimmax=(value_x_max, value_x_max))
+                    try:
+                        les_d = equation[1][1] * np.exp(equation[2][1]/(k_b * les_temperatures))
+                        legend = source["author_name"] + " - " + str(source["year"])
+                        data = les_temperatures, les_d
+                        self.pltwindows[0].plot(data, legend, ylog=True, x_label="Temperature (K)", y_label="" + " (logscale)", xlim=xlim, xlimmax=(value_x_max, value_x_max))
 
-                    data = 1 / les_temperatures, les_d
-                    if xlim != 0:
-                        xlim_divided = 1 / xlim
-                    else:
-                        xlim_divided = 0
+                        data = 1 / les_temperatures, les_d
+                        if xlim != 0:
+                            xlim_divided = 1 / xlim
+                        else:
+                            xlim_divided = 0
 
-                    if value_x_max != 0:
-                        value_x_max_divided = 1 / value_x_max
-                    else:
-                        value_x_max_divided = 0
+                        if value_x_max != 0:
+                            value_x_max_divided = 1 / value_x_max
+                        else:
+                            value_x_max_divided = 0
 
-                    self.pltwindows[1].plot(data, legend, ylog=True, x_label="1/Temperature ($K^{-1}$)", y_label="" + " (logscale)", xlim=xlim_divided, xlimmax=(value_x_max_divided, value_x_max))
+                        self.pltwindows[1].plot(data, legend, ylog=True, x_label="1/Temperature ($K^{-1}$)", y_label="" + " (logscale)", xlim=xlim_divided, xlimmax=(value_x_max_divided, value_x_max))
 
-                    data = les_temperatures, les_d
-                    self.pltwindows[2].plot(data, legend, x_label="Temperature (K)", y_label="", xlim=xlim, xlimmax=(value_x_max, value_x_max))
+                        data = les_temperatures, les_d
+                        self.pltwindows[2].plot(data, legend, x_label="Temperature (K)", y_label="", xlim=xlim, xlimmax=(value_x_max, value_x_max))
 
-                    data = les_temperatures, les_d
-                    self.pltwindows[3].plot(data, legend, xlog=True, ylog=True, x_label="Temperature (K)" + " (logscale)",y_label=""  + " (logscale)", xlim=xlim, xlimmax=(value_x_max, value_x_max))
-                    # since the curves was plot, we nedd to not plot the xilm and the xlimmax anymore
-                    xlim, value_x_max = 0, 0
+                        data = les_temperatures, les_d
+                        self.pltwindows[3].plot(data, legend, xlog=True, ylog=True, x_label="Temperature (K)" + " (logscale)",y_label=""  + " (logscale)", xlim=xlim, xlimmax=(value_x_max, value_x_max))
+                        # since the curves was plot, we nedd to not plot the xilm and the xlimmax anymore
+                        xlim, value_x_max = 0, 0
+                    except TypeError:  # un None s'est glissé dans les données
+                        print("Impossible de tracer toutes les courbes", name)
 
         print("Temps de tracé: " + str(time.time() - start))
 

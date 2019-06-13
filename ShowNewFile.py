@@ -144,19 +144,38 @@ class ShowNewFile(QWidget):
                 import signal
                 from crossref.restful import Works
 
-                def handler(signum, frame):
-                    raise Exception
+                class TimeoutException(Exception):
+                    pass
 
+                def deadline(timeout, *args):
+                    def decorate(f):
+                        """ the decorator creation """
+                        def handler(signum, frame):
+                            """ the handler for the timeout """
+                            raise TimeoutException()
+                
+                        def new_f(*args):
+                            """ the initiation of the handler, 
+                            the lauch of the function and the end of it"""
+                            signal.signal(signal.SIGALRM, handler)
+                            signal.alarm(timeout)
+                            res = f(*args)
+                            signal.alarm(0)
+                            return res
+                    
+                        new_f.__name__ = f.__name__
+                        return new_f
+                @deadline(1)
                 def request_doi_api():
                     works = Works()
                     value = works.doi(parameters["source"][prop])["link"][0]["URL"]
                     to_insert = QLabel("<html><a href=\"" + value + "\">" + value + "</a></html>")
                     return to_insert
-                    
-                signal.signal(signal.SIGALRM, handler)
-                signal.alarm(1)  # 1 sec max to call the api
-                to_insert = request_doi_api()
-                signal.alarm(0)  # cancel alarm
+                
+                try:
+                    to_insert = request_doi_api()
+                except TimeoutException:
+                    pass
                 doi_api_success = True
             except:
                 pass
@@ -302,64 +321,62 @@ class ShowNewFile(QWidget):
     def make_vbox_from_data_equation(self, list_data_equation):
         equations_container = makeWidget.make_vbox()
         equations_container.setObjectName("equation")
+        list_equation_already_written = []
+
+        def fillVboxWithAnything(equations_container, name, coef1, coef2):
+            equation_container = QGroupBox()
+            unit1 = "(m²/s)"
+            unit2 = ("(eV)", "(kJ/mol)")
+            if name == "D":
+                title = "For interstitial diffusivity D = D_0 * exp(-E_D/(Kb*T))"
+                objectName = "diffusivity"
+                coef1_name = "D_0"
+                coef2_name = "E_D"
+            elif name == "S":
+                title = "For solubility S = S_0 * exp(-E_S/(Kb*T))"
+                objectName = "solubility"
+                coef1_name = "S_0"
+                coef2_name = "E_S"
+            elif name == "Kr":
+                title = "For combination Kr = Kr_0 * exp(-E_r/(Kb*T))"  # todo: check translation
+                objectName = "combination"
+                coef1_name = "Kr_0"
+                coef2_name = "E_r"
+            equation_container.setTitle(title)
+            equation_container.setObjectName(objectName)
+            grid_data_coef = QGridLayout()
+            grid_data_coef.addWidget(QLabel(coef1_name), 0, 0)
+            grid_data_coef.addWidget(QLineEditWidthed(coef1, self.editable), 0, 1)
+            grid_data_coef.addWidget(QLabel(unit1), 0, 2)
+            if self.editable:
+                checkbox = QCheckBox("Take it into account")
+                checkbox.setChecked(True)
+                grid_data_coef.addWidget(checkbox, 0, 4)
+            grid_data_coef.addWidget(QLabel(coef2_name), 1, 0)
+            grid_data_coef.addWidget(QLineEditWidthed(coef2, self.editable), 1, 1)
+            grid_data_coef.addWidget(QLabel(unit2[0]), 1, 2)
+            grid_data_coef.addWidget(QLineEditWidthed(coef2kJmol, self.editable), 1, 3)
+            grid_data_coef.addWidget(QLabel(unit2[1]), 1, 4)
+            equation_container.setLayout(grid_data_coef)
+            equations_container.layout.addWidget(equation_container)
+
         for name, c1, c2 in list_data_equation:
             coef1 = "None" if c1[1] is None else "{:.2e}".format(float(c1[1]))
             coef2 = "None" if c2[1] is None else "{:.2e}".format(float(c2[1]))
             coef2kJmol = "None" if c2[1] is None else "{:.2e}".format(float(c2[1]/0.0104))
             equation_container = QGroupBox()
-            if name == "D":
-                equation_container.setTitle("For interstitial diffusivity D = D_0 * exp(-E_D/(Kb*T))")
-                equation_container.setObjectName("diffusivity")
-                grid_data_coef = QGridLayout()
-                grid_data_coef.addWidget(QLabel("D_0"), 0, 0)
-                grid_data_coef.addWidget(QLineEditWidthed(coef1, self.editable), 0, 1)
-                grid_data_coef.addWidget(QLabel("(m²/s)"), 0, 2)
-                if self.editable:
-                    checkbox = QCheckBox("Take it into account")
-                    checkbox.setChecked(True)
-                    grid_data_coef.addWidget(checkbox, 0, 4)
-                grid_data_coef.addWidget(QLabel("E_D"), 1, 0)
-                grid_data_coef.addWidget(QLineEditWidthed(coef2, self.editable), 1, 1)
-                grid_data_coef.addWidget(QLabel("(eV)"), 1, 2)
-                grid_data_coef.addWidget(QLineEditWidthed(coef2kJmol, self.editable), 1, 3)
-                grid_data_coef.addWidget(QLabel("(kJ/mol)"), 1, 4)
-
-            elif name == "S":
-                equation_container.setTitle("For solubility S = S_0 * exp(-E_S/(Kb*T))")
-                equation_container.setObjectName("solubility")
-                grid_data_coef = QGridLayout()
-                grid_data_coef.addWidget(QLabel("S_0"), 0, 0)
-                grid_data_coef.addWidget(QLineEditWidthed(coef1, self.editable), 0, 1)
-                grid_data_coef.addWidget(QLabel("(m²/s)"), 0, 2)
-                if self.editable:
-                    checkbox = QCheckBox("Take it into account")
-                    checkbox.setChecked(True)
-                    grid_data_coef.addWidget(checkbox, 0, 4)
-                grid_data_coef.addWidget(QLabel("E_S"), 1, 0)
-                grid_data_coef.addWidget(QLineEditWidthed(coef2, self.editable), 1, 1)
-                grid_data_coef.addWidget(QLabel("(eV)"), 1, 2)
-                grid_data_coef.addWidget(QLineEditWidthed(coef2kJmol, self.editable), 1, 3)
-                grid_data_coef.addWidget(QLabel("(kJ/mol)"), 1, 4)
-            elif name == "Kr":
-                equation_container.setTitle("For combination Kr = Kr_0 * exp(-E_r/(Kb*T))")  # todo: check translation
-                equation_container.setObjectName("combination")
-                grid_data_coef = QGridLayout()
-                grid_data_coef.addWidget(QLabel("Kr_0"), 0, 0)
-                grid_data_coef.addWidget(QLineEditWidthed(coef1, self.editable), 0, 1)
-                grid_data_coef.addWidget(QLabel("(m²/s)"), 0, 2)
-                if self.editable:
-                    checkbox = QCheckBox("Take it into account")
-                    checkbox.setChecked(True)
-                    grid_data_coef.addWidget(checkbox, 0, 4)
-                grid_data_coef.addWidget(QLabel("E_r"), 1, 0)
-                grid_data_coef.addWidget(QLineEditWidthed(coef2, self.editable), 1, 1)
-                grid_data_coef.addWidget(QLabel("(eV)"), 1, 2)
-                grid_data_coef.addWidget(QLineEditWidthed(coef2kJmol, self.editable), 1, 3)
-                grid_data_coef.addWidget(QLabel("(kJ/mol)"), 1, 4)
+            if name == "D" or name == "S" or name == "Kr":
+                fillVboxWithAnything(equations_container, name, coef1, coef2)
+                list_equation_already_written.append(name)
             else:
                 print("WARNING : I cant't show the equation named", name, "because it is not in ['D', 'S', 'Kr'].")
-            equation_container.setLayout(grid_data_coef)
-            equations_container.layout.addWidget(equation_container)
+
+        if self.editable:
+            for name in ("D", "S", "Kr"):
+                if name not in list_equation_already_written:
+                    print("WARNING:", name, "not found in the JSON")  # todo: handle this
+                    fillVboxWithAnything(equations_container, name, "None", "None")
+
         return equations_container
 
 
