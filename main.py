@@ -29,8 +29,16 @@ def create_database():
             "[density] number,"
             "[net] text,"
             "[atomic_number] INTEGER,"
-            "[melting_point] number)"
+            "[melting_point] number,"
+            "[difusion_coefficient] number,"
+            "[noccupied_site] number,"
+            "[diffusion_energy], number,"
+            "[traps_energy] number,"
+            "[frequence_attaque] number,"  # todo: traduire
+            "[distance_interdtitielle] number"  # todo: traduire
+            ")"
         )
+        db.commit()
         cursor.execute(
             "INSERT INTO MATERIAL"
             "(id, name, lattice_parameter, density, net, atomic_number, melting_point)"
@@ -84,13 +92,13 @@ def create_database():
         db.close()
 
 # todo:
-# "resserrer" les champs du premier onglet
-# voir lors de la non selection d'une equation: faut-il ajouter un squelette vide dans la partie ecriture? -> OUI
-# faire un paquet debian
 # troisiemen partie
 # lire le matlab founi par le client
+
+# optionel:
+# faire un paquet debian
+# "resserrer" les champs du premier onglet
 # ecrire l'aide
-# ajouter des boutons pour charger des données depuis la base, au lieu de taper le nom
 def main():
     dataFunctions.create_json_example()
     create_database()
