@@ -1,0 +1,8 @@
+This file is meant to explained some of Python's syntax. It is not a Python course, but shoulb be sufficient to understand this program if you have already used another Object Oriented language (Java, c++, ...).
+
+
+if variable:
+
+It is roughly equivalent to:
+"if variable is not None or variable != [] or variable != "" or variable != 0"
+In other word, "if variable contains informations".
