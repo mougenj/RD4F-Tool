@@ -263,7 +263,7 @@ class ReadingPart(QWidget):
             for equation in onglet:
                 if equation[0] == name:
                     try:
-                        y_values = equation[1][1] * np.exp(equation[2][1]/(k_b * les_temperatures))
+                        y_values = equation[1][1] * np.exp(-equation[2][1]/(k_b * les_temperatures))
                         legend = source["author_name"] + " - " + str(source["year"])
                         data = les_temperatures, y_values
                         self.pltwindows[0].plot(data, legend, ylog=True, x_label="Temperature (K)", y_label="" + " (logscale)", xlim=xlim, xlimmax=(value_x_max, value_x_max))
