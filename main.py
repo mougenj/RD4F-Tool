@@ -2,11 +2,12 @@ import os
 import random as rd
 import sqlite3
 import sys
+from PyQt5.QtWidgets import QApplication
+import signal
 
-# the two import below is just an evil way to frorce cx_freeze to include these parts in the exe. Should br done in the setup.py, but I'm not sure how to do it.
+# the two import below is just an evil way to force cx_freeze to include these parts in the exe. Should be done in the setup.py, but I'm not sure how to do it.
 import numpy.core._methods
 import numpy.lib.format
-from PyQt5.QtWidgets import QApplication
 
 import App
 import dataFunctions
@@ -92,14 +93,15 @@ def create_database():
         db.close()
 
 # todo:
-# troisiemen partie
+# troisieme partie
 # lire le matlab founi par le client
 
 # optionel:
 # faire un paquet debian
 # "resserrer" les champs du premier onglet
-# ecrire l'aide
+# ecrire l'aide (ecriture)
 def main():
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
     dataFunctions.create_json_example()
     create_database()
     # print("création de l'interface")
