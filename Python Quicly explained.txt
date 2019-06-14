@@ -6,3 +6,33 @@ if variable:
 It is roughly equivalent to:
 "if variable is not None or variable != [] or variable != "" or variable != 0"
 In other word, "if variable contains informations".
+
+
+try:
+    instructions1
+except nameOfException as name:
+    instructions2
+
+Execute the block instructions1. If ther is a problem, and if this problem is
+named nameOfException, it will not stop the program (as it is supposed to do,
+but it will execute the instructions2 instead.)
+Exemple:
+```
+>>> 1/0
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+ZeroDivisionError: division by zero
+```
+The program will stop. But with:
+```
+>>> try:
+     1/0
+except ZeroDivisionError as error:
+    print("I will continue to work even after a", error)
+```
+The program will print:
+```
+I will continue to work even after a division by zero
+```
+
+This is usefull if one is not sure about what can happen during the execution of the program.
