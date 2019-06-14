@@ -4,3 +4,4 @@ dist/
 *.sqlite
 *.txt
 *.spec
+!Python Quicly explained.txt
