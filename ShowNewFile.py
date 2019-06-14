@@ -11,8 +11,14 @@ import makeWidget
 
 
 class ShowNewFile(QWidget):
-
+    """
+        A QWidget that display a new file. Can be editable or not.
+        Contains tabs, that split the informations in the JSON into parts.
+    """
     def __init__(self, parameters, color, editable=False):
+        """
+            Init the ShowNewFile.
+        """
         super().__init__()
         self.editable = editable
         """
@@ -21,6 +27,11 @@ class ShowNewFile(QWidget):
             time we remove a QTreeWidgetItem, the index of the QTreeWidgetItem
             below it will be reindexed. So, we need to remember how many
             QTreeWidgetItem were deleted to calculate the old index.
+            This is done throught a list. Each time we add a node, we add its
+            id to the list. This way, when we delete the node, we search the
+            position of its id in the list, and we delete the node at this
+            position.
+            The same process is used later for the node of other nodes.
         """
         self.nb_created = 0
         self.correspondence_index_position = []
@@ -28,6 +39,7 @@ class ShowNewFile(QWidget):
         self.setMinimumSize(690, 500)
         tabs = QTabWidget()
         tabs.setFocusPolicy(Qt.NoFocus)  # prevent the "horrible orange box effect" on Ubuntu
+        # set the style
         tabs.setStyleSheet(tabs.styleSheet() + """
         QTabBar::tab:!selected {
             color: rgb(242, 241, 240);
@@ -39,14 +51,13 @@ class ShowNewFile(QWidget):
         }
         """)
 
-        #change color
+        # change the background color
         p = self.palette()
         red, green, blue, alpha = color
         p.setColor(self.backgroundRole(), QColor(red, green, blue, alpha))
         self.setPalette(p)
-        
-        
 
+        # get the equation from the file
         list_data_equation = []
         for equation_type in parameters["equation"]:
             coefs_type = parameters["equation"][equation_type]
@@ -59,7 +70,12 @@ class ShowNewFile(QWidget):
             sorted_coefficients.append((first_coef_type, parameters["equation"][equation_type][first_coef_type]))
             sorted_coefficients.append((second_coef_type, parameters["equation"][equation_type][second_coef_type]))
             list_data_equation.append(sorted_coefficients)
+        self.list_data_equation = list_data_equation
+        # create a tab based on this informations
+        tabs.addTab(makeWidget.make_scroll(self.make_vbox_from_data_equation(list_data_equation)), "Coefficients values")
 
+        """
+        # display a nice name for the area
         adatome_name = parameters["material"]["adatome"]
         adatome_name = str(adatome_name) if adatome_name is not None else "None"
         material_name = parameters["material"]["name"]
@@ -68,8 +84,7 @@ class ShowNewFile(QWidget):
         myFont=QFont()
         myFont.setBold(True)
         name_of_area.setFont(myFont)
-        
-        tabs.addTab(makeWidget.make_scroll(self.make_vbox_from_data_equation(list_data_equation)), "Coefficients values")
+        """
 
         material_container = makeWidget.make_vbox()
         material_container.setObjectName("material")
@@ -241,17 +256,21 @@ class ShowNewFile(QWidget):
             bt_add_new_trap.clicked.connect(partial(self.create_subtree_for_a_trap, tree, empy_trap))
         tabs.addTab(vbox, "Traps")
         
-        self.list_data_equation = list_data_equation
         layout = QVBoxLayout()  # contient les tabs
         layout.addWidget(tabs)
         self.setLayout(layout)
         self.tabs = tabs
-        # tabs.setCurrentIndex(3)
     
     def create_subtree_for_a_trap(self, tree, trap):
+        """
+            Creat a node that disply onformations about a trap. Can have
+            subnodes that diplay infos about some energy of this trap.
+        """
+        # add it to the list, so it can be deleted later
         self.correspondence_index_position.append(self.nb_created)
         tree_item_for_this_trap = QTreeWidgetItem(tree)
 
+        # get informations from the JSON file
         if trap["density"]:
             density = "{:.2e}".format(float(trap["density"]))
         else:
@@ -266,18 +285,20 @@ class ShowNewFile(QWidget):
         angular_frequency_line = QLineEditWidthed(angular_frequency, self.editable)
         tree.setItemWidget(tree_item_for_this_trap, 1, angular_frequency_line)
 
+        # creat a list that store the ids of its subnodes. see a comment in
+        # ShowNewFile.__init() to see how it works.
         tree_item_for_this_trap.correspondence_index_position_energy = []
         tree_item_for_this_trap.nb_energy_created = 0
         
         if self.editable:
-            # lets create a button that remove a trap
+            # lets create a button that remove this trap
             remove_bt = QPushButton()
             remove_bt.setIcon(QIcon("ressources/trash-alt-solid.svg"))
             remove_bt.setMaximumSize(50, 50)
             remove_bt.clicked.connect(partial(self.on_click_remove_bt_trap, tree, self.nb_created))
             # add the button to the tree
             tree.setItemWidget(tree_item_for_this_trap, 2, remove_bt)
-            # lets create a button that add energy to trap
+            # lets create a button that add energy to this trap
             add_energy_bt = QPushButton()
             add_energy_bt.setIcon(QIcon("ressources/plus-circle-solid.svg"))
             add_energy_bt.setMaximumSize(50, 50)
@@ -291,15 +312,26 @@ class ShowNewFile(QWidget):
         return tree_item_for_this_trap
 
     def on_click_remove_bt_trap(self, tree, initial_index):
+        """
+            Remove the trap with the id initial_index.
+        """
+        # get the index
         index_to_delete = self.correspondence_index_position.index(initial_index)
+        # remove it from the list, so that the other id will be reindexed
         self.correspondence_index_position.pop(index_to_delete)
+        # remove the node
         tree.takeTopLevelItem(index_to_delete)
     
     def addEnergyToATrap(self, tree, trap_tree, value=""):
+        """
+            Add a subnode to this node that can be filled by the user to
+            display informations about energy of this trp.
+        """
         energy_trap = QTreeWidgetItem(trap_tree)
         tree.setItemWidget(energy_trap, 0, QLineEditWidthed("{:.2e}".format(float(value)), self.editable))
 
         if self.editable:
+            # create a button that remove this subnode
             remove_energy_bt = QPushButton("delete energy")
             remove_energy_bt.setIcon(QIcon("ressources/trash-alt-solid.svg"))
             # remove_energy_bt.setMinimumSize(120, 0);
@@ -311,19 +343,29 @@ class ShowNewFile(QWidget):
         trap_tree.correspondence_index_position_energy.append(trap_tree.nb_energy_created)
         trap_tree.nb_energy_created += 1
         
-
     def on_click_remove_energy_bt(self, trap_tree, initial_index):
+        """
+            Remove a subnode (that display energy info) from a node
+            (that display trap info).
+        """
         index_to_delete = trap_tree.correspondence_index_position_energy.index(initial_index)
         trap_tree.correspondence_index_position_energy.pop(index_to_delete)
         trap_tree.removeChild(trap_tree.child(index_to_delete))
 
-
     def make_vbox_from_data_equation(self, list_data_equation):
+        """
+            Display equation in a widget.
+        """
         equations_container = makeWidget.make_vbox()
         equations_container.setObjectName("equation")
         list_equation_already_written = []
 
         def fillVboxWithAnything(equations_container, name, coef1, coef2):
+            """
+                Create a QGroupBox, fill it with the informations contained in
+                'name', 'coef1' and 'coef2'.
+                Then, add this widget to equations_container.
+            """
             equation_container = QGroupBox()
             unit1 = "(m²/s)"
             unit2 = ("(eV)", "(kJ/mol)")
@@ -370,11 +412,15 @@ class ShowNewFile(QWidget):
                 list_equation_already_written.append(name)
             else:
                 print("WARNING : I cant't show the equation named", name, "because it is not in ['D', 'S', 'Kr'].")
-
+        # if this ShowNewFile is editable and if some informations is lacking,
+        # we must display an empty section so that the user will be able to
+        # fill it anyway
+        # (if we don't, the section will be missing and the user won't be able
+        # to add the lacking infos)
         if self.editable:
             for name in ("D", "S", "Kr"):
                 if name not in list_equation_already_written:
-                    print("WARNING:", name, "not found in the JSON")  # todo: handle this
+                    print("WARNING:", name, "not found in the JSON. I'll add it myself.")
                     fillVboxWithAnything(equations_container, name, "None", "None")
 
         return equations_container

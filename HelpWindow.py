@@ -1,20 +1,8 @@
-# todo: remove them
-from PyQt5.QtWidgets import (QWidget,
-                             QVBoxLayout, 
-                             QTabWidget,
-                             QDesktopWidget,
+from PyQt5.QtWidgets import (QDesktopWidget,
                              QMainWindow,
-                             QAction,
-                             QMenuBar,
-                             QDialog,
-                             QMessageBox,
                              QLabel
                             )
-from PyQt5.QtGui import QIcon, QColor, QPalette, QBrush
-import matplotlib.pyplot as plt
-from FirstTab import FirstTab
-from SecondTab import SecondTab
-from ThirdTab import ThirdTab
+from PyQt5.QtGui import QIcon, QColor
 import os
 from PyQt5.QtCore import Qt
 import makeWidget

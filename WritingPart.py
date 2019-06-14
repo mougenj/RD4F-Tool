@@ -43,7 +43,7 @@ class BDDNonTrouvee(Exception):
         super().__init__()
 
 
-class SecondTab(QWidget):
+class WritingPart(QWidget):
 
     def __init__(self):
         super().__init__()
@@ -112,9 +112,6 @@ class SecondTab(QWidget):
             return children
 
         for tab_data_container in searchForChild(tabs_to_save, ["traps", "material", "source", "equation"]):
-            # if len(tab_data_container) != 1:  # todo: re-add this warning, as it is useful
-            #     print("WARNING :", len(tab_data_container), "widget are named", filtre, "in a tab.")
-            
             if tab_data_container.objectName() == "equation":
                 vbox = tab_data_container
                 groupboxes = vbox.findChildren(QGroupBox)

@@ -2,6 +2,9 @@ import json
 
 
 def create_json_example():
+    """
+        Create a fake JSON file, usefull for test.
+    """
     parameters = {}
     material = {
         "name" : "Carbone",
@@ -49,6 +52,10 @@ def create_json_example():
         fichier.write(chaine)
 
 def create_empty_data():
+    """
+        Create an empty JSON file, usefull for creating a partial JSON file, as
+        every key is already in this file.
+    """
     parameters = {}
     material = {
         "name" : None,

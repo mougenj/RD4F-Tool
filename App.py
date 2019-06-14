@@ -1,18 +1,9 @@
-from PyQt5.QtWidgets import (QWidget,
-                             QVBoxLayout, 
-                             QTabWidget,
-                             QDesktopWidget,
+from PyQt5.QtWidgets import (QDesktopWidget,
                              QMainWindow,
                              QAction,
-                             QMenuBar,
-                             QDialog,
-                             QMessageBox
+                             QMenuBar
                             )
-from PyQt5.QtGui import QIcon, QColor, QPalette, QBrush
-import matplotlib.pyplot as plt
-from FirstTab import FirstTab
-from SecondTab import SecondTab
-from ThirdTab import ThirdTab
+from PyQt5.QtGui import QIcon, QColor
 import os
 from PyQt5.QtCore import Qt
 from HelpWindow import HelpWindow
@@ -21,8 +12,19 @@ from AboutWindow import AboutWindow
 
 
 class App(QMainWindow):
-
+    """
+        Main class of the application.
+        It display a MainWidget, wich contains infos on data included in a
+        JSON file. To get more informations about this MainWidget, please read
+        the documentation of the class MainWidget in the file MainWidget.py.
+        It also display a menu (which can be used to show a Help window and a
+        window about the author of this program).
+    """
     def __init__(self):
+        """
+            Init the App by setting its title, its icon, its background color
+            and creating its menu and a MainWidget.
+        """
         super().__init__()
         self.title = 'RDRP Database Tools'
         self.left = 10
@@ -104,6 +106,9 @@ class App(QMainWindow):
         self.show()
 
     def center(self):
+        """
+            Center the window in the middle of the screen.
+        """
         # see answer of BPL on https://stackoverflow.com/questions/39046059/pyqt-location-of-the-window
         ag = QDesktopWidget().availableGeometry()
         sg = QDesktopWidget().screenGeometry()
@@ -113,9 +118,16 @@ class App(QMainWindow):
         self.move(maxX/2, maxY/2)
 
     def openHelp(self):
+        """
+            Open the Help window.
+        """
         dialog = HelpWindow(self)
         dialog.show()
     
     def openAbout(self):
+        """
+            Open a window that display informations about the author of this
+            application.
+        """
         dialog = AboutWindow(self)
         dialog.show()

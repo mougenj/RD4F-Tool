@@ -1,4 +1,3 @@
-import DragAndDrop
 from PyQt5.QtCore import pyqtSlot, Qt
 from PyQt5.QtWidgets import (QWidget,
                              QPushButton,
@@ -6,33 +5,34 @@ from PyQt5.QtWidgets import (QWidget,
                              QHBoxLayout,
                              QVBoxLayout, 
                              QTabWidget,
-                             QScrollArea,
-                             QGridLayout,
-                             QScroller,
-                             QTabBar,
                              QFileDialog,
-                             QMessageBox,
-                             QLineEdit,
-                             QGroupBox,
-                             QSizePolicy
+                             QMessageBox
                             )
-from PyQt5.QtGui import QPixmap, QFontMetrics, QPalette
+from PyQt5.QtGui import QPixmap, QPalette
 import json
 import numpy as np
 from functools import partial
 import time
-from QLineEditWidthed import QLineEditWidthed
-from ShowNewFile import ShowNewFile
+# matplotlib stufffs
 import matplotlib.pyplot as plt
-
-
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
-import sys
-import random as rd
+# my classes
+import DragAndDrop
+from ShowNewFile import ShowNewFile
+
 
 class PltWindow(QWidget):
+    """
+        This widget act as a Canva for drawing Matplotlib figures in a PyQt5
+        window.
+    """
     def __init__(self):
+        """
+            Init the PltWindow. Create the figure, the Canva and plot an empty
+            graph inside the Canva using the figure. Add the toolbar from
+            matplotlib on the top of it.
+        """
         super().__init__()
         self.figure = plt.figure()
         self.canvas = FigureCanvas(self.figure)
@@ -45,6 +45,18 @@ class PltWindow(QWidget):
         self.plot()
 
     def plot(self, data=None, name="", xlog = False, ylog = False, x_label="", y_label="", xlim="", xlimmax=""):
+        """
+            Plot the graph given the parameters.
+            If data is None, plot an empty graph.
+            If xlog is True, the x axis xill be logscale.
+            The same goes for ylog.
+            x_label and y_label designate the name of the axis.
+            
+            The folloxing arguements does not have any effect, but were let
+            here to facilitate their implementation in case of need.
+            xlim: position of a vertical line of equation x=xlim. Should be used to indicate the minimum limit of a graph. 
+            xlimmax: position of a vertical line of equation x=xlimmax. Should be used to indicate the maximum limit of a graph. 
+        """
         if data is None:
             data = []
             self.figure.clear()
@@ -74,11 +86,23 @@ class PltWindow(QWidget):
 
 
 
-class FirstTab(QWidget):
+class ReadingPart(QWidget):
+    """
+        The first tab of this app (ie: the reading part).
+        It contains three main parts:
+         - Some tabs, in which the user can read informations about a file
+           (a file per tab)
+         - Three button, used for plotting the graph
+         - A graph, which is in a Canva, which is in a PltWindow (see this
+           class for more inforamtions)
+    """
 
     def __init__(self):
+        """
+            Init the ReadingPart.Create the UI (the three part) and init the
+            validity range.
+        """
         super().__init__()
-        #todo: use lists
 
         self.layout = QHBoxLayout()
         self.setLayout(self.layout)
@@ -165,6 +189,11 @@ class FirstTab(QWidget):
         self.layout.addWidget(tab_right)
     
     def majValidityRange(self):
+        """
+            Update the validity range. Should be called each time a new file is
+            opened or close. Can also be called to get the maximal validity
+            range (which is the minimal of all the fusion temperatures).
+        """
         if self.end_validity_ranges:
             mini = min(self.end_validity_ranges)
             self.validity_range = self.template_validity_range.format(mini)
@@ -179,6 +208,10 @@ class FirstTab(QWidget):
         return make_vbox()
 
     def make_pixmap(self, picture_name, label_name):
+        """
+            Create a QLabel with the name picture_name, containing a QPixmap
+            made from the image picture_name. 
+        """
         label = QLabel()
         label.setObjectName(label_name)
         pixmap = QPixmap(picture_name)
@@ -186,8 +219,12 @@ class FirstTab(QWidget):
         return label
 
     def open_new_file(self, tab, name, parameters):
+        """
+            Create a new tab that shows informations about a file. Extract and
+            add those informations to a list, so that they can be re-used later
+            (for plotting, for instance).
+        """
         decoupe = lambda chaine : "..." + chaine[-10:] if len(chaine) > 10 else chaine
-        #get background color
         snf = ShowNewFile(parameters, self.background)
         tab.setCurrentIndex(tab.addTab(snf, decoupe(name)))
         self.data_onglets.append(snf.list_data_equation)
@@ -199,27 +236,39 @@ class FirstTab(QWidget):
 
     @pyqtSlot()
     def on_click_tracer(self, name):
-        start = time.time()  # 4*2 onglets utiles + 1 inutile : Temps: 4.524548768997192 (1.1296305656433105 en mutualisant les ecritures)
+        """
+            Plot every graph on every tab : for every equation from
+            every file, plot it if the equation name is equal to the parameter
+            'name'. The name can be 'D' (for diffusion), 'S' (for solubility)
+            or 'Kr' (for combination).
+        """
+        start = time.time()
         print('Tracons la courbe des lignes ' + name)
-        # effaçons les graphes pécédents
+
+        # clean graphs
         for indice_figure in range(len(self.pltwindows)):
             self.pltwindows[indice_figure].clear()
+        
+        # temperature
         debut, fin, pas = 300, 2500, 0.1
         les_temperatures = np.arange(debut, fin, pas)
+
+        # Boltzmann constant
         k_b = 1.38064852 * 10**(-23) * 8.617e+18
 
         value_x_max = self.majValidityRange()
         xlim=300
+
         for onglet, source in zip(self.data_onglets, self.data_sources):
             for equation in onglet:
                 if equation[0] == name:
                     try:
-                        les_d = equation[1][1] * np.exp(equation[2][1]/(k_b * les_temperatures))
+                        y_values = equation[1][1] * np.exp(equation[2][1]/(k_b * les_temperatures))
                         legend = source["author_name"] + " - " + str(source["year"])
-                        data = les_temperatures, les_d
+                        data = les_temperatures, y_values
                         self.pltwindows[0].plot(data, legend, ylog=True, x_label="Temperature (K)", y_label="" + " (logscale)", xlim=xlim, xlimmax=(value_x_max, value_x_max))
 
-                        data = 1 / les_temperatures, les_d
+                        data = 1 / les_temperatures, y_values
                         if xlim != 0:
                             xlim_divided = 1 / xlim
                         else:
@@ -232,20 +281,25 @@ class FirstTab(QWidget):
 
                         self.pltwindows[1].plot(data, legend, ylog=True, x_label="1/Temperature ($K^{-1}$)", y_label="" + " (logscale)", xlim=xlim_divided, xlimmax=(value_x_max_divided, value_x_max))
 
-                        data = les_temperatures, les_d
+                        data = les_temperatures, y_values
                         self.pltwindows[2].plot(data, legend, x_label="Temperature (K)", y_label="", xlim=xlim, xlimmax=(value_x_max, value_x_max))
 
-                        data = les_temperatures, les_d
+                        data = les_temperatures, y_values
                         self.pltwindows[3].plot(data, legend, xlog=True, ylog=True, x_label="Temperature (K)" + " (logscale)",y_label=""  + " (logscale)", xlim=xlim, xlimmax=(value_x_max, value_x_max))
-                        # since the curves was plot, we nedd to not plot the xilm and the xlimmax anymore
+                        # since the curves was plot, we need to stop plotting
+                        # the xilm and the xlimmax
                         xlim, value_x_max = 0, 0
-                    except TypeError:  # un None s'est glissé dans les données
-                        print("Impossible de tracer toutes les courbes", name)
+                    except TypeError:  # there is a None in the data
+                        print("I cant't draw", name)
 
-        print("Temps de tracé: " + str(time.time() - start))
+        print("Time taken to plot " + str(time.time() - start))
 
     @pyqtSlot()
     def on_click_open_files(self, tab_to_add):
+        """
+            Open a dialog which let the user choose some files that he can open
+            in the app.
+        """
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
         files, _ = QFileDialog.getOpenFileNames(self, "QFileDialog.getOpenFileNames()", "","All Files (*);;Python Files (*.py)", options=options)

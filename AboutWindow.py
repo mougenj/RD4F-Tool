@@ -1,27 +1,20 @@
-# todo: remove them
 from PyQt5.QtWidgets import (QWidget,
-                             QVBoxLayout, 
-                             QTabWidget,
                              QDesktopWidget,
                              QMainWindow,
-                             QAction,
-                             QMenuBar,
-                             QDialog,
-                             QMessageBox,
                              QHBoxLayout,
                              QLabel
                             )
-from PyQt5.QtGui import QIcon, QColor, QPalette, QBrush, QPixmap, QFont, QDesktopServices
+from PyQt5.QtGui import QIcon, QColor, QPixmap 
 import matplotlib.pyplot as plt
-from FirstTab import FirstTab
-from SecondTab import SecondTab
-from ThirdTab import ThirdTab
 import os
 from PyQt5.QtCore import Qt
-
+import makeWidget
 
 
 class AboutWindow(QMainWindow):
+    """
+        A window designed to contain informations about the application.
+    """
     def __init__(self, parent=None):
         super(AboutWindow, self).__init__(parent)
         self.title = 'RDRP Database Tools - About'
@@ -37,6 +30,9 @@ class AboutWindow(QMainWindow):
         self.initUI()
 
     def center(self):
+        """
+            Center the window in the middle of the screen.
+        """
         # see answer of BPL on https://stackoverflow.com/questions/39046059/pyqt-location-of-the-window
         ag = QDesktopWidget().availableGeometry()
         sg = QDesktopWidget().screenGeometry()
@@ -46,6 +42,10 @@ class AboutWindow(QMainWindow):
         self.move(maxX/2, maxY/2)
 
     def make_pixmap(self, picture_name):
+        """
+            Create a QLabel with the name picture_name, containing a QPixmap
+            made from the image picture_name. 
+        """
         label = QLabel()
         label.setObjectName(picture_name)
         pixmap = QPixmap(picture_name)
@@ -53,6 +53,9 @@ class AboutWindow(QMainWindow):
         return label
 
     def initUI(self):
+        """
+            Create the GUI of the window.
+        """
         central_widget = QWidget()
 
         central_widget.layout = QHBoxLayout()
@@ -60,7 +63,7 @@ class AboutWindow(QMainWindow):
         logo = self.make_pixmap("ressources/lspm-trasparent.png")
         central_widget.layout.addWidget(logo)
 
-        text_area = make_vbox()
+        text_area = makeWidget.make_vbox()
         # todo: demander une confirmation de la traduction
         description = """
         <html>
@@ -80,16 +83,5 @@ class AboutWindow(QMainWindow):
         central_widget.setPalette(p)
         self.setCentralWidget(central_widget)
 
-def make_vbox():
-    vbox = QWidget()
-    vbox.layout = QVBoxLayout()
-    vbox.setLayout(vbox.layout)
-    return vbox
 
-
-def make_hbox():
-    hbox = QWidget()
-    hbox.layout = QHBoxLayout()
-    hbox.setLayout(hbox.layout)
-    return hbox
 
