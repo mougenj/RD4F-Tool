@@ -366,6 +366,7 @@ class ShowNewFile(QWidget):
                 'name', 'coef1' and 'coef2'.
                 Then, add this widget to equations_container.
             """
+            coef2kJmol = "None" if coef2 == "None" else "{:.2e}".format(float(coef2)/0.0104)
             equation_container = QGroupBox()
             unit1 = "(m²/s)"
             unit2 = ("(eV)", "(kJ/mol)")
@@ -405,7 +406,6 @@ class ShowNewFile(QWidget):
         for name, c1, c2 in list_data_equation:
             coef1 = "None" if c1[1] is None else "{:.2e}".format(float(c1[1]))
             coef2 = "None" if c2[1] is None else "{:.2e}".format(float(c2[1]))
-            coef2kJmol = "None" if c2[1] is None else "{:.2e}".format(float(c2[1]/0.0104))
             equation_container = QGroupBox()
             if name == "D" or name == "S" or name == "Kr":
                 fillVboxWithAnything(equations_container, name, coef1, coef2)
