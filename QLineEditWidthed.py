@@ -26,7 +26,6 @@ class QLineEditWidthed(QLineEdit):
             if self.other.editable:
                 number = float(self.text()) * self.coef
                 self.other.setText("{:.2e}".format(number))
-                print("edited")
         except Exception as e:
             self.other.setText("")
 
@@ -34,7 +33,3 @@ class QLineEditWidthed(QLineEdit):
         self.other = other
         self.coef = coef
         self.editingFinished.connect(self.autoUpdate)
-
-        
-def sayCoucou():
-    print("coucou (edition terminee)")
