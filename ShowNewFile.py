@@ -427,10 +427,22 @@ class ShowNewFile(QWidget):
                 checkbox.setChecked(True)
                 grid_data_coef.addWidget(checkbox, 1, 4)
             grid_data_coef.addWidget(QLabel(coef2_name), 2, 0)
-            grid_data_coef.addWidget(QLineEditWidthed(coef2, self.editable), 2, 1)
+
+            # eV
+            coef2_line = QLineEditWidthed(coef2, self.editable)
+            grid_data_coef.addWidget(coef2_line, 2, 1)
             grid_data_coef.addWidget(QLabel(unit2[0]), 2, 2)
-            grid_data_coef.addWidget(QLineEditWidthed(coef2kJmol, self.editable), 2, 3)
+
+            # kJ/mol
+            coef2kJmol_line = QLineEditWidthed(coef2kJmol, self.editable)
+            grid_data_coef.addWidget(coef2kJmol_line, 2, 3)
             grid_data_coef.addWidget(QLabel(unit2[1]), 2, 4)
+
+            # automatic update
+            coef2_line.setAutoUpdate(coef2kJmol_line, 1/0.0104)
+            coef2kJmol_line.setAutoUpdate(coef2_line, 0.0104)
+
+
             equation_container.setLayout(grid_data_coef)
             equations_container.layout.addWidget(equation_container)
 
