@@ -120,13 +120,25 @@ class ShowNewFile(QWidget):
                 print("There is no key named", key, "in the file loaded, thus it is not possible to diplay this information.")
         
         material_counter = 0
-        for key in ("lattice_parameter", "atomic_number", "density", "atomic_symbol", "melting_point", "name", "net"):
+        keys = ("lattice_parameter", "atomic_number", "density", "atomic_symbol", "melting_point", "name", "net")
+        units = ("m", "", "at/m³", "", "K", "", "")
+        for key, unit in zip(keys, units):
             try:
                 value = parameters["material"][key]
                 value = str(value)
-                line = QLineEditWidthed(value, editable)
+                line = QLineEditWidthed(value, editable, "      ")
+
                 grid_material.addWidget(QLabel(key), material_counter, 0)
-                grid_material.addWidget(line, material_counter, 1);
+                grid_material.addWidget(QLabel("     "), material_counter, 1)  # todo: find a better way to align Qlabels inside the grid
+                grid_material.addWidget(line, material_counter, 2)
+
+                if unit:
+                    grid_material.addWidget(QLabel("("+unit+")"), material_counter, 3)
+                    if key == "density":
+                        eq_density = makeWidget.make_pixmap("ressources/latex_equation_density_resized.png")
+                        grid_material.addWidget(eq_density, material_counter, 4)
+                    else:
+                        grid_material.addWidget(QLabel(""), material_counter, 4)
                 material_counter += 1
             except KeyError:
                 print("There is no key named", key, "in the file loaded, thus it is not possible to diplay this information.")
@@ -147,7 +159,7 @@ class ShowNewFile(QWidget):
             value = "None"
         elif type(value) is not str:
             value = "{:.2e}".format(float(value))
-        gridSource.layout.addWidget(QLineEditWidthed(value, editable), i, 1)
+        gridSource.layout.addWidget(QLineEditWidthed(value, editable, "-------------------------------"), i, 1)
         i += 1
         # DOI
         prop = "doi"
@@ -163,6 +175,12 @@ class ShowNewFile(QWidget):
                     pass
 
                 def deadline(timeout, *args):
+                    """
+                        "decorator of a decorator" that allow the decorator
+                        to accept an argument. If the decorated function didn't
+                        finish before 'timeout' seconds, then a
+                        TimeoutException is raised.
+                    """
                     def decorate(f):
                         """ the decorator creation """
                         def handler(signum, frame):
@@ -180,27 +198,36 @@ class ShowNewFile(QWidget):
                     
                         new_f.__name__ = f.__name__
                         return new_f
-                @deadline(1)
+                    return decorate
+
+                @deadline(3)
                 def request_doi_api():
                     works = Works()
-                    value = works.doi(parameters["source"][prop])["link"][0]["URL"]
-                    to_insert = QLabel("<html><a href=\"" + value + "\">" + value + "</a></html>")
+                    address = parameters["source"][prop]
+                    data = works.doi(address)
+                    print(data)
+                    if data:
+                        value = data["URL"]
+                        to_insert = QLabel("<html><a href=\"" + value + "\">" + value + "</a></html>")
+                    else:
+                        to_insert = None
                     return to_insert
                 
                 try:
                     to_insert = request_doi_api()
+                    if to_insert:
+                        doi_api_success = True
                 except TimeoutException:
-                    pass
-                doi_api_success = True
-            except:
-                pass
+                    print("failed")
+            except Exception as e:
+                print(e)
         if not doi_api_success:
             value = parameters["source"][prop]
             if value is None:
                 value = "None"
             elif type(value) is not str:
                 value = "{:.2e}".format(float(value))
-            to_insert = QLineEditWidthed(value, editable)
+            to_insert = QLineEditWidthed(value, editable, "https://doi.org/10.1016/j.nme.2018.11.020-------------")
         gridSource.layout.addWidget(to_insert, i, 1)
         i += 1
         # YEAR
@@ -211,7 +238,7 @@ class ShowNewFile(QWidget):
             value = "None"
         elif type(value) is not str:
             value = str(int(value))
-        gridSource.layout.addWidget(QLineEditWidthed(value, editable), i, 1)
+        gridSource.layout.addWidget(QLineEditWidthed(value, editable, "------"), i, 1)
         i += 1
 
         tabs.addTab(makeWidget.make_scroll(gridSource), "Source")
@@ -371,35 +398,39 @@ class ShowNewFile(QWidget):
             unit1 = "(m²/s)"
             unit2 = ("(eV)", "(kJ/mol)")
             if name == "D":
-                title = "For interstitial diffusivity D = D_0 * exp(-E_D/(Kb*T))"
+                latex_equation = makeWidget.make_pixmap("ressources/latex_equation_diffusivity_resized.png")
+                title = "For interstitial diffusivity"
                 objectName = "diffusivity"
                 coef1_name = "D_0"
                 coef2_name = "E_D"
             elif name == "S":
-                title = "For solubility S = S_0 * exp(-E_S/(Kb*T))"
+                latex_equation = makeWidget.make_pixmap("ressources/latex_equation_solubility_resized.png")
+                title = "For solubility"
                 objectName = "solubility"
                 coef1_name = "S_0"
                 coef2_name = "E_S"
             elif name == "Kr":
-                title = "For combination Kr = Kr_0 * exp(-E_r/(Kb*T))"  # todo: check translation
+                latex_equation = makeWidget.make_pixmap("ressources/latex_equation_combination_resized.png")
+                title = "For combination"  # todo: check translation
                 objectName = "combination"
                 coef1_name = "Kr_0"
                 coef2_name = "E_r"
             equation_container.setTitle(title)
             equation_container.setObjectName(objectName)
             grid_data_coef = QGridLayout()
-            grid_data_coef.addWidget(QLabel(coef1_name), 0, 0)
-            grid_data_coef.addWidget(QLineEditWidthed(coef1, self.editable), 0, 1)
-            grid_data_coef.addWidget(QLabel(unit1), 0, 2)
+            grid_data_coef.addWidget(latex_equation, 0, 0)
+            grid_data_coef.addWidget(QLabel(coef1_name), 1, 0)
+            grid_data_coef.addWidget(QLineEditWidthed(coef1, self.editable), 1, 1)
+            grid_data_coef.addWidget(QLabel(unit1), 1, 2)
             if self.editable:
                 checkbox = QCheckBox("Take it into account")
                 checkbox.setChecked(True)
-                grid_data_coef.addWidget(checkbox, 0, 4)
-            grid_data_coef.addWidget(QLabel(coef2_name), 1, 0)
-            grid_data_coef.addWidget(QLineEditWidthed(coef2, self.editable), 1, 1)
-            grid_data_coef.addWidget(QLabel(unit2[0]), 1, 2)
-            grid_data_coef.addWidget(QLineEditWidthed(coef2kJmol, self.editable), 1, 3)
-            grid_data_coef.addWidget(QLabel(unit2[1]), 1, 4)
+                grid_data_coef.addWidget(checkbox, 1, 4)
+            grid_data_coef.addWidget(QLabel(coef2_name), 2, 0)
+            grid_data_coef.addWidget(QLineEditWidthed(coef2, self.editable), 2, 1)
+            grid_data_coef.addWidget(QLabel(unit2[0]), 2, 2)
+            grid_data_coef.addWidget(QLineEditWidthed(coef2kJmol, self.editable), 2, 3)
+            grid_data_coef.addWidget(QLabel(unit2[1]), 2, 4)
             equation_container.setLayout(grid_data_coef)
             equations_container.layout.addWidget(equation_container)
 

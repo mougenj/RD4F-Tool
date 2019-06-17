@@ -6,26 +6,18 @@ from PyQt5.QtWidgets import (QWidget,
                              QHBoxLayout,
                              QVBoxLayout, 
                              QTabWidget,
-                             QScrollArea,
                              QGridLayout,
-                             QScroller,
-                             QTabBar,
                              QFileDialog,
                              QMessageBox,
-                             QLineEdit,
-                             QGroupBox,
-                             QCompleter,
+                             QGroupBox
                             )
-from PyQt5.QtGui import QPixmap, QFontMetrics, QPalette
+from PyQt5.QtGui import QPalette
 from PyQt5.QtCore import QStringListModel
 from ShowNewFile import ShowNewFile
-from QLineEditWidthed import QLineEditWidthed
 import json
-import numpy as np
 from functools import partial
 import pdb
 import rlcompleter
-import time
 import os
 import sqlite3
 import dataFunctions
@@ -117,11 +109,11 @@ class WritingPart(QWidget):
                 groupboxes = vbox.findChildren(QGroupBox)
                 for groupbox in groupboxes:
                     grid_layout = groupbox.findChild(QGridLayout)
-                    coef1 = grid_layout.itemAtPosition(0, 0).widget().text()
-                    val1 = grid_layout.itemAtPosition(0, 1).widget().text()
-                    coef2 = grid_layout.itemAtPosition(1, 0).widget().text()
-                    val2 = grid_layout.itemAtPosition(1, 1).widget().text()
-                    checkbox = grid_layout.itemAtPosition(0, 4).widget()
+                    coef1 = grid_layout.itemAtPosition(1, 0).widget().text()
+                    val1 = grid_layout.itemAtPosition(1, 1).widget().text()
+                    coef2 = grid_layout.itemAtPosition(2, 0).widget().text()
+                    val2 = grid_layout.itemAtPosition(2, 1).widget().text()
+                    checkbox = grid_layout.itemAtPosition(1, 4).widget()
                     if checkbox.isChecked():
                         if groupbox.objectName() == "diffusivity":
                             equation_type = "D"
@@ -134,7 +126,6 @@ class WritingPart(QWidget):
                         data_to_save["equation"][equation_type] = {}
                         data_to_save["equation"][equation_type][coef1] = val1
                         data_to_save["equation"][equation_type][coef2] = val2
-
             elif tab_data_container.objectName() == "traps":
                 for i in range(tab_data_container.topLevelItemCount()):
                     trap_tree = tab_data_container.topLevelItem(i)
@@ -153,27 +144,20 @@ class WritingPart(QWidget):
                 
             elif tab_data_container.objectName() == "material":
                 vbox = tab_data_container 
-                for groupbox in searchForChild(vbox, ["gb_material", "gb_adatome"]):
-                    # grids = searchForChild(groupbox, ["grid_material", "grid_adatome"])
-
-                    # print("here are the every children")
-                    # everychild = groupbox.findChildren(QWidget)
-                    # for achild in everychild:
-                    #     print(achild, achild.objectName())
-                    # if len(grids) == 0:
-                    #     print("WARNING: I can't find nothing in the groupbox named", groupbox.objectName(), ".")
-                    # if len(grids) > 1:
-                    #     print("WARNING: I found", len(grids), " grid in the groupbox named", groupbox.objectName(), ".")
-                    #     print("I am going to use only one of them.")
-                    # for grid in grids:
-                    #     print(grid.objectName())
-                    # grid = grids[0]
-                    # print(grid)
+                for groupbox in searchForChild(vbox, ["gb_material"]):
                     for row in range(groupbox.layout.rowCount()):
-                        print(groupbox.objectName(), row)
                         label = groupbox.layout.itemAtPosition(row, 0).widget().text()
+                        print(label)
+                        value = groupbox.layout.itemAtPosition(row, 2).widget().text()
+                        data_to_save["material"][label] = value
+                        print(label, value)
+                for groupbox in searchForChild(vbox, ["gb_adatome"]):
+                    for row in range(groupbox.layout.rowCount()):
+                        label = groupbox.layout.itemAtPosition(row, 0).widget().text()
+                        print(label)
                         value = groupbox.layout.itemAtPosition(row, 1).widget().text()
                         data_to_save["material"][label] = value
+                        print(label, value)
                         
             elif tab_data_container.objectName() == "source":
                 grid = tab_data_container
@@ -238,6 +222,7 @@ class WritingPart(QWidget):
             if value == "None" or value == "":
                 value = None
             else:
+                print("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", key, value)
                 value = float(value)
             data["material"][key] = value
         value = data["material"]["atomic_number"]
