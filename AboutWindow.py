@@ -41,17 +41,6 @@ class AboutWindow(QMainWindow):
         maxY = 2 * ag.height() - sg.height() - widget.height()
         self.move(maxX/2, maxY/2)
 
-    def make_pixmap(self, picture_name):
-        """
-            Create a QLabel with the name picture_name, containing a QPixmap
-            made from the image picture_name. 
-        """
-        label = QLabel()
-        label.setObjectName(picture_name)
-        pixmap = QPixmap(picture_name)
-        label.setPixmap(pixmap)
-        return label
-
     def initUI(self):
         """
             Create the GUI of the window.
@@ -60,7 +49,7 @@ class AboutWindow(QMainWindow):
 
         central_widget.layout = QHBoxLayout()
         central_widget.setLayout(central_widget.layout)
-        logo = self.make_pixmap("ressources/lspm-trasparent.png")
+        logo = makeWidget.make_pixmapmake_pixmap("ressources/lspm-trasparent.png")
         central_widget.layout.addWidget(logo)
 
         text_area = makeWidget.make_vbox()
