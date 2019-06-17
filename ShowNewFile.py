@@ -205,7 +205,6 @@ class ShowNewFile(QWidget):
                     works = Works()
                     address = parameters["source"][prop]
                     data = works.doi(address)
-                    print(data)
                     if data:
                         value = data["URL"]
                         to_insert = QLabel("<html><a href=\"" + value + "\">" + value + "</a></html>")
@@ -214,11 +213,11 @@ class ShowNewFile(QWidget):
                     return to_insert
                 
                 try:
-                    to_insert = request_doi_api()
+                    #to_insert = request_doi_api()  # todo: uncomment
                     if to_insert:
                         doi_api_success = True
                 except TimeoutException:
-                    print("failed")
+                    print("time out")
             except Exception as e:
                 print(e)
         if not doi_api_success:
