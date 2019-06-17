@@ -396,7 +396,7 @@ class ShowNewFile(QWidget):
             coef2kJmol = "None" if coef2 == "None" else "{:.2e}".format(float(coef2)/0.0104)
             equation_container = QGroupBox()
             unit1 = "(m²/s)"
-            unit2 = ("(eV)", "(kJ/mol)")
+            unit2 = ("(eV/mol)", "(kJ/mol)")
             if name == "D":
                 latex_equation = makeWidget.make_pixmap("ressources/latex_equation_diffusivity_resized.png")
                 title = "For interstitial diffusivity"
