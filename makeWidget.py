@@ -1,4 +1,5 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QScrollArea, QScroller
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QScrollArea, QScroller, QLabel
+from PyQt5.QtGui import QPixmap 
 
 def make_vbox():
     """
@@ -30,3 +31,14 @@ def make_scroll(scrollAreaWidgetContents):
     scroll_area.setWidget(scrollAreaWidgetContents)
     QScroller.grabGesture(scroll_area.viewport(), QScroller.LeftMouseButtonGesture)
     return scroll_area
+
+def make_pixmap(picture_name):
+    """
+        Create a QLabel with the name picture_name, containing a QPixmap
+        made from the image picture_name. 
+    """
+    label = QLabel()
+    label.setObjectName(picture_name)
+    pixmap = QPixmap(picture_name)
+    label.setPixmap(pixmap)
+    return label
