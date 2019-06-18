@@ -77,7 +77,7 @@ class ShowNewFile(QWidget):
             sorted_coefficients.append((second_coef_type, parameters["equation"][key][second_coef_type]))
             sorted_coefficients.append(("comment", parameters["equation"][key]["comment"]))
             list_data_equation.append(sorted_coefficients)
-            print(list_data_equation)
+
         self.list_data_equation = list_data_equation
         # create a tab based on this informations
         tabs.addTab(makeWidget.make_scroll(self.make_vbox_from_data_equation(list_data_equation)), "Coefficients values")
@@ -319,7 +319,7 @@ class ShowNewFile(QWidget):
         angular_frequency_line = QLineEditWidthed(angular_frequency, self.editable)
         tree.setItemWidget(tree_item_for_this_trap, 1, angular_frequency_line)
 
-        # creat a list that store the ids of its subnodes. see a comment in
+        # create a list that store the ids of its subnodes. see a comment in
         # ShowNewFile.__init() to see how it works.
         tree_item_for_this_trap.correspondence_index_position_energy = []
         tree_item_for_this_trap.nb_energy_created = 0
@@ -464,7 +464,7 @@ class ShowNewFile(QWidget):
         for name, c1, c2, comment in list_data_equation:
             coef1 = "None" if c1[1] is None else "{:.2e}".format(float(c1[1]))
             coef2 = "None" if c2[1] is None else "{:.2e}".format(float(c2[1]))
-            comment_content = comment[0]
+            comment_content = comment[1]
             equation_container = QGroupBox()
             if name == "D" or name == "S" or name == "Kr":
                 fillVboxWithAnything(equations_container, name, coef1, coef2, comment_content)

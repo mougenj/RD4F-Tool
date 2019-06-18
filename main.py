@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import QApplication
 import signal
 
 # the two import below is just an evil way to force cx_freeze to include these parts in the exe. Should be done in the setup.py, but I'm not sure how to do it.
-import numpy.core._methods
+import numpy.core._methods  # todo: check if it is safe to remove them
 import numpy.lib.format
 
 import App
@@ -17,6 +17,7 @@ import dataFunctions
 
 def create_database():
     dbname = 'database.sqlite'
+    # remove the database if it already exists
     if os.path.isfile(dbname):
         os.remove(dbname)
     if not os.path.isfile(dbname):
@@ -85,25 +86,27 @@ def create_database():
 
         cursor.execute("SELECT * FROM MATERIAL")
 
-
+        """
         rows = cursor.fetchall()
         for row in rows:
             print(row)
+        """
 
         db.close()
 
 # todo:
 # troisieme partie
 # lire le matlab founi par le client
-
+# plus d'espace pour ecrire les coefs des equations
 # optionel:
+# afficher le doi même si on a pas de reponse de l'api et l'afficher par la suite
 # faire un paquet debian
 # "resserrer" les champs du premier onglet
 # ecrire l'aide (ecriture)
 def main():
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     dataFunctions.create_json_example()
-    create_database()
+    # create_database()
     # print("création de l'interface")
     app = QApplication(sys.argv)
     #print("lancement de l'interface")

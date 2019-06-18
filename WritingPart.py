@@ -9,7 +9,8 @@ from PyQt5.QtWidgets import (QWidget,
                              QGridLayout,
                              QFileDialog,
                              QMessageBox,
-                             QGroupBox
+                             QGroupBox,
+                             QTextEdit
                             )
 from PyQt5.QtGui import QPalette
 from PyQt5.QtCore import QStringListModel
@@ -115,6 +116,8 @@ class WritingPart(QWidget):
                     coef2 = grid_layout.itemAtPosition(2, 0).widget().text()
                     val2 = grid_layout.itemAtPosition(2, 1).widget().text()
                     checkbox = grid_layout.itemAtPosition(1, 4).widget()
+
+                    comment_content = groupbox.findChild(QTextEdit).toPlainText()
                     if checkbox.isChecked():
                         if groupbox.objectName() == "diffusivity":
                             equation_type = "D"
@@ -127,6 +130,7 @@ class WritingPart(QWidget):
                         data_to_save["equation"][equation_type] = {}
                         data_to_save["equation"][equation_type][coef1] = val1
                         data_to_save["equation"][equation_type][coef2] = val2
+                        data_to_save["equation"][equation_type]["comment"] = comment_content
             elif tab_data_container.objectName() == "traps":
                 for i in range(tab_data_container.topLevelItemCount()):
                     trap_tree = tab_data_container.topLevelItem(i)
@@ -266,7 +270,7 @@ class WritingPart(QWidget):
                 value = data["equation"][key][subkey]
                 if value == "None" or value == "":
                     value = None
-                else:
+                elif subkey != "comment":
                     value = float(value)
                 data["equation"][key][subkey] = value
         
