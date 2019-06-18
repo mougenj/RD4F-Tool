@@ -49,7 +49,7 @@ class AboutWindow(QMainWindow):
 
         central_widget.layout = QHBoxLayout()
         central_widget.setLayout(central_widget.layout)
-        logo = makeWidget.make_pixmapmake_pixmap("ressources/lspm-trasparent.png")
+        logo = makeWidget.make_pixmap("ressources/lspm-trasparent.png")
         central_widget.layout.addWidget(logo)
 
         text_area = makeWidget.make_vbox()
