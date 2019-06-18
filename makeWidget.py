@@ -1,23 +1,29 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QScrollArea, QScroller, QLabel
 from PyQt5.QtGui import QPixmap 
 
-def make_vbox():
+def make_vbox(*args):
     """
         Create a QWidget, set its layout to QVBoxLayout and return it.
     """
     vbox = QWidget()
     vbox.layout = QVBoxLayout()
     vbox.setLayout(vbox.layout)
+    if args:
+        for arg in args:
+            vbox.layout.addWidget(arg)
     return vbox
 
 
-def make_hbox():
+def make_hbox(*args):
     """
         Create a QWidget, set its layout to QHBoxLayout and return it.
     """
     hbox = QWidget()
     hbox.layout = QHBoxLayout()
     hbox.setLayout(hbox.layout)
+    if args:
+        for arg in args:
+            hbox.layout.addWidget(arg)
     return hbox
 
 
