@@ -24,15 +24,18 @@ def create_json_example():
     equations = {
         "D" : {
             "D_0" : 6e-4,
-            "E_D" : 1.04
+            "E_D" : 1.04,
+            "comment" : "blablabla"
         },
         "S" : {
             "S_0" : 1.0,
-            "E_S" : 6545
+            "E_S" : 6545,
+            "comment" : "blablabli"
         },
         "Kr" : {
             "Kr_0" : 1.0,
-            "E_r" : 6545
+            "E_r" : 6545,
+            "comment" : "blablablo"
         }
     }
     traps = [

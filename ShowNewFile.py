@@ -1,6 +1,6 @@
 import DragAndDrop
 from PyQt5.QtCore import pyqtSlot
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QGroupBox, QGridLayout, QLabel, QHBoxLayout, QScrollArea, QScroller, QPushButton, QApplication, QTabWidget, QTreeWidget, QTreeWidgetItem, QHeaderView, QCheckBox
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QGroupBox, QGridLayout, QLabel, QHBoxLayout, QScrollArea, QScroller, QPushButton, QApplication, QTabWidget, QTreeWidget, QTreeWidgetItem, QHeaderView, QCheckBox, QTextEdit
 from QLineEditWidthed import QLineEditWidthed
 from PyQt5.QtGui import QColor, QFont, QIcon
 import pdb
@@ -59,17 +59,25 @@ class ShowNewFile(QWidget):
 
         # get the equation from the file
         list_data_equation = []
-        for equation_type in parameters["equation"]:
-            coefs_type = parameters["equation"][equation_type]
-            l_coef_type = list(coefs_type)
-            first_coef_type = equation_type + "_0"
-            l_coef_type.remove(equation_type + "_0")
-            second_coef_type = l_coef_type[0]
+        for key in parameters["equation"]:
+            if key == "D":
+                first_coef_type = "D_0"
+                second_coef_type = "E_D"
+            elif key == "S":
+                first_coef_type = "S_0"
+                second_coef_type = "E_S"
+            elif key == "Kr":
+                first_coef_type = "Kr_0"
+                second_coef_type = "E_r"
+            
+
             sorted_coefficients = []
-            sorted_coefficients.append(equation_type)
-            sorted_coefficients.append((first_coef_type, parameters["equation"][equation_type][first_coef_type]))
-            sorted_coefficients.append((second_coef_type, parameters["equation"][equation_type][second_coef_type]))
+            sorted_coefficients.append(key)
+            sorted_coefficients.append((first_coef_type, parameters["equation"][key][first_coef_type]))
+            sorted_coefficients.append((second_coef_type, parameters["equation"][key][second_coef_type]))
+            sorted_coefficients.append(("comment", parameters["equation"][key]["comment"]))
             list_data_equation.append(sorted_coefficients)
+            print(list_data_equation)
         self.list_data_equation = list_data_equation
         # create a tab based on this informations
         tabs.addTab(makeWidget.make_scroll(self.make_vbox_from_data_equation(list_data_equation)), "Coefficients values")
@@ -289,7 +297,7 @@ class ShowNewFile(QWidget):
     
     def create_subtree_for_a_trap(self, tree, trap):
         """
-            Creat a node that disply onformations about a trap. Can have
+            Create a node that display informations about a trap. Can have
             subnodes that diplay infos about some energy of this trap.
         """
         # add it to the list, so it can be deleted later
@@ -386,7 +394,7 @@ class ShowNewFile(QWidget):
         equations_container.setObjectName("equation")
         list_equation_already_written = []
 
-        def fillVboxWithAnything(equations_container, name, coef1, coef2):
+        def fillVboxWithAnything(equations_container, name, coef1, coef2, comment_content):
             """
                 Create a QGroupBox, fill it with the informations contained in
                 'name', 'coef1' and 'coef2'.
@@ -394,21 +402,23 @@ class ShowNewFile(QWidget):
             """
             coef2kJmol = "None" if coef2 == "None" else "{:.2e}".format(float(coef2)/0.0104)
             equation_container = QGroupBox()
-            unit1 = "(m²/s)"
             unit2 = ("(eV/mol)", "(kJ/mol)")
             if name == "D":
+                unit1 = "(m²/s)"
                 latex_equation = makeWidget.make_pixmap("ressources/latex_equation_diffusivity_resized.png")
                 title = "For interstitial diffusivity"
                 objectName = "diffusivity"
                 coef1_name = "D_0"
                 coef2_name = "E_D"
             elif name == "S":
+                unit1 = "(adatome/(m³*Pa½))"  # todo: update it (like JS)
                 latex_equation = makeWidget.make_pixmap("ressources/latex_equation_solubility_resized.png")
                 title = "For solubility"
                 objectName = "solubility"
                 coef1_name = "S_0"
                 coef2_name = "E_S"
             elif name == "Kr":
+                unit1 = "(m⁴/s)"
                 latex_equation = makeWidget.make_pixmap("ressources/latex_equation_combination_resized.png")
                 title = "For combination"  # todo: check translation
                 objectName = "combination"
@@ -416,41 +426,48 @@ class ShowNewFile(QWidget):
                 coef2_name = "E_r"
             equation_container.setTitle(title)
             equation_container.setObjectName(objectName)
-            grid_data_coef = QGridLayout()
-            grid_data_coef.addWidget(latex_equation, 0, 0)
-            grid_data_coef.addWidget(QLabel(coef1_name), 1, 0)
-            grid_data_coef.addWidget(QLineEditWidthed(coef1, self.editable), 1, 1)
-            grid_data_coef.addWidget(QLabel(unit1), 1, 2)
+
+            grid_data_coef = QWidget()
+            grid_data_coef.layout = QGridLayout()
+            grid_data_coef.setLayout(grid_data_coef.layout)
+
+            grid_data_coef.layout.addWidget(latex_equation, 0, 0)
+            grid_data_coef.layout.addWidget(QLabel(coef1_name), 1, 0)
+            grid_data_coef.layout.addWidget(QLineEditWidthed(coef1, self.editable), 1, 1)
+            grid_data_coef.layout.addWidget(QLabel(unit1), 1, 2)
             if self.editable:
                 checkbox = QCheckBox("Take it into account")
                 checkbox.setChecked(True)
-                grid_data_coef.addWidget(checkbox, 1, 4)
-            grid_data_coef.addWidget(QLabel(coef2_name), 2, 0)
+                grid_data_coef.layout.addWidget(checkbox, 1, 4)
+            grid_data_coef.layout.addWidget(QLabel(coef2_name), 2, 0)
 
             # eV
             coef2_line = QLineEditWidthed(coef2, self.editable)
-            grid_data_coef.addWidget(coef2_line, 2, 1)
-            grid_data_coef.addWidget(QLabel(unit2[0]), 2, 2)
+            grid_data_coef.layout.addWidget(coef2_line, 2, 1)
+            grid_data_coef.layout.addWidget(QLabel(unit2[0]), 2, 2)
 
             # kJ/mol
             coef2kJmol_line = QLineEditWidthed(coef2kJmol, self.editable)
-            grid_data_coef.addWidget(coef2kJmol_line, 2, 3)
-            grid_data_coef.addWidget(QLabel(unit2[1]), 2, 4)
+            grid_data_coef.layout.addWidget(coef2kJmol_line, 2, 3)
+            grid_data_coef.layout.addWidget(QLabel(unit2[1]), 2, 4)
 
             # automatic update
             coef2_line.setAutoUpdate(coef2kJmol_line, 1/0.0104)
             coef2kJmol_line.setAutoUpdate(coef2_line, 0.0104)
 
-
-            equation_container.setLayout(grid_data_coef)
+            textedit = QTextEdit(comment_content)
+            textedit.setReadOnly(not self.editable)
+            vbox = makeWidget.make_vbox(grid_data_coef, textedit)
+            equation_container.setLayout(vbox.layout)
             equations_container.layout.addWidget(equation_container)
 
-        for name, c1, c2 in list_data_equation:
+        for name, c1, c2, comment in list_data_equation:
             coef1 = "None" if c1[1] is None else "{:.2e}".format(float(c1[1]))
             coef2 = "None" if c2[1] is None else "{:.2e}".format(float(c2[1]))
+            comment_content = comment[0]
             equation_container = QGroupBox()
             if name == "D" or name == "S" or name == "Kr":
-                fillVboxWithAnything(equations_container, name, coef1, coef2)
+                fillVboxWithAnything(equations_container, name, coef1, coef2, comment_content)
                 list_equation_already_written.append(name)
             else:
                 print("WARNING : I cant't show the equation named", name, "because it is not in ['D', 'S', 'Kr'].")
@@ -463,7 +480,7 @@ class ShowNewFile(QWidget):
             for name in ("D", "S", "Kr"):
                 if name not in list_equation_already_written:
                     print("WARNING:", name, "not found in the JSON. I'll add it myself.")
-                    fillVboxWithAnything(equations_container, name, "None", "None")
+                    fillVboxWithAnything(equations_container, name, "None", "None", "")
 
         return equations_container
 
