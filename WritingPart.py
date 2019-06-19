@@ -180,13 +180,21 @@ class WritingPart(QWidget):
         """
             Save a file (ie: a tab) to a json file. Each file is represented by 4 sub tabs.)
         """
-        data_to_save = self.getDataInFile(functionToCallToGetIndex)
-        filename = QFileDialog.getSaveFileName(None, "Save File")[0]
-        if filename[-4::] != ".txt":
-            filename += ".txt"
-        #pdb.Pdb.complete=rlcompleter.Completer(locals()).complete; pdb.set_trace()
-        with open(filename, "w") as fichier:
-            fichier.write(json.dumps(data_to_save, indent=4))
+        try:
+            data_to_save = self.getDataInFile(functionToCallToGetIndex)
+            filename = QFileDialog.getSaveFileName(None, "Save File")[0]
+            if filename[-4::] != ".txt":
+                filename += ".txt"
+            #pdb.Pdb.complete=rlcompleter.Completer(locals()).complete; pdb.set_trace()
+            with open(filename, "w") as fichier:
+                fichier.write(json.dumps(data_to_save, indent=4))
+        except Exception as e:
+            dialog = QMessageBox()
+            dialog.setWindowTitle("Error")
+            error_text = "An error occured while saving your file. It is likely that your file is filled with wrong datas (or maybe you don't have any file opened yet)." 
+            dialog.setText(error_text)
+            dialog.setIcon(QMessageBox.Warning)
+            dialog.exec_()
         
     def convert_to_other_format(self, functionToCallToGetIndex):
         data_to_convert = self.getDataInFile(functionToCallToGetIndex)
@@ -243,60 +251,51 @@ class WritingPart(QWidget):
         with open(filename, "w") as fichier:
             fichier.write(data_converted)
 
-
-
     def correctTypes(self, data):
+        def to_float_secure(x):
+            try:
+                floated = float(x)
+                return floated
+            except Exception as e:
+                print(e)
+                return None
+
+        def to_int_secure(x):
+            try:
+                # here, I use int(float(x)) instead of int(x):
+                # that's because int(float("2.5e2")) return 250
+                # while int("2.5e2") raise a ValueError.
+                inted = int(float(x))
+                return inted
+            except Exception as e:
+                print(e)
+                return None
+
         for i in range(len(data["traps"])):
             for key in ("density", "angular_frequency"):
                 try:
-                    value = data["traps"][i][key]
-                    if value == "None" or value == "":
-                        value = None
-                    else:
-                        value = float(value)
-                    data["traps"][i][key] = value
+                    data["traps"][i][key] = to_float_secure(data["traps"][i][key])
                 except KeyError as e:  # attrape le bouton d'ajout
                     print(e)
             # energy part
             energy_list = data["traps"][i]["energy"]
-            corrected_energy_list = []
-            for value in energy_list:
-                if value == "None" or value == "":
-                    value = None
-                else:
-                    value = float(value)
-                corrected_energy_list.append(value)
+            corrected_energy_list = [to_float_secure(x) for x in energy_list]
             data["traps"][i]["energy"] = corrected_energy_list
 
         for key in data["equation"]:
             for subkey in data["equation"][key]:
-                value = data["equation"][key][subkey]
-                if value == "None" or value == "":
-                    value = None
-                elif subkey != "comment":
-                    value = float(value)
-                data["equation"][key][subkey] = value
+                if subkey != "comment":
+                    data["equation"][key][subkey] = to_float_secure(data["equation"][key][subkey])
         
-        year = data["source"]["year"]
-        if year == "None" or year == "":
-            year = None
-        else:
-            year = int(float(year))
-        data["source"]["year"] = year
+        data["source"]["year"] = to_int_secure(data["source"]["year"])
 
         for key in ("melting_point", "lattice_parameter", "density"):
-            value = data["material"][key]
-            if value == "None" or value == "":
-                value = None
-            else:
-                value = float(value)
-            data["material"][key] = value
-        value = data["material"]["atomic_number"]
-        if value == "None" or value == "":
-            value = None
-        else:
-            value = float(value)
-        data["material"]["atomic_number"] = value
+            data["material"][key] = to_float_secure(data["material"][key])
+
+        #atomic number and adatom atomic number to float
+        data["material"]["atomic_number"] = to_int_secure(data["material"]["atomic_number"])
+        data["material"]["adatome_atomic_number"] = to_int_secure(data["material"]["adatome_atomic_number"])
+
         return data
 
     @pyqtSlot()

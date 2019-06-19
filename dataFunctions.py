@@ -14,7 +14,9 @@ def create_json_example():
         "net" : None,  # reseaux TODO : traduire
         "lattice_parameter" : 1,
         "melting_point" : 600,
-        "adatome" : "hydrogene"
+        "adatome" : "hydrogene",
+        "adatome_atomic_number" : 1,
+        "adatome_atomic_symbol" : "H"
     }
     source = {
         "author_name" : "Touchard",
@@ -25,17 +27,17 @@ def create_json_example():
         "D" : {
             "D_0" : 6e-4,
             "E_D" : 1.04,
-            "comment" : "blablabla"
+            "comment" : "Add a comment"
         },
         "S" : {
             "S_0" : 1.0,
             "E_S" : 6545,
-            "comment" : "blablabli"
+            "comment" : "Add a comment"
         },
         "Kr" : {
             "Kr_0" : 1.0,
             "E_r" : 6545,
-            "comment" : "blablablo"
+            "comment" : "Add a comment"
         }
     }
     traps = [
@@ -68,7 +70,9 @@ def create_empty_data():
         "net" : None,  # reseaux TODO : traduire
         "lattice_parameter" : None,
         "melting_point" : None,
-        "adatome" : None
+        "adatome" : None,
+        "adatome_atomic_number" : None,
+        "adatome_atomic_symbol" : None
     }
     source = {
         "author_name" : None,
@@ -78,15 +82,18 @@ def create_empty_data():
     equations = {
         "D" : {
             "D_0" : None,
-            "E_D" : None
+            "E_D" : None,
+            "comment" : ""
         },
         "S" : {
             "S_0" : None,
-            "E_S" : None
+            "E_S" : None,
+            "comment" : ""
         },
         "Kr" : {
             "Kr_0" : None,
-            "E_r" : None
+            "E_r" : None,
+            "comment" : ""
         }
     }
     traps = [

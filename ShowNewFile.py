@@ -75,7 +75,8 @@ class ShowNewFile(QWidget):
             sorted_coefficients.append(key)
             sorted_coefficients.append((first_coef_type, parameters["equation"][key][first_coef_type]))
             sorted_coefficients.append((second_coef_type, parameters["equation"][key][second_coef_type]))
-            sorted_coefficients.append(("comment", parameters["equation"][key]["comment"]))
+            comment = parameters["equation"][key].get("comment", "")
+            sorted_coefficients.append(("comment", comment))
             list_data_equation.append(sorted_coefficients)
 
         self.list_data_equation = list_data_equation
@@ -116,7 +117,7 @@ class ShowNewFile(QWidget):
         material_container.layout.addWidget(gb_material)
 
         adatome_counter = 0
-        for key in ["adatome"]:
+        for key in ["adatome", "adatome_atomic_number", "adatome_atomic_symbol"]:
             try:
                 value = parameters["material"][key]
                 value = str(value)
