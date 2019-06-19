@@ -10,9 +10,10 @@ from PyQt5.QtWidgets import (QWidget,
                              QFileDialog,
                              QMessageBox,
                              QGroupBox,
-                             QTextEdit
+                             QTextEdit,
+                             QShortcut
                             )
-from PyQt5.QtGui import QPalette
+from PyQt5.QtGui import QPalette, QKeySequence
 from PyQt5.QtCore import QStringListModel
 from ShowNewFile import ShowNewFile
 import json
@@ -42,7 +43,7 @@ class WritingPart(QWidget):
         super().__init__()
         self.layout = QHBoxLayout()
         self.setLayout(self.layout)
-        # sauvegarde de la couleur du fond
+        # save background color
         color = self.palette().color(QPalette.Background)
         rgba = color.red(), color.green(), color.blue(), color.alpha()
         self.background = rgba
@@ -80,6 +81,8 @@ class WritingPart(QWidget):
 
         self.layout.addWidget(tab_left)
         self.layout.addWidget(files_vbox)
+        self.shortcut = QShortcut(QKeySequence("Ctrl+S"), self)
+        self.shortcut.activated.connect(partial(self.save, tab_left.currentIndex))
         # self.save(tab_left.currentIndex)
         # self.convert_to_other_format(tab_left.currentIndex)
 
