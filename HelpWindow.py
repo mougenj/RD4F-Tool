@@ -44,14 +44,14 @@ class HelpWindow(QMainWindow):
         <p>This GUI is meant to help manipulating a standardized format for chemical reactions.</p>
 
         <h3>Read</h3>
-        <p>This application have two main tab: "Read" and "Write". The first one allows you to read data from a JSON file, while the second let you create your own JSON file by filling forms. To add a file to read, use one of these two buttons:</p>
+        <p>This application have two main tabs: "Read" and "Write". The first one allows you to read datas from a JSON file, while the second let you create your own JSON file by filling forms. To add a file to read, use one of these two buttons:</p>
         <br/><img src="ressources/addFiles.png"></img><br/>
         <p>You can drop files on the left part to open them or you can click on the right button to open a new window in which you can choose some files to open.</p>
         <br/><img src="ressources/addMultpleFiles.png"></img><br/>
         <p><div style="color: #FF0000;text-decoration: underline;">Tips:</div> you can hold ctrl and click on as many files as you want to open them all.</p>
         <p>Once files are opened, you can see what is inside by click on the corresponding tab. The corresponding informations will be printed on the left.</p>
         <br/><img src="ressources/infosOnFiles.png"></img><br/>
-        <p>If you click on one of the coefficient buttons, the graphs on the right will be update with the values inside the opened files. For instance, if you click on "Diffusion", the program will search every "diffusion" part in every opened file and will plot it in the graph.</p>
+        <p>If you click on one of the coefficient buttons, the graphs on the right will be updated with the values inside the opened files. For instance, if you click on "Diffusion", the program will search every "diffusion" part in every opened file and will plot it in the graph.</p>
         <br/><img src="ressources/drawCoefficients.png"></img><br/>
         <br/><img src="ressources/drawnCoefficients.png"></img><br/>
         <p>You can modify the graph with the below buttons:</p>
@@ -59,7 +59,7 @@ class HelpWindow(QMainWindow):
         <li>
             <ul>You can move in the graph by clicking on the arrows and then by clicking on the graph, holding the mouse button pressed and dragging the mouse.</ul>
             <ul>After a click on the magnifying glass, you can zoom in the graph.</ul>
-            <ul>The third button let you modify the heigh tand the weight of the graph.</ul>
+            <ul>The third button let you modify the height and the weight of the graph.</ul>
             <ul>The fourth button let you add a title to the graph, edit its axis, change the legend... It can be usefull to get a better looking graph.
             <br/>
             <div style="color: #FF0000;text-decoration: underline;">Be careful:</div> if you draw a graph using one of the coefficient buttons (on the left of the graph), these changes will be lost. Be sure to export your graph before drawing another one.</ul>

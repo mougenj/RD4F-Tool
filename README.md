@@ -6,14 +6,14 @@ To install them, you should install Python3 first, then install pip (the package
 On Linux:
 ```
 sudo apt-get install python3 python3-pip git # (some of them should be already on your machine)
-sudo python3 -m pip install matplotlib PyQt5 numpy pdb sqlite3 rlcompleter functools json re crossref
+sudo python3 -m pip install matplotlib PyQt5 numpy pdb sqlite3 rlcompleter functools json re crossrefapi
 git clone https://github.com/Ribodou/LSPM-Gui
 cd LSPM-Gui
 python3 main.py
 ```
 This way, you can execute the program via command-line interface, via "python main.py" on Windows, or "python3 main.py" on Linux.  
 
-However, you may want to build an executable (ie: double-click on it to execute it). In this case, you should install another module: pyinstaller. Then, type "pyinstaller main.py --exclude-module PyQt4 --onedir --noconsole" in a console while being in the LSPM-Gui folder.
+However, you may want to build an executable (ie: double-click on it to execute it). In this case, you will have to "compile" the python program. In this case, the crossref module is mandatory. To compile python scripts, you should install another module: pyinstaller. Then, type "pyinstaller main.py --exclude-module PyQt4 --onedir --noconsole" in a console while being in the LSPM-Gui folder.
 ```
 sudo python3 -m pip install pyinstaller
 pyinstaller main.py --exclude-module PyQt4 --onedir --noconsole
