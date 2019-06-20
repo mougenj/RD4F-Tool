@@ -121,7 +121,7 @@ class ShowNewFile(QWidget):
             try:
                 value = parameters["material"][key]
                 value = str(value)
-                line = QLineEditWidthed(value, editable)
+                line = QLineEditWidthed(value, editable, "--------------")
                 grid_adatome.addWidget(QLabel(key), adatome_counter, 0)
                 grid_adatome.addWidget(line, adatome_counter, 1);
                 adatome_counter += 1
@@ -135,7 +135,7 @@ class ShowNewFile(QWidget):
             try:
                 value = parameters["material"][key]
                 value = str(value)
-                line = QLineEditWidthed(value, editable, "      ")
+                line = QLineEditWidthed(value, editable, "--------------")
 
                 grid_material.addWidget(QLabel(key), material_counter, 0)
                 grid_material.addWidget(QLabel("     "), material_counter, 1)  # todo: find a better way to align Qlabels inside the grid
@@ -310,14 +310,14 @@ class ShowNewFile(QWidget):
             density = "{:.2e}".format(float(trap["density"]))
         else:
             density = "None"
-        density_line = QLineEditWidthed(density, self.editable)
+        density_line = QLineEditWidthed(density, self.editable, "--------------")
         tree.setItemWidget(tree_item_for_this_trap, 0, density_line)
 
         if trap["angular_frequency"]:
             angular_frequency = "{:.2e}".format(float(trap["angular_frequency"]))
         else:
             angular_frequency = "None"
-        angular_frequency_line = QLineEditWidthed(angular_frequency, self.editable)
+        angular_frequency_line = QLineEditWidthed(angular_frequency, self.editable, "--------------")
         tree.setItemWidget(tree_item_for_this_trap, 1, angular_frequency_line)
 
         # create a list that store the ids of its subnodes. see a comment in
@@ -363,7 +363,7 @@ class ShowNewFile(QWidget):
             display informations about energy of this trp.
         """
         energy_trap = QTreeWidgetItem(trap_tree)
-        tree.setItemWidget(energy_trap, 0, QLineEditWidthed("{:.2e}".format(float(value)), self.editable))
+        tree.setItemWidget(energy_trap, 0, QLineEditWidthed("{:.2e}".format(float(value)), self.editable, "--------------"))
 
         if self.editable:
             # create a button that remove this subnode
@@ -434,7 +434,7 @@ class ShowNewFile(QWidget):
 
             grid_data_coef.layout.addWidget(latex_equation, 0, 0)
             grid_data_coef.layout.addWidget(QLabel(coef1_name), 1, 0)
-            grid_data_coef.layout.addWidget(QLineEditWidthed(coef1, self.editable), 1, 1)
+            grid_data_coef.layout.addWidget(QLineEditWidthed(coef1, self.editable, "--------------"), 1, 1)
             grid_data_coef.layout.addWidget(QLabel(unit1), 1, 2)
             if self.editable:
                 checkbox = QCheckBox("Take it into account")
@@ -443,12 +443,12 @@ class ShowNewFile(QWidget):
             grid_data_coef.layout.addWidget(QLabel(coef2_name), 2, 0)
 
             # eV
-            coef2_line = QLineEditWidthed(coef2, self.editable)
+            coef2_line = QLineEditWidthed(coef2, self.editable, "--------------")
             grid_data_coef.layout.addWidget(coef2_line, 2, 1)
             grid_data_coef.layout.addWidget(QLabel(unit2[0]), 2, 2)
 
             # kJ/mol
-            coef2kJmol_line = QLineEditWidthed(coef2kJmol, self.editable)
+            coef2kJmol_line = QLineEditWidthed(coef2kJmol, self.editable, "--------------")
             grid_data_coef.layout.addWidget(coef2kJmol_line, 2, 3)
             grid_data_coef.layout.addWidget(QLabel(unit2[1]), 2, 4)
 

@@ -97,7 +97,7 @@ def create_database():
 # todo:
 # troisieme partie
 # lire le matlab founi par le client
-# plus d'espace pour ecrire les coefs des equations
+
 # optionel:
 # afficher le doi même si on a pas de reponse de l'api et l'afficher par la suite
 # faire un paquet debian
