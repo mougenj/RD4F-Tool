@@ -2,8 +2,7 @@ from PyQt5.QtCore import pyqtSlot, Qt
 from PyQt5.QtWidgets import (QWidget,
                              QPushButton,
                              QLabel,
-                             QHBoxLayout,
-                             QVBoxLayout, 
+                             QHBoxLayout, 
                              QTabWidget,
                              QFileDialog,
                              QMessageBox
@@ -18,71 +17,13 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 # my classes
-import DragAndDrop
 from ShowNewFile import ShowNewFile
+from PltWindows import PltWindowReading
+from makeWidget import make_vbox
+from AddFiles import AddFiles
 
 
-class PltWindow(QWidget):
-    """
-        This widget act as a Canva for drawing Matplotlib figures in a PyQt5
-        window.
-    """
-    def __init__(self):
-        """
-            Init the PltWindow. Create the figure, the Canva and plot an empty
-            graph inside the Canva using the figure. Add the toolbar from
-            matplotlib on the top of it.
-        """
-        super().__init__()
-        self.figure = plt.figure()
-        self.canvas = FigureCanvas(self.figure)
-        self.toolbar = NavigationToolbar(self.canvas, self)
 
-        self.layout = QVBoxLayout()
-        self.layout.addWidget(self.toolbar)
-        self.layout.addWidget(self.canvas)
-        self.setLayout(self.layout)
-        self.plot()
-
-    def plot(self, data=None, name="", xlog = False, ylog = False, x_label="", y_label="", xlim="", xlimmax=""):
-        """
-            Plot the graph given the parameters.
-            If data is None, plot an empty graph.
-            If xlog is True, the x axis xill be logscale.
-            The same goes for ylog.
-            x_label and y_label designate the name of the axis.
-            
-            The folloxing arguements does not have any effect, but were let
-            here to facilitate their implementation in case of need.
-            xlim: position of a vertical line of equation x=xlim. Should be used to indicate the minimum limit of a graph. 
-            xlimmax: position of a vertical line of equation x=xlimmax. Should be used to indicate the maximum limit of a graph. 
-        """
-        if data is None:
-            data = []
-            self.figure.clear()
-            ax = self.figure.add_subplot(111)
-            ax.plot(data, "o--")
-        else:
-            ax = self.figure.add_subplot(111)
-            if xlog:
-                ax.set_xscale("log", nonposx='clip')
-            if ylog:
-                ax.set_yscale("log", nonposy='clip')
-            x, y = data
-            ax.plot(x, y, label=name)
-            """
-            if xlim:
-                ax.axvline(x=xlim, linestyle="--", color="red", label="300 K")
-            if xlimmax[0]:
-                ax.axvline(x=xlimmax[0], linestyle="--", color="green", label=str(xlimmax[1]) + " K")
-            """
-            ax.legend()
-            ax.set_xlabel(x_label)
-            ax.set_ylabel(y_label)
-        self.canvas.draw()
-
-    def clear(self):
-        self.figure.clear()
 
 
 
@@ -93,8 +34,8 @@ class ReadingPart(QWidget):
          - Some tabs, in which the user can read informations about a file
            (a file per tab)
          - Three button, used for plotting the graph
-         - A graph, which is in a Canva, which is in a PltWindow (see this
-           class for more inforamtions)
+         - A graph, which is in a Canva, which is in a PltWindowReading
+           (see this class for more inforamtions)
     """
 
     def __init__(self):
@@ -103,9 +44,9 @@ class ReadingPart(QWidget):
             validity range.
         """
         super().__init__()
-
         self.layout = QHBoxLayout()
         self.setLayout(self.layout)
+
         self.data_onglets = []
         self.data_sources = []
         self.start_validity_range = 300  # K
@@ -133,14 +74,9 @@ class ReadingPart(QWidget):
         tab_left.setTabPosition(QTabWidget.West)
         tab_left.setFocusPolicy(Qt.NoFocus)
 
-        add_files = QWidget()
-        add_files.layout = QHBoxLayout()
-        add_files.setLayout(add_files.layout)
+        trigger_drag = partial(self.open_new_file, tab_left)
+        trigger_click = partial(self.on_click_open_files, tab_left)
 
-        add_files.layout.addWidget(DragAndDrop.FileEdit("Drop your files here", partial(self.open_new_file, tab_left)))
-        boutton_ajout_fichiers = QPushButton("Add file(s)")
-        boutton_ajout_fichiers.clicked.connect(partial(self.on_click_open_files, tab_left))
-        add_files.layout.addWidget(boutton_ajout_fichiers)        
 
         # TODO: commenter
         """
@@ -149,13 +85,14 @@ class ReadingPart(QWidget):
         """
         with open("json.txt") as fichier:
             self.open_new_file(tab_left, "json.txt", json.loads(fichier.read()))
-        files_vbox = QWidget()
-        files_vbox.layout = QVBoxLayout()
-        files_vbox.setLayout(files_vbox.layout)
-        files_vbox.layout.addWidget(tab_left)
-        files_vbox.layout.addWidget(add_files)
 
-        self.layout.addWidget(files_vbox)
+        self.layout.addWidget(
+            make_vbox(
+                tab_left,
+                AddFiles(trigger_drag, trigger_click)
+            )
+        )
+
         bt_d = QPushButton("Diffusion")
         bt_d.clicked.connect(partial(self.on_click_tracer, "D"))
         bt_s = QPushButton("Solubility")
@@ -179,7 +116,7 @@ class ReadingPart(QWidget):
         # RIGHT
 
         # let's add tabs on the right
-        self.pltwindows = [PltWindow() for _ in range(4)]
+        self.pltwindows = [PltWindowReading() for _ in range(4)]
         tab_right = QTabWidget()
         tab_right.setFocusPolicy(Qt.NoFocus)
         tab_right.addTab(self.pltwindows[0], "Log - Natural")
@@ -328,17 +265,3 @@ class ReadingPart(QWidget):
             get_name_from_path = lambda path : path.split("/")[-1].split('.', 1)[0]
             filepath, liste = success
             self.open_new_file(tab_to_add, get_name_from_path(filepath), liste)
-
-
-def make_vbox():
-    vbox = QWidget()
-    vbox.layout = QVBoxLayout()
-    vbox.setLayout(vbox.layout)
-    return vbox
-
-
-def make_hbox():
-    hbox = QWidget()
-    hbox.layout = QHBoxLayout()
-    hbox.setLayout(hbox.layout)
-    return hbox

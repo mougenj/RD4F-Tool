@@ -1,6 +1,3 @@
-# !/usr/bin/env python
-# -*- coding:utf-8 -*-
-
 from PyQt5.QtWidgets import QMessageBox, QLineEdit
 import json
 from re import search

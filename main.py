@@ -97,6 +97,7 @@ def create_database():
 # todo:
 # troisieme partie
 # lire le matlab founi par le client
+# export des valeur brutes
 
 # optionel:
 # afficher le doi même si on a pas de reponse de l'api et l'afficher par la suite
@@ -106,7 +107,7 @@ def create_database():
 def main():
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     dataFunctions.create_json_example()
-    # create_database()
+    create_database()
     # print("création de l'interface")
     app = QApplication(sys.argv)
     #print("lancement de l'interface")

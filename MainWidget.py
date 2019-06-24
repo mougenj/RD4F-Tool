@@ -8,6 +8,8 @@ from WritingPart import WritingPart
 from ThirdTab import ThirdTab
 import os
 from PyQt5.QtCore import Qt
+from Profile import Profile
+
 
 class MainWidget(QWidget):
     """
@@ -39,7 +41,8 @@ class MainWidget(QWidget):
 
         tabs.addTab(ReadingPart(), "Read")
         tabs.addTab(WritingPart(), "Write")
-        tabs.addTab(ThirdTab(), "Post-traitement")  # todo: traduire
+        # tabs.addTab(ThirdTab(), "Post-traitement")  # todo: traduire
+        tabs.addTab(Profile(), "Profile")
         tabs.setCurrentIndex(0)
 
         layout = QVBoxLayout()  # contient les tabs

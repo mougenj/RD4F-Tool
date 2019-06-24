@@ -248,7 +248,7 @@ class WritingPart(QWidget):
             filename += ".txt"
 
         #pdb.Pdb.complete=rlcompleter.Completer(locals()).complete; pdb.set_trace()
-        with open(filename, "w") as fichier:
+        with open(filename, "w", encoding='utf-8') as fichier:
             fichier.write(data_converted)
 
     def correctTypes(self, data):
