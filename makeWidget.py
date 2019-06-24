@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QScrollArea, QScroller, QLabel
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QScrollArea, QScroller, QLabel, QGroupBox
 from PyQt5.QtGui import QPixmap 
 
 def make_vbox(*args):
@@ -48,3 +48,15 @@ def make_pixmap(picture_name):
     pixmap = QPixmap(picture_name)
     label.setPixmap(pixmap)
     return label
+
+def make_groupbox(name, *args):
+    gb_material = QGroupBox()
+    gb_material.layout = QVBoxLayout()
+    gb_material.setLayout(gb_material.layout)
+    gb_material.setTitle(name)
+    gb_material.setObjectName(name)
+    if args:
+        for arg in args:
+            gb_material.layout.addWidget(arg)
+    return gb_material
+    

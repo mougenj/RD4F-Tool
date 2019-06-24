@@ -1,6 +1,6 @@
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import QListWidget, QAbstractItemView, QListWidgetItem, QVBoxLayout, QWidget, QMenu
-
+from makeWidget import make_groupbox
 
 class DoubleThumbListWidget(QWidget):
     """
@@ -12,10 +12,21 @@ class DoubleThumbListWidget(QWidget):
         super().__init__()
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
+        
         self.down = ThumbListWidget()
         self.up = UniqueThumbListWidget(self.down)
-        self.layout.addWidget(self.up)
-        self.layout.addWidget(self.down)
+
+        self.up.setMinimumSize(20, 20)
+        self.up.setMaximumHeight(20)
+        gb_up = make_groupbox("Fichier principal", self.up)
+        gb_up.setMaximumHeight(80)
+
+        self.down.setMinimumSize(100, 100)
+        gb_down = make_groupbox("Fichiers secondaires", self.down)
+        gb_down.setMinimumSize(self.down.width(), 400)
+
+        self.layout.addWidget(gb_up)
+        self.layout.addWidget(gb_down)
     
     def addItemFromName(self, name):
         if not self.up.count():
@@ -23,14 +34,13 @@ class DoubleThumbListWidget(QWidget):
         else:
             self.down.addItemFromName(name)
 
-
 class ThumbListWidget(QListWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setIconSize(QtCore.QSize(124, 124))
         self.setDragDropMode(QAbstractItemView.DragDrop)
         self.setSelectionMode(QAbstractItemView.ExtendedSelection)
-        self.setAcceptDrops(True)
+        self.setAcceptDrops(False)
         self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self.openMenu)
     
@@ -52,14 +62,16 @@ class ThumbListWidget(QListWidget):
             event.accept()
         else:
             super(ThumbListWidget, self).dragEnterEvent(event)
-
+    
+    """
     def dragMoveEvent(self, event):
         if event.mimeData().hasUrls():
             event.setDropAction(QtCore.Qt.CopyAction)
             event.accept()
         else:
             super(ThumbListWidget, self).dragMoveEvent(event)
-
+    
+    
     def dropEvent(self, event):
         if event.mimeData().hasUrls():
             event.setDropAction(QtCore.Qt.CopyAction)
@@ -71,6 +83,7 @@ class ThumbListWidget(QListWidget):
         else:
             event.setDropAction(QtCore.Qt.MoveAction)
             super(ThumbListWidget, self).dropEvent(event)
+    """
     
     def removeElementFromText(self, text):
         supression_index = -1
@@ -131,12 +144,6 @@ class UniqueThumbListWidget(QListWidget):
         while(len(s)) < 3:
             s = "0" + s
         return s
-
-    def startDrag(self, actions):
-        self._drag_info[:] = [str(self.objectName())]
-        for item in self.selectedItems():
-            self._drag_info.append(self.row(item))
-        super(ThumbListWidget, self).startDrag(actions)
         
     def dragEnterEvent(self, event):
         if event.mimeData().hasUrls():

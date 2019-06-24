@@ -3,7 +3,9 @@ from PyQt5.QtWidgets import (QWidget,
                              QHBoxLayout,
                              QFileDialog,
                              QMessageBox,
-                             QListWidgetItem
+                             QListWidgetItem,
+                             QPushButton,
+                             QLabel
                             )
 from PyQt5.QtGui import QIcon, QPixmap
 import matplotlib.pyplot as plt
@@ -12,7 +14,7 @@ import numpy as np
 from functools import partial
 
 from myListWidget import DoubleThumbListWidget
-from makeWidget import make_vbox
+from makeWidget import make_vbox, make_hbox, make_scroll
 from PltWindows import PltWindowProfile
 from AddFiles import AddFiles
 
@@ -34,12 +36,33 @@ class Profile(QWidget):
         doublelist = DoubleThumbListWidget()
         trigger_click = partial(self.on_click_open_files, doublelist)
         
-        def passs(*args):
+        def todo(*args):
             pass
+        
+        bt_d = QPushButton("Diffusion")
+        bt_d.clicked.connect(todo)
+        bt_s = QPushButton("Solubility")
+        bt_s.clicked.connect(todo)
+        bt_kr = QPushButton("Combination coefficients")  # todo: demander pour la traduction
+        bt_kr.clicked.connect(todo)
+
+        draw_bts = make_vbox()
+        for _ in range(10):  # todo: find another way to place the widget down
+            draw_bts.layout.addWidget(QLabel(" "))
+        draw_bts.layout.addWidget(QLabel("Coefficients"))
+        draw_bts.layout.addWidget(bt_d)
+        draw_bts.layout.addWidget(bt_s)
+        draw_bts.layout.addWidget(bt_kr)
+        
+
+        
         self.layout.addWidget(
-            make_vbox(
-                doublelist,
-                AddFiles(passs, trigger_click)
+            make_hbox(
+                make_vbox(
+                    doublelist,
+                    AddFiles(todo, trigger_click)  # todo
+                ),
+                draw_bts
             )
         )
 
