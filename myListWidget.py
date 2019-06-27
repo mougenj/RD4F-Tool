@@ -1,6 +1,8 @@
 from PyQt5 import QtCore
-from PyQt5.QtWidgets import QListWidget, QAbstractItemView, QListWidgetItem, QVBoxLayout, QWidget, QMenu
+from PyQt5.QtWidgets import QListWidget, QAbstractItemView, QListWidgetItem, QVBoxLayout, QWidget, QMenu, QMessageBox
 from makeWidget import make_groupbox
+from DataOfAFile import DataOfAFile
+
 
 class DoubleThumbListWidget(QWidget):
     """
@@ -12,7 +14,10 @@ class DoubleThumbListWidget(QWidget):
         super().__init__()
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
-        
+
+        self.data_from_files = []
+        self.i = 0
+
         self.down = ThumbListWidget()
         self.up = UniqueThumbListWidget(self.down)
 
@@ -27,6 +32,34 @@ class DoubleThumbListWidget(QWidget):
 
         self.layout.addWidget(gb_up)
         self.layout.addWidget(gb_down)
+
+    def getIndexFromName(self, name):
+        start_of_name = name.split(":")[0]
+        int_in_str = start_of_name.split()[1]
+        index = int(int_in_str)
+        return index
+
+    def getData(self):
+        if self.i != 0:
+            master = self.up.get_name()
+            slaves = self.down.get_names()
+            index_master = self.getIndexFromName(master)
+            index_slaves = [self.getIndexFromName(name) for name in slaves]
+
+            data_master = self.data_from_files[index_master]
+            data_slaves = []
+            for i in index_slaves:
+                data_slaves.append(self.data_from_files[i])
+            return data_master, data_slaves
+        return None, None
+    
+    def addItemFromData(self, data):
+        self.data_from_files.append(data)
+        if not self.up.count():
+            self.up.addItemFromData(data, self.i)
+        else:
+            self.down.addItemFromData(data, self.i)
+        self.i += 1
     
     def addItemFromName(self, name):
         if not self.up.count():
@@ -43,13 +76,16 @@ class ThumbListWidget(QListWidget):
         self.setAcceptDrops(False)
         self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self.openMenu)
-    
-    def setUniqueList(self, uniqueList):
-        pass
 
-    def addItemFromName(self, name):
-        item = QListWidgetItem('Item ' + self.int_to_str(self.count()) + name)
+    def addItemFromData(self, data, i):
+        i = self.int_to_str(i)
+        name = data.name
+
+        item = QListWidgetItem('Item ' + i + ": " + name)
         self.addItem(item)
+
+    def get_names(self):
+        return [self.item(i).text() for i in range(self.count())]
 
     def int_to_str(self, x):
         s = str(x)
@@ -127,16 +163,18 @@ class UniqueThumbListWidget(QListWidget):
         self.setSelectionMode(QAbstractItemView.ExtendedSelection)
         self.setAcceptDrops(True)
         self.previous_state = []
-
-        self.other.setUniqueList(self)
+    
         # self.setStyleSheet(self.styleSheet() + """
         # QListWidget{
         #     display: none;
         # }
         # """)
+    
+    def get_name(self):
+        return self.item(0).text()
 
-    def addItemFromName(self, name):
-        item = QListWidgetItem('Item ' + self.int_to_str(self.count()) + name)
+    def addItemFromData(self, data, i):
+        item = QListWidgetItem('Item ' + self.int_to_str(i) + ": " + data.name)
         self.addItem(item)
 
     def int_to_str(self, x):

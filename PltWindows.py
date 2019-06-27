@@ -4,7 +4,8 @@ from PyQt5.QtWidgets import (QWidget,
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
-
+import matplotlib.ticker as mtick
+import numpy as np
 
 class PltWindow(QWidget):
     """
@@ -86,6 +87,22 @@ class PltWindowProfile(PltWindow):
         """
         super().__init__()
         self.plot()
+        self.xmin = None
+        self.xmax = None
+    
+    def getXminFromVector(self, abscissa):
+        return abscissa[0]
+
+    def getXmaxFromVector(self, abscissa, ordinate):
+        xmax_of_this_vect = None
+        y_trigger = np.max(ordinate) / 100
+        for x, y in zip(abscissa[::-1], ordinate[::-1]):
+            if y <= y_trigger:
+                xmax_of_this_vect = x
+            else:
+                break
+        print(xmax_of_this_vect)
+        return xmax_of_this_vect
 
     def plot(self, data=None, name="", xlog = False, ylog = False, x_label="", y_label="", xlim="", xlimmax=""):
         """
@@ -112,17 +129,34 @@ class PltWindowProfile(PltWindow):
             if ylog:
                 ax.set_yscale("log", nonposy='clip')
             x, y = data
+
+            ax.xaxis.set_major_formatter(mtick.FormatStrFormatter('%.2e'))
+            ax.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.2e'))
+
+            xmaxtemp = self.getXmaxFromVector(x, y)
+            if self.xmax:
+                if self.xmax < xmaxtemp:
+                    self.xmax = xmaxtemp
+            elif xmaxtemp:
+                self.xmax = xmaxtemp
+            if self.xmax:
+                ax.set_xlim(right=self.xmax)
+            
+            xmintemp = self.getXminFromVector(x)
+            if self.xmin:
+                if self.xmin > xmintemp:
+                    self.xmin = xmintemp
+            elif xmintemp:
+                self.xmin = xmintemp
+            if self.xmin:
+                ax.set_xlim(left=self.xmin)
+            ax.set_xlim(left=0)
             ax.plot(x, y, label=name)
-            """
-            if xlim:
-                ax.axvline(x=xlim, linestyle="--", color="red", label="300 K")
-            if xlimmax[0]:
-                ax.axvline(x=xlimmax[0], linestyle="--", color="green", label=str(xlimmax[1]) + " K")
-            """
             ax.legend()
             ax.set_xlabel(x_label)
             ax.set_ylabel(y_label)
         self.canvas.draw()
 
     def clear(self):
+        self.xmax = None
         self.figure.clear()

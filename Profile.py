@@ -5,24 +5,72 @@ from PyQt5.QtWidgets import (QWidget,
                              QMessageBox,
                              QListWidgetItem,
                              QPushButton,
-                             QLabel
+                             QLabel,
+                             QTabWidget,
+                             QGroupBox,
+                             QVBoxLayout,
+                             QCheckBox,
+                             QScrollArea,
+                             QScroller
                             )
 from PyQt5.QtGui import QIcon, QPixmap
+from PyQt5.QtCore import Qt
 import matplotlib.pyplot as plt
 import json
 import numpy as np
 from functools import partial
+import time
 
 from myListWidget import DoubleThumbListWidget
 from makeWidget import make_vbox, make_hbox, make_scroll
 from PltWindows import PltWindowProfile
 from AddFiles import AddFiles
+ 
+from DataOfAFile import DataOfAFile
 
 
-class DataOfAFile:
-    def __init__(self, name, data):
-        self.name = name
-        self.data = data
+class Checkboxes(QGroupBox):
+    
+    def __init__(self, name):
+        super().__init__()
+
+        self.vbox = make_vbox()
+
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setWidget(self.vbox)
+        QScroller.grabGesture(scroll_area.viewport(), QScroller.LeftMouseButtonGesture)
+        
+        self.setTitle(name)
+        self.setObjectName(name)
+        self.layout = QVBoxLayout()
+        self.setLayout(self.layout)
+        self.layout.addWidget(scroll_area)
+        self.checked = []
+    
+    def addCheckbox(self):
+        i = len(self.checked)
+        if i == 0:
+            cb = QCheckBox("solubility")
+        elif i == 1:
+            cb = QCheckBox("source")
+        else:
+            cb = QCheckBox("trap " + str(i - 1))
+        cb.setCheckState(True)
+        cb.setTristate(False)
+
+        self.checked.append(True)
+
+        trigger = partial(self.state_changed, cb, i)
+        cb.stateChanged.connect(trigger)
+        self.vbox.layout.addWidget(cb)
+
+    def state_changed(self, cb, i):
+        self.checked[i] = cb.isChecked()
+        print(self.checked)
+    
+    def getChecked(self):
+        return self.checked
 
 
 class Profile(QWidget):
@@ -33,41 +81,99 @@ class Profile(QWidget):
         self.setLayout(self.layout)
         self.data_onglets = []
 
-        doublelist = DoubleThumbListWidget()
-        trigger_click = partial(self.on_click_open_files, doublelist)
+        self.doublelist = DoubleThumbListWidget()
+        trigger_click = partial(self.on_click_open_files, self.doublelist)
         
         def todo(*args):
             pass
         
-        bt_d = QPushButton("Diffusion")
-        bt_d.clicked.connect(todo)
-        bt_s = QPushButton("Solubility")
-        bt_s.clicked.connect(todo)
-        bt_kr = QPushButton("Combination coefficients")  # todo: demander pour la traduction
-        bt_kr.clicked.connect(todo)
+        bt_draw = QPushButton("Draw")
+        bt_draw.clicked.connect(self.draw)
 
         draw_bts = make_vbox()
-        for _ in range(10):  # todo: find another way to place the widget down
-            draw_bts.layout.addWidget(QLabel(" "))
-        draw_bts.layout.addWidget(QLabel("Coefficients"))
-        draw_bts.layout.addWidget(bt_d)
-        draw_bts.layout.addWidget(bt_s)
-        draw_bts.layout.addWidget(bt_kr)
-        
-
+        #for _ in range(10):  # todo: find another way to place the widget down
+        #    draw_bts.layout.addWidget(QLabel(" "))
+        draw_bts.layout.addWidget(QLabel("Draw"))
+        draw_bts.layout.addWidget(bt_draw)
+        self.checkboxes = Checkboxes("Select your data")
         
         self.layout.addWidget(
             make_hbox(
                 make_vbox(
-                    doublelist,
+                    self.doublelist,
                     AddFiles(todo, trigger_click)  # todo
                 ),
-                draw_bts
+                make_vbox(
+                    self.checkboxes,
+                    draw_bts
+                )
             )
         )
 
+        self.pltwindows = [PltWindowProfile() for _ in range(4)]
+        tab_right = QTabWidget()
+        tab_right.setFocusPolicy(Qt.NoFocus)
+        tab_right.addTab(self.pltwindows[0], "Log - Natural")
+        tab_right.addTab(self.pltwindows[1], "Log - 1/T")
+        tab_right.addTab(self.pltwindows[2], "Natural - Natural")
+        tab_right.addTab(self.pltwindows[3], "Log - Log")
+        self.layout.addWidget(tab_right)
+
+
+        get_name_from_path = lambda path : path.split("/")[-1].split('.', 1)[0]
+        filepath = "cas_test/profil000001.txt"
+        data = self.getDataFromFilepath(filepath)
+        name = get_name_from_path(filepath)
+        self.open_new_file(self.doublelist, DataOfAFile(filepath, name, data))
+        
+
     def open_new_file(self, doubleListToAdd, data):
-        doubleListToAdd.addItemFromName(data.name)
+        doubleListToAdd.addItemFromData(data)
+    
+    def getDataFromFilepath(self, filepath):
+        list_numbers = []
+        length = -1
+        with open(filepath, "r") as fichier:
+            for ligne in fichier:
+                if not ligne.strip().startswith("%"):
+                    numbers = [float(x) for x in ligne.split()]
+                    if length == -1:
+                        length = len(numbers)
+                    else:
+                        if length != len(numbers):
+                            raise Exception("the file can't be parsed")
+                    list_numbers.append(numbers)
+        
+        # Here, numbers looks like:
+        # [[x0, y0, z0, ...], [x1, y1, z1, ...], [x2, y2, z2, ...], ...]
+        # It is better to have:
+        # [[x0, x1, x2, ...], [y0, y1, y2, ...], [z0, z1, z2, ...]]
+        list_numbers = list(zip(*list_numbers))
+        list_numbers = np.array(list_numbers)
+        maxlen = len(list_numbers)
+
+        checked = self.checkboxes.getChecked()
+        
+        if (maxlen > len(checked)):
+            diff = maxlen - len(checked) - 1
+            print("adding ", maxlen, "-", len(checked), "checkboxes")
+            for i in range(diff):
+                self.checkboxes.addCheckbox()
+        
+        try:
+            master, slaves = self.doublelist.getData()
+            if master:
+                master_t, master_y, *master_traps = master.data
+                maxlen = max(maxlen, len(master_traps))
+            if slaves:
+                for slave in slaves:
+                    _, _, *slave_traps = slave.data
+                    maxlen = max(maxlen, len(slave_traps))
+        except Exception as e:
+            print(e)
+        print(maxlen)
+
+        return list_numbers
 
     @pyqtSlot()
     def on_click_open_files(self, doubleListToAdd):
@@ -79,250 +185,68 @@ class Profile(QWidget):
         get_name_from_path = lambda path : path.split("/")[-1].split('.', 1)[0]
         for filepath in files:
             try:
-                with open(filepath, "r") as fichier: 
-                    data = fichier.read()
+                data = self.getDataFromFilepath(filepath)
                 name = get_name_from_path(filepath)
-                sucessfully_loaded.append(DataOfAFile(name, data))
+                sucessfully_loaded.append(DataOfAFile(filepath, name, data))
             except Exception as e:
                 print(e)
                 failed.append(filepath)
         if failed:
-            dialog = QMessageBox()
             if len(failed) > 1:
-                dialog.setWindowTitle("Error: Invalid Files")
+                title = "Error: Invalid Files"
             else:
-                dialog.setWindowTitle("Error: Invalid File")
+                title = "Error: Invalid File"
             error_text = "An error occured when loading :"
             for failure in failed:
                 error_text += "\n" + failure
-            dialog.setText(error_text)
-            dialog.setIcon(QMessageBox.Warning)
-            dialog.exec_()
+            self.newErrorWindow(title, error_text)
         for success in sucessfully_loaded:
             self.open_new_file(doubleListToAdd, success)
-
-
-
-
-
-
-
-
-    # def __init__(self):
-    #     """
-    #         Init the ReadingPart.Create the UI (the three part) and init the
-    #         validity range.
-    #     """
-
-
-
-
-    #     # LEFT
-    #     tab_left = QTabWidget(tabsClosable=True)
-    #     def CloseTab(i):
-    #         tab_left.removeTab(i)
-    #         self.data_onglets.pop(i)
-    #         self.data_sources.pop(i)
-    #         self.end_validity_ranges.pop(i)
-    #         self.majValidityRange()
-            
-
-    #     tab_left.tabCloseRequested.connect(CloseTab)
-    #     tab_left.setTabPosition(QTabWidget.West)
-    #     tab_left.setFocusPolicy(Qt.NoFocus)
-
-    #     add_files = QWidget()
-    #     add_files.layout = QHBoxLayout()
-    #     add_files.setLayout(add_files.layout)
-
-    #     add_files.layout.addWidget(DragAndDrop.FileEdit("Drop your files here", partial(self.open_new_file, tab_left)))
-    #     boutton_ajout_fichiers = QPushButton("Add file(s)")
-    #     boutton_ajout_fichiers.clicked.connect(partial(self.on_click_open_files, tab_left))
-    #     add_files.layout.addWidget(boutton_ajout_fichiers)        
-
-    #     # TODO: commenter
-    #     """
-    #     with open("Touchard-2012.txt") as fichier:
-    #         self.open_new_file(tab_left, "Touchard-2012.txt", json.loads(fichier.read()))
-    #     """
-    #     with open("json.txt") as fichier:
-    #         self.open_new_file(tab_left, "json.txt", json.loads(fichier.read()))
-    #     files_vbox = QWidget()
-    #     files_vbox.layout = QVBoxLayout()
-    #     files_vbox.setLayout(files_vbox.layout)
-    #     files_vbox.layout.addWidget(tab_left)
-    #     files_vbox.layout.addWidget(add_files)
-
-    #     self.layout.addWidget(files_vbox)
-    #     bt_d = QPushButton("Diffusion")
-    #     bt_d.clicked.connect(partial(self.on_click_tracer, "D"))
-    #     bt_s = QPushButton("Solubility")
-    #     bt_s.clicked.connect(partial(self.on_click_tracer, "S"))
-    #     bt_kr = QPushButton("Combination coefficients")  # todo: demander pour la traduction
-    #     bt_kr.clicked.connect(partial(self.on_click_tracer, "Kr"))
-
-    #     hbox = make_vbox()
-    #     for _ in range(10):  # todo: find another way to place the widget down
-    #         hbox.layout.addWidget(QLabel(" "))
-    #         self.majValidityRange()
-    #     self.qlabel_validity_range.setText(self.validity_range)
-    #     hbox.layout.addWidget(self.qlabel_validity_range)
-    #     hbox.layout.addWidget(QLabel("Coefficients"))
-    #     hbox.layout.addWidget(bt_d)
-    #     hbox.layout.addWidget(bt_s)
-    #     hbox.layout.addWidget(bt_kr)
-    #     self.layout.addWidget(hbox)
-
-
-    #     # RIGHT
-
-    #     # let's add tabs on the right
-    #     self.pltwindows = [PltWindowReading() for _ in range(4)]
-    #     tab_right = QTabWidget()
-    #     tab_right.setFocusPolicy(Qt.NoFocus)
-    #     tab_right.addTab(self.pltwindows[0], "Log - Natural")
-    #     tab_right.addTab(self.pltwindows[1], "Log - 1/T")
-    #     tab_right.addTab(self.pltwindows[2], "Natural - Natural")
-    #     tab_right.addTab(self.pltwindows[3], "Log - Log")
-    #     self.layout.addWidget(tab_right)
     
-    # def majValidityRange(self):
-    #     """
-    #         Update the validity range. Should be called each time a new file is
-    #         opened or close. Can also be called to get the maximal validity
-    #         range (which is the minimal of all the fusion temperatures).
-    #     """
-    #     if self.end_validity_ranges:
-    #         mini = min(self.end_validity_ranges)
-    #         self.validity_range = self.template_validity_range.format(mini)
-    #         self.qlabel_validity_range.setText(self.validity_range)
-    #         return mini
-    #     else:
-    #         self.validity_range = ""
-    #         self.qlabel_validity_range.setText(self.validity_range)
-    #         return None
+    def newErrorWindow(self, title, content):
+        dialog = QMessageBox()
+        dialog.setWindowTitle(title)
+        dialog.setText(content)
+        dialog.setIcon(QMessageBox.Warning)
+        dialog.exec_()
 
-    # def make_tab(self):
-    #     return make_vbox()
+    @pyqtSlot()
+    def draw(self):
+        start = time.time()
 
-    # def make_pixmap(self, picture_name, label_name):
-    #     """
-    #         Create a QLabel with the name picture_name, containing a QPixmap
-    #         made from the image picture_name. 
-    #     """
-    #     label = QLabel()
-    #     label.setObjectName(label_name)
-    #     pixmap = QPixmap(picture_name)
-    #     label.setPixmap(pixmap)
-    #     return label
+        # clean graphs
+        for indice_figure in range(len(self.pltwindows)):
+            self.pltwindows[indice_figure].clear()
+        master, slaves = self.doublelist.getData()
 
-    # def open_new_file(self, tab, name, parameters):
-    #     """
-    #         Create a new tab that shows informations about a file. Extract and
-    #         add those informations to a list, so that they can be re-used later
-    #         (for plotting, for instance).
-    #     """
-    #     decoupe = lambda chaine : "..." + chaine[-10:] if len(chaine) > 10 else chaine
-    #     snf = ShowNewFile(parameters, self.background)
-    #     tab.setCurrentIndex(tab.addTab(snf, decoupe(name)))
-    #     self.data_onglets.append(snf.list_data_equation)
-    #     self.data_sources.append(snf.list_data_source)
-    #     self.end_validity_ranges.append(parameters["material"]["melting_point"])
-    #     self.majValidityRange()
-    #     self.qlabel_validity_range.setText(self.validity_range)
+        checked = self.checkboxes.checked
 
+        if master:
+            # master
+            master_t, master_y, *master_traps, master_source = master.data
+            xmax = master_t[0]
 
-    # @pyqtSlot()
-    # def on_click_tracer(self, name):
-    #     """
-    #         Plot every graph on every tab : for every equation from
-    #         every file, plot it if the equation name is equal to the parameter
-    #         'name'. The name can be 'D' (for diffusion), 'S' (for solubility)
-    #         or 'Kr' (for combination).
-    #     """
-    #     start = time.time()
-    #     print('Tracons la courbe des lignes ' + name)
-
-    #     # clean graphs
-    #     for indice_figure in range(len(self.pltwindows)):
-    #         self.pltwindows[indice_figure].clear()
-        
-    #     # temperature
-    #     debut, fin, pas = 300, 2500, 0.1
-    #     les_temperatures = np.arange(debut, fin, pas)
-
-    #     # Boltzmann constant
-    #     k_b = 1.38064852 * 10**(-23) * 8.617e+18
-
-    #     value_x_max = self.majValidityRange()
-    #     xlim=300
-
-    #     for onglet, source in zip(self.data_onglets, self.data_sources):
-    #         for equation in onglet:
-    #             if equation[0] == name:
-    #                 try:
-    #                     y_values = equation[1][1] * np.exp(-equation[2][1]/(k_b * les_temperatures))
-    #                     legend = source["author_name"] + " - " + str(source["year"])
-    #                     data = les_temperatures, y_values
-    #                     self.pltwindows[0].plot(data, legend, ylog=True, x_label="Temperature (K)", y_label="" + " (logscale)", xlim=xlim, xlimmax=(value_x_max, value_x_max))
-
-    #                     data = 1 / les_temperatures, y_values
-    #                     if xlim != 0:
-    #                         xlim_divided = 1 / xlim
-    #                     else:
-    #                         xlim_divided = 0
-
-    #                     if value_x_max != 0:
-    #                         value_x_max_divided = 1 / value_x_max
-    #                     else:
-    #                         value_x_max_divided = 0
-
-    #                     self.pltwindows[1].plot(data, legend, ylog=True, x_label="1/Temperature ($K^{-1}$)", y_label="" + " (logscale)", xlim=xlim_divided, xlimmax=(value_x_max_divided, value_x_max))
-
-    #                     data = les_temperatures, y_values
-    #                     self.pltwindows[2].plot(data, legend, x_label="Temperature (K)", y_label="", xlim=xlim, xlimmax=(value_x_max, value_x_max))
-
-    #                     data = les_temperatures, y_values
-    #                     self.pltwindows[3].plot(data, legend, xlog=True, ylog=True, x_label="Temperature (K)" + " (logscale)",y_label=""  + " (logscale)", xlim=xlim, xlimmax=(value_x_max, value_x_max))
-    #                     # since the curves was plot, we need to stop plotting
-    #                     # the xilm and the xlimmax
-    #                     xlim, value_x_max = 0, 0
-    #                 except TypeError:  # there is a None in the data
-    #                     print("I cant't draw", name)
-
-    #     print("Time taken to plot " + str(time.time() - start))
-
-    # @pyqtSlot()
-    # def on_click_open_files(self, tab_to_add):
-    #     """
-    #         Open a dialog which let the user choose some files that he can open
-    #         in the app.
-    #     """
-    #     options = QFileDialog.Options()
-    #     options |= QFileDialog.DontUseNativeDialog
-    #     files, _ = QFileDialog.getOpenFileNames(self, "QFileDialog.getOpenFileNames()", "","All Files (*);;Python Files (*.py)", options=options)
-    #     sucessfully_loaded = []
-    #     failed = []
-    #     for filepath in files:
-    #         try:
-    #             with open(filepath, "r") as fichier: 
-    #                 liste = json.loads(fichier.read())
-    #             sucessfully_loaded.append((filepath, liste))
-    #         except Exception as e:
-    #             failed.append(filepath)
-    #     if failed:
-    #         dialog = QMessageBox()
-    #         if len(failed) > 1:
-    #             dialog.setWindowTitle("Error: Invalid Files")
-    #         else:
-    #             dialog.setWindowTitle("Error: Invalid File")
-    #         error_text = "An error occured when loading :"
-    #         for failure in failed:
-    #             error_text += "\n" + failure
-    #         dialog.setText(error_text)
-    #         dialog.setIcon(QMessageBox.Warning)
-    #         dialog.exec_()
-    #     for success in sucessfully_loaded:
-    #         get_name_from_path = lambda path : path.split("/")[-1].split('.', 1)[0]
-    #         filepath, liste = success
-    #         self.open_new_file(tab_to_add, get_name_from_path(filepath), liste)
+            if checked[0]:
+                self.pltwindows[0].plot((master_t, master_y), master.name + " solubility")
+            if checked[1]:
+                self.pltwindows[0].plot((master_t, master_source), master.name + " source")
+            for index, trap in enumerate(master_traps):
+                if checked[index + 2]:
+                    self.pltwindows[0].plot((master_t, trap), master.name + " (trap " + str(index + 1) + ")")
+            
+        if slaves:
+            # slaves
+            for slave in slaves:
+                slave_t, slave_y, *slaves_traps, slave_source = slave.data
+                if checked[0]:
+                    self.pltwindows[0].plot((slave_t, slave_y), slave.name + " solubility")
+                if checked[1]:
+                    sous = master_source - slave_source
+                    print(sous)
+                    score = np.max(np.abs(np.sqrt(sous**2)))
+                    self.pltwindows[0].plot((master_t, slave_source), slave.name + " source (score: " + str(score) + ")")
+                for index, trap in enumerate(slaves_traps):
+                    if checked[index + 2]:
+                        self.pltwindows[0].plot((slave_t, trap), slave.name + " (trap " + str(index + 1) + ")")
+                
+        print("Time taken to plot " + str(time.time() - start))
