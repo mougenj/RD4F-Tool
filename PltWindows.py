@@ -37,20 +37,19 @@ class PltWindowReading(PltWindow):
         """
         super().__init__()
         self.plot()
-
-    def plot(self, data=None, name="", xlog = False, ylog = False, x_label="", y_label="", xlim="", xlimmax=""):
+    
+    # ef plot(self, data=None, name="", xlog = False, ylog = False, x_label="", y_label="", xlim="", xlimmax=""):
+    def plot(self, data=None, name="", xlog = False, ylog = False, x_label="", y_label=""):
         """
             Plot the graph given the parameters.
             If data is None, plot an empty graph.
             If xlog is True, the x axis xill be logscale.
             The same goes for ylog.
             x_label and y_label designate the name of the axis.
-            
-            The folloxing arguements does not have any effect, but were let
-            here to facilitate their implementation in case of need.
-            xlim: position of a vertical line of equation x=xlim. Should be used to indicate the minimum limit of a graph. 
-            xlimmax: position of a vertical line of equation x=xlimmax. Should be used to indicate the maximum limit of a graph. 
         """
+            # xlim: position of a vertical line of equation x=xlim. Should be used to indicate the minimum limit of a graph. 
+            # xlimmax: position of a vertical line of equation x=xlimmax. Should be used to indicate the maximum limit of a graph. 
+
         if data is None:
             data = []
             self.figure.clear()
@@ -64,12 +63,10 @@ class PltWindowReading(PltWindow):
                 ax.set_yscale("log", nonposy='clip')
             x, y = data
             ax.plot(x, y, label=name)
-            """
-            if xlim:
-                ax.axvline(x=xlim, linestyle="--", color="red", label="300 K")
-            if xlimmax[0]:
-                ax.axvline(x=xlimmax[0], linestyle="--", color="green", label=str(xlimmax[1]) + " K")
-            """
+            # if xlim:
+            #     ax.axvline(x=xlim, linestyle="--", color="red", label="300 K")
+            # if xlimmax[0]:
+            #     ax.axvline(x=xlimmax[0], linestyle="--", color="green", label=str(xlimmax[1]) + " K")
             ax.legend()
             ax.set_xlabel(x_label)
             ax.set_ylabel(y_label)
@@ -95,27 +92,25 @@ class PltWindowProfile(PltWindow):
 
     def getXmaxFromVector(self, abscissa, ordinate):
         xmax_of_this_vect = None
-        y_trigger = np.max(ordinate) / 100
-        for x, y in zip(abscissa[::-1], ordinate[::-1]):
-            if y <= y_trigger:
+        #todo: np.isnan
+        dyx = np.abs(np.gradient(ordinate, abscissa))
+        dyx_trigger = np.max(dyx) / 10
+        for x, derivate in zip(abscissa[::-1], dyx[::-1]):
+            if derivate <= dyx_trigger:
                 xmax_of_this_vect = x
             else:
                 break
         print(xmax_of_this_vect)
         return xmax_of_this_vect
 
-    def plot(self, data=None, name="", xlog = False, ylog = False, x_label="", y_label="", xlim="", xlimmax=""):
+    # def plot(self, data=None, name="", xlog = False, ylog = False, x_label="", y_label=""):
+    def plot(self, data=None, name="", xlog = False, ylog = False, x_label="", y_label="", linestyle=""):
         """
             Plot the graph given the parameters.
             If data is None, plot an empty graph.
             If xlog is True, the x axis xill be logscale.
             The same goes for ylog.
             x_label and y_label designate the name of the axis.
-            
-            The folloxing arguements does not have any effect, but were let
-            here to facilitate their implementation in case of need.
-            xlim: position of a vertical line of equation x=xlim. Should be used to indicate the minimum limit of a graph. 
-            xlimmax: position of a vertical line of equation x=xlimmax. Should be used to indicate the maximum limit of a graph. 
         """
         if data is None:
             data = []
@@ -132,7 +127,7 @@ class PltWindowProfile(PltWindow):
 
             ax.xaxis.set_major_formatter(mtick.FormatStrFormatter('%.2e'))
             ax.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.2e'))
-
+            """
             xmaxtemp = self.getXmaxFromVector(x, y)
             if self.xmax:
                 if self.xmax < xmaxtemp:
@@ -150,8 +145,13 @@ class PltWindowProfile(PltWindow):
                 self.xmin = xmintemp
             if self.xmin:
                 ax.set_xlim(left=self.xmin)
-            ax.set_xlim(left=0)
-            ax.plot(x, y, label=name)
+            #ax.set_xlim(left=0)
+            #ax.set_xlim(right=1e-8)
+            """
+            if linestyle:
+                ax.plot(x, y, linestyle, label=name)
+            else:
+                ax.plot(x, y, label=name)
             ax.legend()
             ax.set_xlabel(x_label)
             ax.set_ylabel(y_label)

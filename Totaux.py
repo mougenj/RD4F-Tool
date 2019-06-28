@@ -27,17 +27,16 @@ from PltWindows import PltWindowProfile
 from AddFiles import AddFiles
  
 from DataOfAFile import DataOfAFile
-from Checkboxes import ProfileCheckboxes
+from Checkboxes import Checkboxes
 
-
-class Profile(QWidget):
+class Totaux(QWidget):
     
     def __init__(self):
         super().__init__()
         self.layout = QHBoxLayout()
         self.setLayout(self.layout)
+        self.names_of_curves = ["temperature", "int+sum", "int", "sum", "mini_int"]
         self.data_onglets = []
-        self.names_of_curves = ["solubility", "source", "trap"]
 
         self.doublelist = DoubleThumbListWidget()
         trigger_click = partial(self.on_click_open_files, self.doublelist)
@@ -49,11 +48,9 @@ class Profile(QWidget):
         bt_draw.clicked.connect(self.draw)
 
         draw_bts = make_vbox()
-        #for _ in range(10):  # todo: find another way to place the widget down
-        #    draw_bts.layout.addWidget(QLabel(" "))
         draw_bts.layout.addWidget(QLabel("Draw"))
         draw_bts.layout.addWidget(bt_draw)
-        self.checkboxes = ProfileCheckboxes("Select your data", self.names_of_curves)
+        self.checkboxes = Checkboxes("Select your data", self.names_of_curves)
         
         self.layout.addWidget(
             make_hbox(
@@ -79,7 +76,7 @@ class Profile(QWidget):
 
 
         get_name_from_path = lambda path : path.split("/")[-1].split('.', 1)[0]
-        filepath = "cas_test/profil000001.txt"
+        filepath = "cas_test/totaux.txt"
         data = self.getDataFromFilepath(filepath)
         name = get_name_from_path(filepath)
         self.open_new_file(self.doublelist, DataOfAFile(filepath, name, data))
@@ -179,58 +176,60 @@ class Profile(QWidget):
         checked = self.checkboxes.checked
 
         def plot_every_window(x, y, name):
-            if self.checkboxes.isSourceOnly():
-                linestyle = ".--"
-            else:
-                linestyle = ""
             data = x, y
-            self.pltwindows[0].plot(data, name, ylog=True, x_label="TODO", y_label="" + " (logscale)", linestyle=linestyle)
+            self.pltwindows[0].plot(data, name, ylog=True, x_label="TODO", y_label="" + " (logscale)")
             
             data = 1 / x, y
-            self.pltwindows[1].plot(data, name, ylog=True, x_label="TODO", y_label="" + " (logscale)", linestyle=linestyle)
+            self.pltwindows[1].plot(data, name, ylog=True, x_label="TODO", y_label="" + " (logscale)")
 
             data = x, y
-            self.pltwindows[2].plot(data, name, x_label="TODOs", y_label="", linestyle=linestyle)
+            self.pltwindows[2].plot(data, name, x_label="TODOs", y_label="")
 
             data = x, y
-            self.pltwindows[3].plot(data, name, xlog=True, ylog=True, x_label="Temperature (K)" + " (logscale)",y_label=""  + " (logscale)", linestyle=linestyle)
-        """
-                i = len(self.checked)
-                if i < len(self.names_of_buttons) - 1:
-                    cb = QCheckBox(self.names_of_buttons[i])
-                else:
-                    cb = QCheckBox(self.names_of_buttons[-1] + str(i + 1 - len(self.names_of_buttons)))
-        """
+            self.pltwindows[3].plot(data, name, xlog=True, ylog=True, x_label="Temperature (K)" + " (logscale)",y_label=""  + " (logscale)")
+
         if master:
             # master
-            master_t, master_y, *master_traps, master_source = master.data
+            master_t, master_temperature, master_int_sum, master_int, master_sum, *master_mini_ints = master.data
             xmax = master_t[0]
 
             if checked[0]:
                 curve_name =  master.name + " " + self.names_of_curves[0]
-                plot_every_window(master_t, master_y, curve_name)
+                plot_every_window(master_t, master_temperature, curve_name)
             if checked[1]:
                 curve_name = master.name + " " + self.names_of_curves[1]
-                plot_every_window(master_t, master_source, curve_name)
-            for index, trap in enumerate(master_traps):
-                if checked[index + 2]:
-                    curve_name = master.name + " (" + self.names_of_curves[2] + " " + str(index + 1) + ")"
-                    plot_every_window(master_t, trap, curve_name)
+                plot_every_window(master_t, master_int_sum, curve_name)
+            if checked[2]:
+                curve_name = master.name + " " + self.names_of_curves[2]
+                plot_every_window(master_t, master_int, curve_name)
+            if checked[3]:
+                curve_name = master.name + " " + self.names_of_curves[3]
+                plot_every_window(master_t, master_sum, curve_name)
+            
+            for index, mini_int in enumerate(master_mini_ints):
+                if checked[index + 4]:
+                    curve_name = master.name + " (" + self.names_of_curves[-1] + " " + str(index + 1) + ")"
+                    plot_every_window(master_t, mini_int, curve_name)
             
         if slaves:
             # slaves
             for slave in slaves:
-                slave_t, slave_y, *slaves_traps, slave_source = slave.data
+                slave_t, slave_temperature, slave_int_sum, slave_int, slave_sum, *slave_mini_ints = slave.data
                 if checked[0]:
                     curve_name =  slave.name + " " + self.names_of_curves[0]
-                    plot_every_window(slave_t, slave_y, curve_name)
+                    plot_every_window(slave_t, slave_temperature, curve_name)
                 if checked[1]:
-                    score = np.max(np.abs(np.sqrt((master_source - slave_source)**2)))
-                    curve_name = slave.name + " " + self.names_of_curves[1] + " (score: " + str(score) + ")"
-                    plot_every_window(slave_t, slave_source, curve_name)
-                for index, trap in enumerate(slaves_traps):
-                    if checked[index + 2]:
-                        curve_name = slave.name + " (" + self.names_of_curves[2] + " " + str(index + 1) + ")"
+                    curve_name = slave.name + " " + self.names_of_curves[1]
+                    plot_every_window(slave_t, slave_int_sum, curve_name)
+                if checked[2]:
+                    curve_name = slave.name + " " + self.names_of_curves[2]
+                    plot_every_window(slave_t, slave_int, curve_name)
+                if checked[3]:
+                    curve_name = slave.name + " " + self.names_of_curves[3]
+                    plot_every_window(slave_t, slave_sum, curve_name)
+                for index, trap in enumerate(slave_mini_ints):
+                    if checked[index + 4]:
+                        curve_name = slave.name + " (" + self.names_of_curves[-1] + " " + str(index + 1) + ")"
                         plot_every_window(slave_t, trap, curve_name)
                 
         print("Time taken to plot " + str(time.time() - start))

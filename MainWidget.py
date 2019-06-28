@@ -5,10 +5,11 @@ from PyQt5.QtWidgets import (QWidget,
 import matplotlib.pyplot as plt
 from ReadingPart import ReadingPart
 from WritingPart import WritingPart
-from ThirdTab import ThirdTab
+from Profile import Profile
+from Totaux import Totaux
 import os
 from PyQt5.QtCore import Qt
-from Profile import Profile
+
 
 
 class MainWidget(QWidget):
@@ -41,8 +42,8 @@ class MainWidget(QWidget):
 
         tabs.addTab(ReadingPart(), "Read")
         tabs.addTab(WritingPart(), "Write")
-        # tabs.addTab(ThirdTab(), "Post-traitement")  # todo: traduire
         tabs.addTab(Profile(), "Profile")
+        tabs.addTab(Totaux(), "Totaux")
         tabs.setCurrentIndex(0)
 
         layout = QVBoxLayout()  # contient les tabs
