@@ -1,4 +1,7 @@
 from PyQt5.QtWidgets import QLineEdit
+from PyQt5.QtGui import QPalette, QColor
+
+
 
 class QLineEditWidthed(QLineEdit):
     """
@@ -12,6 +15,10 @@ class QLineEditWidthed(QLineEdit):
         self.setText(text)
         self.editable = editable
         self.setReadOnly(not editable)
+        if not editable:
+            palette = self.palette();
+            palette.setColor(QPalette.Base, QColor(190 , 190, 190))
+            self.setPalette(palette);
         textSize = self.fontMetrics().size(0, "")
         
         if text_to_be_able_to_display:
