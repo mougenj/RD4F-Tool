@@ -200,10 +200,18 @@ class ReadingPart(QWidget):
             for equation in onglet:
                 if equation[0] == name:
                     try:
+                        if name == "D":
+                            y_unit = "Diffusivity (m²/s)"
+                        elif name == "Kr":
+                            y_unit = "Recombinaison coefficient (m⁴/s)"
+                        elif name == "S":
+                            y_unit = "Solubility (adatome/(m³*Pa½)"
+                        else:
+                            y_unit = ""
                         y_values = equation[1][1] * np.exp(-equation[2][1]/(k_b * les_temperatures))
                         legend = source["author_name"] + " - " + str(source["year"])
                         data = les_temperatures, y_values
-                        self.pltwindows[0].plot(data, legend, ylog=True, x_label="Temperature (K)", y_label="" + " (logscale)", xlim=xlim, xlimmax=(value_x_max, value_x_max))
+                        self.pltwindows[0].plot(data, legend, ylog=True, x_label="Temperature (K)", y_label=y_unit + " (logscale)")
 
                         data = 1 / les_temperatures, y_values
                         if xlim != 0:
@@ -216,18 +224,19 @@ class ReadingPart(QWidget):
                         else:
                             value_x_max_divided = 0
 
-                        self.pltwindows[1].plot(data, legend, ylog=True, x_label="1/Temperature ($K^{-1}$)", y_label="" + " (logscale)", xlim=xlim_divided, xlimmax=(value_x_max_divided, value_x_max))
+                        self.pltwindows[1].plot(data, legend, ylog=True, x_label="1/Temperature ($K^{-1}$)", y_label=y_unit + " (logscale)")
 
                         data = les_temperatures, y_values
-                        self.pltwindows[2].plot(data, legend, x_label="Temperature (K)", y_label="", xlim=xlim, xlimmax=(value_x_max, value_x_max))
+                        self.pltwindows[2].plot(data, legend, x_label="Temperature (K)", y_label=y_unit)
 
                         data = les_temperatures, y_values
-                        self.pltwindows[3].plot(data, legend, xlog=True, ylog=True, x_label="Temperature (K)" + " (logscale)",y_label=""  + " (logscale)", xlim=xlim, xlimmax=(value_x_max, value_x_max))
+                        self.pltwindows[3].plot(data, legend, xlog=True, ylog=True, x_label="Temperature (K)" + " (logscale)",y_label=y_unit  + " (logscale)")
                         # since the curves was plot, we need to stop plotting
                         # the xilm and the xlimmax
                         xlim, value_x_max = 0, 0
-                    except TypeError:  # there is a None in the data
+                    except TypeError as e:  # there is a None in the data
                         print("I cant't draw", name)
+                        print(e)
 
         print("Time taken to plot " + str(time.time() - start))
 
