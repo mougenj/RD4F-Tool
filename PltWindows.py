@@ -38,7 +38,7 @@ class PltWindowReading(PltWindow):
         super().__init__()
         self.plot()
     
-    # ef plot(self, data=None, name="", xlog = False, ylog = False, x_label="", y_label="", xlim="", xlimmax=""):
+    # def plot(self, data=None, name="", xlog = False, ylog = False, x_label="", y_label="", xlim="", xlimmax=""):
     def plot(self, data=None, name="", xlog = False, ylog = False, x_label="", y_label=""):
         """
             Plot the graph given the parameters.
@@ -67,6 +67,7 @@ class PltWindowReading(PltWindow):
             #     ax.axvline(x=xlim, linestyle="--", color="red", label="300 K")
             # if xlimmax[0]:
             #     ax.axvline(x=xlimmax[0], linestyle="--", color="green", label=str(xlimmax[1]) + " K")
+            ax.grid()
             ax.legend()
             ax.set_xlabel(x_label)
             ax.set_ylabel(y_label)
