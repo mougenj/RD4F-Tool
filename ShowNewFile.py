@@ -8,6 +8,22 @@ from PyQt5.QtCore import Qt
 import rlcompleter
 from functools import partial
 import makeWidget
+from datetime import datetime
+
+
+def get_today_date():
+    year = str(datetime.today().year)
+    month = str(datetime.today().month)
+    day = str(datetime.today().day)
+    hour = str(datetime.today().hour)
+    minute = str(datetime.today().minute)
+    second = str(datetime.today().second)
+
+    add_0 = lambda s: "0" + s if len(s) == 1 else s
+    today = year + "-" + add_0(month) + "-" + add_0(day)
+    today += " " + add_0(hour) + ":" + add_0(minute) + ":" + add_0(second)
+
+    return today
 
 
 class ShowNewFile(QWidget):
@@ -159,7 +175,15 @@ class ShowNewFile(QWidget):
         gridSource.setLayout(gridSource.layout)
         gridSource.setObjectName("source")
         i = 0
+
         self.list_data_source = parameters["source"]
+        # last edit
+        prop = "last_edit"
+        gridSource.layout.addWidget(QLabel(prop), i, 0)
+        value = parameters["source"].get("last_edit", get_today_date())
+        gridSource.layout.addWidget(QLineEditWidthed(value, False, "2019-07-01 10:56:89"), i, 1)
+        i += 1
+
         # author_name
         prop = "author_name"
         gridSource.layout.addWidget(QLabel(prop), i, 0)
@@ -170,6 +194,7 @@ class ShowNewFile(QWidget):
             value = "{:.2e}".format(float(value))
         gridSource.layout.addWidget(QLineEditWidthed(value, editable, "-------------------------------"), i, 1)
         i += 1
+
         # DOI
         prop = "doi"
         gridSource.layout.addWidget(QLabel(prop), i, 0)
@@ -222,7 +247,7 @@ class ShowNewFile(QWidget):
                     return to_insert
                 
                 try:
-                    #to_insert = request_doi_api()  # todo: uncomment
+                    to_insert = request_doi_api()
                     if to_insert:
                         doi_api_success = True
                 except TimeoutException:
@@ -367,7 +392,7 @@ class ShowNewFile(QWidget):
 
         if self.editable:
             # create a button that remove this subnode
-            remove_energy_bt = QPushButton("delete energy")
+            remove_energy_bt = QPushButton("delete line")
             remove_energy_bt.setIcon(QIcon("ressources/trash-alt-solid.svg"))
             # remove_energy_bt.setMinimumSize(120, 0);
             # remove_energy_bt.setMaximumSize(120, 28);

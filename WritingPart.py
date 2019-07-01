@@ -15,7 +15,7 @@ from PyQt5.QtWidgets import (QWidget,
                             )
 from PyQt5.QtGui import QPalette, QKeySequence
 from PyQt5.QtCore import QStringListModel
-from ShowNewFile import ShowNewFile
+import ShowNewFile
 import json
 from functools import partial
 import pdb
@@ -89,7 +89,7 @@ class WritingPart(QWidget):
     def open_new_file(self, tab, name, parameters):
         decoupe = lambda chaine : "..." + chaine[-10:] if len(chaine) > 10 else chaine
         #get background color
-        snf = ShowNewFile(parameters, self.background, editable=True)
+        snf = ShowNewFile.ShowNewFile(parameters, self.background, editable=True)
         tab.setCurrentIndex(tab.addTab(snf, decoupe(name)))
 
     def getDataInFile(self, functionToCallToGetIndex):
@@ -191,7 +191,8 @@ class WritingPart(QWidget):
         except Exception as e:
             dialog = QMessageBox()
             dialog.setWindowTitle("Error")
-            error_text = "An error occured while saving your file. It is likely that your file is filled with wrong datas (or maybe you don't have any file opened yet)." 
+            error_text = "An error occured while saving your file. It is likely that your file is filled with wrong datas (or maybe you don't have any file opened yet).\n"
+            error_text += "Error text: " + str(e)
             dialog.setText(error_text)
             dialog.setIcon(QMessageBox.Warning)
             dialog.exec_()
@@ -257,7 +258,7 @@ class WritingPart(QWidget):
                 floated = float(x)
                 return floated
             except Exception as e:
-                print(e)
+                print("to_float_secure:", e)
                 return None
 
         def to_int_secure(x):
@@ -288,13 +289,14 @@ class WritingPart(QWidget):
                     data["equation"][key][subkey] = to_float_secure(data["equation"][key][subkey])
         
         data["source"]["year"] = to_int_secure(data["source"]["year"])
+        data["source"]["last_edit"] = ShowNewFile.get_today_date()
 
         for key in ("melting_point", "lattice_parameter", "density"):
             data["material"][key] = to_float_secure(data["material"][key])
 
         #atomic number and adatom atomic number to float
-        data["material"]["atomic_number"] = to_int_secure(data["material"]["atomic_number"])
-        data["material"]["adatome_atomic_number"] = to_int_secure(data["material"]["adatome_atomic_number"])
+        data["material"]["atomic_number"] = to_int_secure(data["material"].get("atomic_number", None))
+        data["material"]["adatome_atomic_number"] = to_int_secure(data["material"].get("adatome_atomic_number", None))
 
         return data
 
