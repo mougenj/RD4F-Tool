@@ -79,10 +79,6 @@ class ReadingPart(QWidget):
 
 
         # TODO: commenter
-        """
-        with open("Touchard-2012.txt") as fichier:
-            self.open_new_file(tab_left, "Touchard-2012.txt", json.loads(fichier.read()))
-        """
         with open("json.txt") as fichier:
             self.open_new_file(tab_left, "json.txt", json.loads(fichier.read()))
 
@@ -156,6 +152,7 @@ class ReadingPart(QWidget):
         return label
 
     def open_new_file(self, tab, name, parameters):
+        print(parameters)
         """
             Create a new tab that shows informations about a file. Extract and
             add those informations to a list, so that they can be re-used later
@@ -193,8 +190,8 @@ class ReadingPart(QWidget):
         # Boltzmann constant
         k_b = 1.38064852 * 10**(-23) * 8.617e+18
 
-        value_x_max = self.majValidityRange()
-        xlim=300
+        # value_x_max = self.majValidityRange()
+        # xlim=300
 
         for onglet, source in zip(self.data_onglets, self.data_sources):
             for equation in onglet:
@@ -214,15 +211,15 @@ class ReadingPart(QWidget):
                         self.pltwindows[0].plot(data, legend, ylog=True, x_label="Temperature (K)", y_label=y_unit + " (logscale)")
 
                         data = 1 / les_temperatures, y_values
-                        if xlim != 0:
-                            xlim_divided = 1 / xlim
-                        else:
-                            xlim_divided = 0
+                        # if xlim != 0:
+                        #     xlim_divided = 1 / xlim
+                        # else:
+                        #     xlim_divided = 0
 
-                        if value_x_max != 0:
-                            value_x_max_divided = 1 / value_x_max
-                        else:
-                            value_x_max_divided = 0
+                        # if value_x_max != 0:
+                        #     value_x_max_divided = 1 / value_x_max
+                        # else:
+                        #     value_x_max_divided = 0
 
                         self.pltwindows[1].plot(data, legend, ylog=True, x_label="1/Temperature ($K^{-1}$)", y_label=y_unit + " (logscale)")
 
@@ -233,7 +230,7 @@ class ReadingPart(QWidget):
                         self.pltwindows[3].plot(data, legend, xlog=True, ylog=True, x_label="Temperature (K)" + " (logscale)",y_label=y_unit  + " (logscale)")
                         # since the curves was plot, we need to stop plotting
                         # the xilm and the xlimmax
-                        xlim, value_x_max = 0, 0
+                        # xlim, value_x_max = 0, 0
                     except TypeError as e:  # there is a None in the data
                         print("I cant't draw", name)
                         print(e)
@@ -256,7 +253,7 @@ class ReadingPart(QWidget):
                 with open(filepath, "r") as fichier: 
                     liste = json.loads(fichier.read())
                 sucessfully_loaded.append((filepath, liste))
-            except Exception as e:
+            except Exception:
                 failed.append(filepath)
         if failed:
             dialog = QMessageBox()

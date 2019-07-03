@@ -36,6 +36,7 @@ class ShowNewFile(QWidget):
             Init the ShowNewFile.
         """
         super().__init__()
+        print(parameters)
         self.editable = editable
         """
             Here is a little hack: in the QTreeWidget (see below), we will add
@@ -247,7 +248,7 @@ class ShowNewFile(QWidget):
                     return to_insert
                 
                 try:
-                    to_insert = request_doi_api()
+                    # to_insert = request_doi_api()
                     if to_insert:
                         doi_api_success = True
                 except TimeoutException:
@@ -287,28 +288,43 @@ class ShowNewFile(QWidget):
             tree.setColumnCount(4)
             tree.setHeaderLabels([
                 "Density",
-                "Angular frequency",
+                "",
+                "energy",
+                "",
+                "frequence",
+                "",
                 "Delete this trap",
-                "Add an energy to this trap"
+                "Add data to this trap"
             ])
         else:
             tree.setColumnCount(2)
             tree.setHeaderLabels([
                 "Density",
-                "Angular frequency"
+                "",
+                "energy",
+                "",
+                "frequence",
+                ""
             ])
-        tree.header().resizeSection(0, 150)
-        tree.header().resizeSection(1, 150)
-        tree.header().resizeSection(2, 150)
-        tree.header().resizeSection(3, 200)
+        tree.header().resizeSection(0, 120)
+        tree.header().resizeSection(1, 50)
+        tree.header().resizeSection(2, 100)
+        tree.header().resizeSection(3, 35)
+        tree.header().resizeSection(4, 100)
+        tree.header().resizeSection(5, 35)
+
+        tree.header().resizeSection(6, 115)
+        tree.header().resizeSection(7, 145)
         tree.header().setStretchLastSection(False)
         tree.setObjectName("traps")
+        
         for trap in parameters["traps"]:
             tree_item_for_this_trap = self.create_subtree_for_a_trap(tree, trap)
-            for energy in trap["energy"]:
-                self.addEnergyToATrap(tree, tree_item_for_this_trap, energy)
+            for data in trap["data"]:
+                self.addEnergyToATrap(tree, tree_item_for_this_trap, data)
         vbox = makeWidget.make_vbox()
         vbox.layout.addWidget(tree)
+
         if self.editable:
             bt_add_new_trap = QPushButton("Add a trap")
             vbox.layout.addWidget(bt_add_new_trap)
@@ -321,29 +337,34 @@ class ShowNewFile(QWidget):
         self.setLayout(layout)
         self.tabs = tabs
     
-    def create_subtree_for_a_trap(self, tree, trap):
+    def create_subtree_for_a_trap(self, tree, trap):  # todo: done
         """
             Create a node that display informations about a trap. Can have
-            subnodes that diplay infos about some energy of this trap.
+            subnodes that diplay infos about some (energy, frequency
+            of this trap.
         """
         # add it to the list, so it can be deleted later
         self.correspondence_index_position.append(self.nb_created)
         tree_item_for_this_trap = QTreeWidgetItem(tree)
 
         # get informations from the JSON file
-        if trap["density"]:
+
+        if trap.get("density") is not None:
             density = "{:.2e}".format(float(trap["density"]))
         else:
             density = "None"
         density_line = QLineEditWidthed(density, self.editable, "--------------")
         tree.setItemWidget(tree_item_for_this_trap, 0, density_line)
+        tree.setItemWidget(tree_item_for_this_trap, 1, QLabel("at. fr."))
 
-        if trap["angular_frequency"]:
+        """
+        if trap.get("angular_frequency") is not None:
             angular_frequency = "{:.2e}".format(float(trap["angular_frequency"]))
         else:
             angular_frequency = "None"
         angular_frequency_line = QLineEditWidthed(angular_frequency, self.editable, "--------------")
         tree.setItemWidget(tree_item_for_this_trap, 1, angular_frequency_line)
+        """
 
         # create a list that store the ids of its subnodes. see a comment in
         # ShowNewFile.__init() to see how it works.
@@ -357,14 +378,14 @@ class ShowNewFile(QWidget):
             remove_bt.setMaximumSize(50, 50)
             remove_bt.clicked.connect(partial(self.on_click_remove_bt_trap, tree, self.nb_created))
             # add the button to the tree
-            tree.setItemWidget(tree_item_for_this_trap, 2, remove_bt)
+            tree.setItemWidget(tree_item_for_this_trap, 6, remove_bt)
             # lets create a button that add energy to this trap
             add_energy_bt = QPushButton()
             add_energy_bt.setIcon(QIcon("ressources/plus-circle-solid.svg"))
             add_energy_bt.setMaximumSize(50, 50)
-            add_energy_bt.clicked.connect(partial(self.addEnergyToATrap, tree, tree_item_for_this_trap))
+            add_energy_bt.clicked.connect(partial(self.addEnergyToATrap, tree, tree_item_for_this_trap, {}))
             # add the button to the tree
-            tree.setItemWidget(tree_item_for_this_trap, 3, add_energy_bt)
+            tree.setItemWidget(tree_item_for_this_trap, 7, add_energy_bt)
         # increment the creation counter
         tree_item_for_this_trap.setExpanded(True)
         self.nb_created += 1
@@ -381,15 +402,21 @@ class ShowNewFile(QWidget):
         self.correspondence_index_position.pop(index_to_delete)
         # remove the node
         tree.takeTopLevelItem(index_to_delete)
-    
-    def addEnergyToATrap(self, tree, trap_tree, value=""):
+
+
+    @pyqtSlot()
+    def addEnergyToATrap(self, tree, trap_tree, value):  # todo rename
         """
             Add a subnode to this node that can be filled by the user to
-            display informations about energy of this trp.
+            display informations about energy of this trap.
         """
         energy_trap = QTreeWidgetItem(trap_tree)
-        tree.setItemWidget(energy_trap, 0, QLineEditWidthed("{:.2e}".format(float(value)), self.editable, "--------------"))
-
+        energy = value.get("energy", 0)
+        frequence = value.get("frequency", 0)
+        tree.setItemWidget(energy_trap, 2, QLineEditWidthed("{:.2e}".format(float(energy)), self.editable, "--------------"))
+        tree.setItemWidget(energy_trap, 3, QLabel("eV"))
+        tree.setItemWidget(energy_trap, 4, QLineEditWidthed("{:.2e}".format(float(frequence)), self.editable, "--------------"))
+        tree.setItemWidget(energy_trap, 5, QLabel("Hz"))
         if self.editable:
             # create a button that remove this subnode
             remove_energy_bt = QPushButton("delete line")
@@ -398,7 +425,7 @@ class ShowNewFile(QWidget):
             # remove_energy_bt.setMaximumSize(120, 28);
             remove_energy_bt.clicked.connect(partial(self.on_click_remove_energy_bt, trap_tree, trap_tree.nb_energy_created))
             # add the button to the tree
-            tree.setItemWidget(energy_trap, 1, remove_energy_bt)
+            tree.setItemWidget(energy_trap, 6, remove_energy_bt)
             
         trap_tree.correspondence_index_position_energy.append(trap_tree.nb_energy_created)
         trap_tree.nb_energy_created += 1
@@ -496,7 +523,7 @@ class ShowNewFile(QWidget):
                 fillVboxWithAnything(equations_container, name, coef1, coef2, comment_content)
                 list_equation_already_written.append(name)
             else:
-                print("WARNING : I cant't show the equation named", name, "because it is not in ['D', 'S', 'Kr'].")
+                print("WARNING : I can't show the equation named", name, "because it is not in ['D', 'S', 'Kr'].")
         # if this ShowNewFile is editable and if some informations is lacking,
         # we must display an empty section so that the user will be able to
         # fill it anyway

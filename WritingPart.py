@@ -139,14 +139,22 @@ class WritingPart(QWidget):
                     trap_tree = tab_data_container.topLevelItem(i)
                     dictionnary_of_this_trap = {
                         "density" : tab_data_container.itemWidget(trap_tree, 0).text(),
-                        "angular_frequency": tab_data_container.itemWidget(trap_tree, 1).text(),
-                        "energy" : []
+                        "data": []
                     }
                     for j in range(trap_tree.childCount()):
                         energy_tree = trap_tree.child(j)
-                        line = tab_data_container.itemWidget(energy_tree, 0)
-                        if line:
-                            dictionnary_of_this_trap["energy"].append(line.text())
+                        energy = tab_data_container.itemWidget(energy_tree, 2)
+                        frequence = tab_data_container.itemWidget(energy_tree, 4)
+                        if energy:
+                            energy = energy.text()
+                        else:
+                            energy = None
+                        if frequence:
+                            frequence = frequence.text()
+                        else:
+                            frequence = None
+                        dictionnary_of_this_trap["data"].append({"energy":energy, "frequency":frequence})
+
                     if not dictionnary_of_this_trap == {}:
                         data_to_save["traps"].append(dictionnary_of_this_trap)
                 
@@ -202,7 +210,7 @@ class WritingPart(QWidget):
         adatome = data_to_convert["material"]["adatome"]
         material_name = data_to_convert["material"]["name"]
 
-        # write the converte data into a string
+        # write the converted data into a string
         data_converted = ""
         data_converted += "$" + adatome + " in " + material_name + "\n"
         i = 0
@@ -271,17 +279,29 @@ class WritingPart(QWidget):
             except Exception as e:
                 print(e)
                 return None
+        
+        def to_sci_notation(x):
+            try: 
+                scied = "{:.2e}".format(to_float_secure(x))
+                return scied
+            except:
+                return None
+
 
         for i in range(len(data["traps"])):
-            for key in ("density", "angular_frequency"):
-                try:
-                    data["traps"][i][key] = to_float_secure(data["traps"][i][key])
-                except KeyError as e:  # attrape le bouton d'ajout
-                    print(e)
-            # energy part
-            energy_list = data["traps"][i]["energy"]
-            corrected_energy_list = [to_float_secure(x) for x in energy_list]
-            data["traps"][i]["energy"] = corrected_energy_list
+            try:
+                data["traps"][i]["density"] = to_sci_notation(data["traps"][i]["density"])
+            except KeyError as e:  # attrape le bouton d'ajout
+                print(e)
+            # data part
+            data_trap_dict_list = data["traps"][i]["data"]
+            data_trap_dict_list_corrected = []
+            for dictionnary in data_trap_dict_list:
+                dictionnary_corrected = {}
+                dictionnary_corrected["energy"] = to_sci_notation(dictionnary["energy"])
+                dictionnary_corrected["frequency"] = to_sci_notation(dictionnary["frequency"])
+                data_trap_dict_list_corrected.append(dictionnary_corrected)
+            data["traps"][i]["data"] = data_trap_dict_list_corrected
 
         for key in data["equation"]:
             for subkey in data["equation"][key]:
@@ -304,7 +324,7 @@ class WritingPart(QWidget):
     def on_click_open_files(self, tab_to_add):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        files, _ = QFileDialog.getOpenFileNames(self,"QFileDialog.getOpenFileNames()", "","All Files (*);;Python Files (*.py)", options=options)
+        files, _ = QFileDialog.getOpenFileNames(self, "QFileDialog.getOpenFileNames()", "","All Files (*);;Python Files (*.py)", options=options)
         sucessfully_loaded = []
         failed = []
         for filepath in files:

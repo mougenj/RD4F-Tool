@@ -111,7 +111,7 @@ class Totaux(QWidget):
         
         if (maxlen > len(checked)):
             diff = maxlen - len(checked) - 1  # -1 because of the abscissa
-            for i in range(diff):
+            for _ in range(diff):
                 self.checkboxes.addCheckbox()
         
         try:

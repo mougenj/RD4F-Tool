@@ -43,8 +43,11 @@ def create_json_example():
     traps = [
         {
             "density" : 5,
-            "angular_frequency" : 8,
-            "energy" : [454, 48, 98]
+            "data" : [
+                {"energy":454, "density":1},
+                {"energy":48, "density":45},
+                {"energy":98, "density":1}
+            ]
         }
         for _ in range(1)
     ]
@@ -99,8 +102,7 @@ def create_empty_data():
     traps = [
         {
             "density" : None,
-            "angular_frequency" : None,
-            "energy" : []
+            "data" : []
         }
         for _ in range(1)
     ]

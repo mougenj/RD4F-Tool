@@ -21,8 +21,8 @@ class DoubleThumbListWidget(QWidget):
         self.down = ThumbListWidget()
         self.up = UniqueThumbListWidget(self.down)
 
-        self.up.setMinimumSize(20, 20)
-        self.up.setMaximumHeight(20)
+        self.up.setMinimumSize(20, 30)
+        self.up.setMaximumHeight(30)
         gb_up = make_groupbox("Fichier principal", self.up)
         gb_up.setMaximumHeight(80)
 
@@ -80,6 +80,8 @@ class ThumbListWidget(QListWidget):
     def addItemFromData(self, data, i):
         i = self.int_to_str(i)
         name = data.name
+        if data.codename:
+            name += " (" + data.codename + ")"
 
         item = QListWidgetItem('Item ' + i + ": " + name)
         self.addItem(item)
@@ -127,12 +129,9 @@ class ThumbListWidget(QListWidget):
             if self.item(i).text() == text:
                 supression_index = i
         if supression_index >= 0:
-            item = self.item(supression_index)
             self.takeItem(supression_index)
         
     def sort(self):
-        def getIndexFromText(element):
-            text = element.text()
         self.previous_state = []
         for i in range(self.count()):
             self.previous_state.append(self.item(i).clone())
@@ -174,7 +173,12 @@ class UniqueThumbListWidget(QListWidget):
         return self.item(0).text()
 
     def addItemFromData(self, data, i):
-        item = QListWidgetItem('Item ' + self.int_to_str(i) + ": " + data.name)
+        i = self.int_to_str(i)
+        name = data.name
+        if data.codename:
+            name += " (" + data.codename + ")"
+            
+        item = QListWidgetItem('Item ' + i + ": " + name)
         self.addItem(item)
 
     def int_to_str(self, x):

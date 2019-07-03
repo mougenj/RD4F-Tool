@@ -5,8 +5,7 @@ from PyQt5.QtWidgets import (QWidget,
 import matplotlib.pyplot as plt
 from ReadingPart import ReadingPart
 from WritingPart import WritingPart
-from Profile import Profile
-from Totaux import Totaux
+from PostProcessing import PostProcessing
 import os
 from PyQt5.QtCore import Qt
 
@@ -42,9 +41,8 @@ class MainWidget(QWidget):
 
         tabs.addTab(ReadingPart(), "Read")
         tabs.addTab(WritingPart(), "Write")
-        tabs.addTab(Profile(), "Profile")
-        tabs.addTab(Totaux(), "Totaux")
-        tabs.setCurrentIndex(0)
+        tabs.addTab(PostProcessing(), "Post processing for Test Cases")
+        tabs.setCurrentIndex(2)
 
         layout = QVBoxLayout()  # contient les tabs
         layout.addWidget(tabs)

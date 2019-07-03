@@ -79,10 +79,10 @@ class Profile(QWidget):
 
 
         get_name_from_path = lambda path : path.split("/")[-1].split('.', 1)[0]
-        filepath = "cas_test/profil000001.txt"
-        data = self.getDataFromFilepath(filepath)
+        filepath = "cas_test/profil000400.txt"
+        data, codename = self.getDataFromFilepath(filepath)
         name = get_name_from_path(filepath)
-        self.open_new_file(self.doublelist, DataOfAFile(filepath, name, data))
+        self.open_new_file(self.doublelist, DataOfAFile(filepath, name, data, codename))
         
 
     def open_new_file(self, doubleListToAdd, data):
@@ -92,6 +92,7 @@ class Profile(QWidget):
         list_numbers = []
         length = -1
         with open(filepath, "r") as fichier:
+            codename = ""
             for ligne in fichier:
                 if not ligne.strip().startswith("%"):
                     numbers = [float(x) for x in ligne.split()]
@@ -101,6 +102,12 @@ class Profile(QWidget):
                         if length != len(numbers):
                             raise Exception("the file can't be parsed")
                     list_numbers.append(numbers)
+                else:
+                    # thus this line is a comment
+                    # if is starts like "% Code: XXX", then the codename is XXX
+                    if ligne.split(":")[0].replace(" ", "") == "%Code":
+                        codename = ligne.split(":")[1].strip(" ")
+
         
         # Here, numbers looks like:
         # [[x0, y0, z0, ...], [x1, y1, z1, ...], [x2, y2, z2, ...], ...]
@@ -130,7 +137,7 @@ class Profile(QWidget):
             print(e)
         print(maxlen)
 
-        return list_numbers
+        return list_numbers, codename
 
     @pyqtSlot()
     def on_click_open_files(self, doubleListToAdd):
@@ -142,9 +149,9 @@ class Profile(QWidget):
         get_name_from_path = lambda path : path.split("/")[-1].split('.', 1)[0]
         for filepath in files:
             try:
-                data = self.getDataFromFilepath(filepath)
+                data, codename = self.getDataFromFilepath(filepath)
                 name = get_name_from_path(filepath)
-                sucessfully_loaded.append(DataOfAFile(filepath, name, data))
+                sucessfully_loaded.append(DataOfAFile(filepath, name, data, codename))
             except Exception as e:
                 print(e)
                 failed.append(filepath)
