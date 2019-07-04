@@ -42,7 +42,7 @@ class MainWidget(QWidget):
         tabs.addTab(ReadingPart(), "Read")
         tabs.addTab(WritingPart(), "Write")
         tabs.addTab(PostProcessing(), "Post processing for Test Cases")
-        tabs.setCurrentIndex(2)
+        tabs.setCurrentIndex(0)
 
         layout = QVBoxLayout()  # contient les tabs
         layout.addWidget(tabs)

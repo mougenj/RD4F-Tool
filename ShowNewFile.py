@@ -135,25 +135,33 @@ class ShowNewFile(QWidget):
 
         adatome_counter = 0
         for key in ["adatome", "adatome_atomic_number", "adatome_atomic_symbol"]:
+            value = ""
             try:
-                value = parameters["material"][key]
-                value = str(value)
+                value = str(parameters["material"][key])
+            except KeyError:
+                print("There is no key named", key, "in the file loaded, thus it is not possible to diplay this information.")
+                if self.editable:
+                    value = "None"
+            if value:
                 line = QLineEditWidthed(value, editable, "--------------")
                 grid_adatome.addWidget(QLabel(key), adatome_counter, 0)
                 grid_adatome.addWidget(line, adatome_counter, 1);
                 adatome_counter += 1
-            except KeyError:
-                print("There is no key named", key, "in the file loaded, thus it is not possible to diplay this information.")
+
         
         material_counter = 0
         keys = ("lattice_parameter", "atomic_number", "density", "atomic_symbol", "melting_point", "name", "net")
         units = ("m", "", "at/m³", "", "K", "", "")
         for key, unit in zip(keys, units):
+            value = ""
             try:
-                value = parameters["material"][key]
-                value = str(value)
+                value = str(parameters["material"][key])
+            except KeyError:
+                print("There is no key named", key, "in the file loaded, thus it is not possible to diplay this information.")
+                if self.editable:
+                    value = "None"
+            if value:
                 line = QLineEditWidthed(value, editable, "--------------")
-
                 grid_material.addWidget(QLabel(key), material_counter, 0)
                 grid_material.addWidget(QLabel("     "), material_counter, 1)  # todo: find a better way to align Qlabels inside the grid
                 grid_material.addWidget(line, material_counter, 2)
@@ -166,8 +174,6 @@ class ShowNewFile(QWidget):
                     else:
                         grid_material.addWidget(QLabel(""), material_counter, 4)
                 material_counter += 1
-            except KeyError:
-                print("There is no key named", key, "in the file loaded, thus it is not possible to diplay this information.")
 
         tabs.addTab(makeWidget.make_scroll(material_container), "Material")
 
@@ -447,7 +453,7 @@ class ShowNewFile(QWidget):
         equations_container.setObjectName("equation")
         list_equation_already_written = []
 
-        def fillVboxWithAnything(equations_container, name, coef1, coef2, comment_content):
+        def fillVboxWithAnything(equations_container, name, coef1, coef2, comment_content, is_in_the_file=True):
             """
                 Create a QGroupBox, fill it with the informations contained in
                 'name', 'coef1' and 'coef2'.
@@ -490,7 +496,7 @@ class ShowNewFile(QWidget):
             grid_data_coef.layout.addWidget(QLabel(unit1), 1, 2)
             if self.editable:
                 checkbox = QCheckBox("Take it into account")
-                checkbox.setChecked(True)
+                checkbox.setChecked(is_in_the_file)
                 grid_data_coef.layout.addWidget(checkbox, 1, 4)
             grid_data_coef.layout.addWidget(QLabel(coef2_name), 2, 0)
 
@@ -533,7 +539,7 @@ class ShowNewFile(QWidget):
             for name in ("D", "S", "Kr"):
                 if name not in list_equation_already_written:
                     print("WARNING:", name, "not found in the JSON. I'll add it myself.")
-                    fillVboxWithAnything(equations_container, name, "None", "None", "")
+                    fillVboxWithAnything(equations_container, name, "None", "None", "", is_in_the_file=False)
 
         return equations_container
 

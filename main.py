@@ -57,12 +57,6 @@ def create_database():
             "INSERT INTO MATERIAL"
             "(id, name, lattice_parameter, density, net, atomic_number, melting_point)"
             "VALUES"
-            "(3, \"AAA\", 0.3, 0.5, \"AAA\", 6,  3553.85);")
-        db.commit()
-        cursor.execute(
-            "INSERT INTO MATERIAL"
-            "(id, name, lattice_parameter, density, net, atomic_number, melting_point)"
-            "VALUES"
             "(4, \"Carbone\", 0.3, 0.5, \"CFC\", 6,  3553.85);")
         db.commit()
         cursor.execute(

@@ -105,7 +105,46 @@ class PltWindowProfile(PltWindow):
                 break
         print(xmax_of_this_vect)
         return xmax_of_this_vect
+    
+    def findXMinXMax(self, x, y):
+        index_x_min = 0
+        print("trouvons le x minimal")
+        while y[index_x_min] < 1e-9:
+            print(y[index_x_min])
+            index_x_min += 1
+            if index_x_min == len(x):
+                # nothing interesting to plot here, let's try to plot all the curve
+                index_x_min = None
+        print("fin", y[index_x_min])
+        
+        print("trouvons le x maximal")
+        index_x_max = len(x) - 1
+        while y[index_x_max] < 1e-9:
+            print(y[index_x_max])
+            index_x_max -= 1
+            if index_x_max == 0:
+                # nothing interesting to plot here, let's try to plot all the curve
+                index_x_max = None
+        
+        xmin = None if index_x_min is None else x[index_x_min]
+        xmax = None if index_x_max is None else x[index_x_max]
+        return xmin, xmax
+    
+    def updateXMinXMax(self, x, y):
+        print("avant", self.xmin, self.xmax)
+        xmin, xmax = self.findXMinXMax(x, y)
+        
+        if self.xmin and xmin:
+            self.xmax = min(self.xmin, xmin)
+        else:
+            self.xmin = xmin
 
+        if self.xmax and xmax:
+            self.xmax = max(self.xmax, xmax)
+        else:
+            self.xmax = xmax
+        print("apres", self.xmin, self.xmax)
+    
     # def plot(self, data=None, name="", xlog = False, ylog = False, x_label="", y_label=""):
     def plot(self, data=None, name="", xlog = False, ylog = False, x_label="", y_label="", linestyle=""):
         """
@@ -130,27 +169,35 @@ class PltWindowProfile(PltWindow):
 
             ax.xaxis.set_major_formatter(mtick.FormatStrFormatter('%.2e'))
             ax.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.2e'))
-            """
-            xmaxtemp = self.getXmaxFromVector(x, y)
-            if self.xmax:
-                if self.xmax < xmaxtemp:
-                    self.xmax = xmaxtemp
-            elif xmaxtemp:
-                self.xmax = xmaxtemp
-            if self.xmax:
-                ax.set_xlim(right=self.xmax)
+
+            self.updateXMinXMax(x, y)
+
+
+            # xmaxtemp = self.getXmaxFromVector(x, y)
+            # if self.xmax:
+            #     if self.xmax < xmaxtemp:
+            #         self.xmax = xmaxtemp
+            # elif xmaxtemp:
+            #     self.xmax = xmaxtemp
+            # if self.xmax:
+            #     ax.set_xlim(right=self.xmax)
             
-            xmintemp = self.getXminFromVector(x)
-            if self.xmin:
-                if self.xmin > xmintemp:
-                    self.xmin = xmintemp
-            elif xmintemp:
-                self.xmin = xmintemp
-            if self.xmin:
-                ax.set_xlim(left=self.xmin)
-            #ax.set_xlim(left=0)
-            #ax.set_xlim(right=1e-8)
-            """
+            # xmintemp = self.getXminFromVector(x)
+            # if self.xmin:
+            #     if self.xmin > xmintemp:
+            #         self.xmin = xmintemp
+            # elif xmintemp:
+            #     self.xmin = xmintemp
+            # if self.xmin:
+            #     ax.set_xlim(left=self.xmin)
+            # ax.set_xlim(left=0)
+            # ax.set_xlim(right=1e-8)
+            
+            # x, y = x[index_x_min:index_x_max], y[index_x_min:index_x_max]
+            # ax.set_ylim([x[index_x_min], x[index_x_max]])
+            ax.set_ylim([1e-9,1e-1])
+            ax.set_xlim(left=self.xmin)
+            ax.set_xlim(right=self.xmax)
             if linestyle:
                 ax.plot(x, y, linestyle, label=name)
             else:
@@ -158,8 +205,12 @@ class PltWindowProfile(PltWindow):
             ax.legend()
             ax.set_xlabel(x_label)
             ax.set_ylabel(y_label)
+        print()
+        print()
+        print()
         self.canvas.draw()
 
     def clear(self):
         self.xmax = None
+        self.xmin = None
         self.figure.clear()

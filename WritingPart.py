@@ -73,9 +73,9 @@ class WritingPart(QWidget):
         add_files.layout.addWidget(DragAndDrop.FileEdit("Drop your files here", partial(self.open_new_file, tab_left)))
         add_files.layout.addWidget(button_add_files)
 
-        # TODO: commenter
-        with open("json.txt") as fichier:
-            self.open_new_file(tab_left, "Exemple", json.loads(fichier.read()))
+
+        # with open("json.txt") as fichier:
+        #     self.open_new_file(tab_left, "Exemple", json.loads(fichier.read()))
         files_vbox = make_vbox()
         files_vbox.layout.addWidget(add_files)
 
@@ -206,60 +206,62 @@ class WritingPart(QWidget):
             dialog.exec_()
         
     def convert_to_other_format(self, functionToCallToGetIndex):
-        data_to_convert = self.getDataInFile(functionToCallToGetIndex)
-        adatome = data_to_convert["material"]["adatome"]
-        material_name = data_to_convert["material"]["name"]
-
-        # write the converted data into a string
-        data_converted = ""
-        data_converted += "$" + adatome + " in " + material_name + "\n"
-        i = 0
-
-        # solubility
         try:
-            es = "{:.2e}".format(data_to_convert["equation"]["S"]["E_S"])
-            s0 = "{:.2e}".format(data_to_convert["equation"]["S"]["S_0"])
-            header = "Solubility of " +  adatome + " in " + material_name + "(" + adatome + "/(m³*Pa½))"
-            exp = "exp(" + es + "/8.625e-5/temp)"
-            data_converted += "$  (" + str(i) + ")  " + header + "\n"
-            data_converted += "y=" + s0 + "*" + exp + ",end" + "\n"
-            i += 1
-        except Exception as e:
-            print(e)
-        
-        # diffusivity
-        try:
-            es = "{:.2e}".format(data_to_convert["equation"]["D"]["E_D"])
-            s0 = "{:.2e}".format(data_to_convert["equation"]["D"]["D_0"])
-            header = "Diffusivity of " +  adatome + " in " + material_name + "(m²/s)"
-            exp = "exp(" + es + "/8.625e-5/temp)"
-            data_converted += "$  (" + str(i) + ")  " + header + "\n"
-            data_converted += "y=" + s0 + "*" + exp + ",end" + "\n"
-            i += 1
-        except Exception as e:
-            print(e)
-        
-        # recombination
-        try:
-            es = "{:.2e}".format(data_to_convert["equation"]["Kr"]["E_r"])
-            s0 = "{:.2e}".format(data_to_convert["equation"]["Kr"]["Kr_0"])
-            header = "Recombination of " +  adatome + " in " + material_name + "(m⁴/s)"
-            exp = "exp(" + es + "/8.625e-5/temp)"
-            data_converted += "$  (" + str(i) + ")  " + header + "\n"
-            data_converted += "y=" + s0 + "*" + exp + ",end" + "\n"
-            i += 1
-        except Exception as e:
-            print(e)
+            data_to_convert = self.getDataInFile(functionToCallToGetIndex)
+            adatome = data_to_convert["material"]["adatome"]
+            material_name = data_to_convert["material"]["name"]
 
-        # save the string
-        filename = QFileDialog.getSaveFileName(None, "Save File")[0]
-        if filename[-4::] != ".txt":
-            filename += ".txt"
+            # write the converted data into a string
+            data_converted = ""
+            data_converted += "$" + adatome + " in " + material_name + "\n"
+            i = 0
 
-        #pdb.Pdb.complete=rlcompleter.Completer(locals()).complete; pdb.set_trace()
-        with open(filename, "w", encoding='utf-8') as fichier:
-            fichier.write(data_converted)
+            # solubility
+            try:
+                es = "{:.2e}".format(data_to_convert["equation"]["S"]["E_S"])
+                s0 = "{:.2e}".format(data_to_convert["equation"]["S"]["S_0"])
+                header = "Solubility of " +  adatome + " in " + material_name + "(" + adatome + "/(m³*Pa½))"
+                exp = "exp(" + es + "/8.625e-5/temp)"
+                data_converted += "$  (" + str(i) + ")  " + header + "\n"
+                data_converted += "y=" + s0 + "*" + exp + ",end" + "\n"
+                i += 1
+            except Exception as e:
+                print(e)
+            
+            # diffusivity
+            try:
+                es = "{:.2e}".format(data_to_convert["equation"]["D"]["E_D"])
+                s0 = "{:.2e}".format(data_to_convert["equation"]["D"]["D_0"])
+                header = "Diffusivity of " +  adatome + " in " + material_name + "(m²/s)"
+                exp = "exp(" + es + "/8.625e-5/temp)"
+                data_converted += "$  (" + str(i) + ")  " + header + "\n"
+                data_converted += "y=" + s0 + "*" + exp + ",end" + "\n"
+                i += 1
+            except Exception as e:
+                print(e)
+            
+            # recombination
+            try:
+                es = "{:.2e}".format(data_to_convert["equation"]["Kr"]["E_r"])
+                s0 = "{:.2e}".format(data_to_convert["equation"]["Kr"]["Kr_0"])
+                header = "Recombination of " +  adatome + " in " + material_name + "(m⁴/s)"
+                exp = "exp(" + es + "/8.625e-5/temp)"
+                data_converted += "$  (" + str(i) + ")  " + header + "\n"
+                data_converted += "y=" + s0 + "*" + exp + ",end" + "\n"
+                i += 1
+            except Exception as e:
+                print(e)
 
+            # save the string
+            filename = QFileDialog.getSaveFileName(None, "Save File")[0]
+            if filename[-4::] != ".txt":
+                filename += ".txt"
+
+            #pdb.Pdb.complete=rlcompleter.Completer(locals()).complete; pdb.set_trace()
+            with open(filename, "w", encoding='utf-8') as fichier:
+                fichier.write(data_converted)
+        except Exception as e:
+            print("Une erreur est survenue lors de la conversion", e)
     def correctTypes(self, data):
         def to_float_secure(x):
             try:
@@ -316,6 +318,7 @@ class WritingPart(QWidget):
 
         #atomic number and adatom atomic number to float
         data["material"]["atomic_number"] = to_int_secure(data["material"].get("atomic_number", None))
+        data["material"]["adatome_atomic_symbol"] = to_int_secure(data["material"].get("adatome_atomic_symbol", None))
         data["material"]["adatome_atomic_number"] = to_int_secure(data["material"].get("adatome_atomic_number", None))
 
         return data

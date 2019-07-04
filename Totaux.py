@@ -72,15 +72,8 @@ class Totaux(QWidget):
         tab_right.addTab(self.pltwindows[1], "Log - 1/T")
         tab_right.addTab(self.pltwindows[2], "Natural - Natural")
         tab_right.addTab(self.pltwindows[3], "Log - Log")
+        tab_right.setCurrentIndex(3)
         self.layout.addWidget(tab_right)
-
-
-        get_name_from_path = lambda path : path.split("/")[-1].split('.', 1)[0]
-        filepath = "cas_test/totaux.txt"
-        data = self.getDataFromFilepath(filepath)
-        name = get_name_from_path(filepath)
-        self.open_new_file(self.doublelist, DataOfAFile(filepath, name, data))
-        
 
     def open_new_file(self, doubleListToAdd, data):
         doubleListToAdd.addItemFromData(data)
