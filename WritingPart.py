@@ -23,7 +23,7 @@ import rlcompleter
 import os
 import sqlite3
 import dataFunctions
-
+from ReadingAndWritingPart import ReadingAndWritingPart
 
 class tooManyValues(Exception):
 
@@ -37,7 +37,7 @@ class BDDNonTrouvee(Exception):
         super().__init__()
 
 
-class WritingPart(QWidget):
+class WritingPart(QWidget, ReadingAndWritingPart):
 
     def __init__(self):
         super().__init__()
@@ -54,6 +54,7 @@ class WritingPart(QWidget):
         tab_left.tabCloseRequested.connect(CloseTab)
         tab_left.setTabPosition(QTabWidget.West)
         tab_left.setFocusPolicy(Qt.NoFocus)
+        tab_left.setObjectName("tab_left")
         self.tab_left = tab_left
 
         search_bar = make_vbox()
@@ -73,9 +74,6 @@ class WritingPart(QWidget):
         add_files.layout.addWidget(DragAndDrop.FileEdit("Drop your files here", partial(self.open_new_file, tab_left)))
         add_files.layout.addWidget(button_add_files)
 
-
-        # with open("json.txt") as fichier:
-        #     self.open_new_file(tab_left, "Exemple", json.loads(fichier.read()))
         files_vbox = make_vbox()
         files_vbox.layout.addWidget(add_files)
 
@@ -83,106 +81,13 @@ class WritingPart(QWidget):
         self.layout.addWidget(files_vbox)
         self.shortcut = QShortcut(QKeySequence("Ctrl+S"), self)
         self.shortcut.activated.connect(partial(self.save, tab_left.currentIndex))
-        # self.save(tab_left.currentIndex)
-        # self.convert_to_other_format(tab_left.currentIndex)
+
 
     def open_new_file(self, tab, name, parameters):
         decoupe = lambda chaine : "..." + chaine[-10:] if len(chaine) > 10 else chaine
         #get background color
         snf = ShowNewFile.ShowNewFile(parameters, self.background, editable=True)
         tab.setCurrentIndex(tab.addTab(snf, decoupe(name)))
-
-    def getDataInFile(self, functionToCallToGetIndex):
-        index = functionToCallToGetIndex()
-        data_to_save = {
-            "material" :{},
-            "source" :{},
-            "traps" : [],
-            "equation" : {}
-        }
-        tabs = self.findChild(QTabWidget)
-        snf = tabs.widget(index)
-        tabs_to_save = snf.findChild(QTabWidget)
-
-        def searchForChild(parent, filtre):
-            children = [x for x in parent.findChildren(QObject) if x.objectName() in filtre]
-            return children
-
-        for tab_data_container in searchForChild(tabs_to_save, ["traps", "material", "source", "equation"]):
-            if tab_data_container.objectName() == "equation":
-                vbox = tab_data_container
-                groupboxes = vbox.findChildren(QGroupBox)
-                for groupbox in groupboxes:
-                    grid_layout = groupbox.findChild(QGridLayout)
-                    coef1 = grid_layout.itemAtPosition(1, 0).widget().text()
-                    val1 = grid_layout.itemAtPosition(1, 1).widget().text()
-                    coef2 = grid_layout.itemAtPosition(2, 0).widget().text()
-                    val2 = grid_layout.itemAtPosition(2, 1).widget().text()
-                    checkbox = grid_layout.itemAtPosition(1, 4).widget()
-
-                    comment_content = groupbox.findChild(QTextEdit).toPlainText()
-                    if checkbox.isChecked():
-                        if groupbox.objectName() == "diffusivity":
-                            equation_type = "D"
-                        elif groupbox.objectName() == "solubility":
-                            equation_type = "S"
-                        elif groupbox.objectName() == "combination":
-                            equation_type = "Kr"
-                        else:
-                            print("WARNING : I don't know how to save the coefficient named", groupbox.objectName())
-                        data_to_save["equation"][equation_type] = {}
-                        data_to_save["equation"][equation_type][coef1] = val1
-                        data_to_save["equation"][equation_type][coef2] = val2
-                        data_to_save["equation"][equation_type]["comment"] = comment_content
-            elif tab_data_container.objectName() == "traps":
-                for i in range(tab_data_container.topLevelItemCount()):
-                    trap_tree = tab_data_container.topLevelItem(i)
-                    dictionnary_of_this_trap = {
-                        "density" : tab_data_container.itemWidget(trap_tree, 0).text(),
-                        "data": []
-                    }
-                    for j in range(trap_tree.childCount()):
-                        energy_tree = trap_tree.child(j)
-                        energy = tab_data_container.itemWidget(energy_tree, 2)
-                        frequence = tab_data_container.itemWidget(energy_tree, 4)
-                        if energy:
-                            energy = energy.text()
-                        else:
-                            energy = None
-                        if frequence:
-                            frequence = frequence.text()
-                        else:
-                            frequence = None
-                        dictionnary_of_this_trap["data"].append({"energy":energy, "frequency":frequence})
-
-                    if not dictionnary_of_this_trap == {}:
-                        data_to_save["traps"].append(dictionnary_of_this_trap)
-                
-            elif tab_data_container.objectName() == "material":
-                vbox = tab_data_container 
-                for groupbox in searchForChild(vbox, ["gb_material"]):
-                    for row in range(groupbox.layout.rowCount()):
-                        label = groupbox.layout.itemAtPosition(row, 0).widget().text()
-                        value = groupbox.layout.itemAtPosition(row, 2).widget().text()
-                        data_to_save["material"][label] = value
-                for groupbox in searchForChild(vbox, ["gb_adatome"]):
-                    for row in range(groupbox.layout.rowCount()):
-                        label = groupbox.layout.itemAtPosition(row, 0).widget().text()
-                        value = groupbox.layout.itemAtPosition(row, 1).widget().text()
-                        data_to_save["material"][label] = value
-                        
-            elif tab_data_container.objectName() == "source":
-                grid = tab_data_container
-                for row in range(grid.layout.rowCount()):
-                    label = grid.layout.itemAtPosition(row, 0).widget().text()
-                    value = grid.layout.itemAtPosition(row, 1).widget().text()
-                    data_to_save["source"][label] = value
-
-            else:
-                print("WARNING: I don't know how to save the grid named", grid.objectName())
-
-        data_to_save = self.correctTypes(data_to_save)
-        return data_to_save
 
     def save(self, functionToCallToGetIndex):
         """
@@ -257,11 +162,11 @@ class WritingPart(QWidget):
             if filename[-4::] != ".txt":
                 filename += ".txt"
 
-            #pdb.Pdb.complete=rlcompleter.Completer(locals()).complete; pdb.set_trace()
             with open(filename, "w", encoding='utf-8') as fichier:
                 fichier.write(data_converted)
         except Exception as e:
             print("Une erreur est survenue lors de la conversion", e)
+
     def correctTypes(self, data):
         def to_float_secure(x):
             try:
