@@ -65,12 +65,9 @@ class WritingPart(QWidget, ReadingAndWritingPart):
         button_add_files.clicked.connect(partial(self.on_click_open_files, tab_left))
         button_save = QPushButton("Save the file")
         button_save.clicked.connect(partial(self.save, tab_left.currentIndex))
-        button_convertion = QPushButton("Convert the file")
-        button_convertion.clicked.connect(partial(self.convert_to_other_format, tab_left.currentIndex))
         add_files = make_vbox()
         add_files.layout.addWidget(search_bar)
         add_files.layout.addWidget(button_save)
-        add_files.layout.addWidget(button_convertion)
         add_files.layout.addWidget(DragAndDrop.FileEdit("Drop your files here", partial(self.open_new_file, tab_left)))
         add_files.layout.addWidget(button_add_files)
 
@@ -109,63 +106,6 @@ class WritingPart(QWidget, ReadingAndWritingPart):
             dialog.setText(error_text)
             dialog.setIcon(QMessageBox.Warning)
             dialog.exec_()
-        
-    def convert_to_other_format(self, functionToCallToGetIndex):
-        try:
-            data_to_convert = self.getDataInFile(functionToCallToGetIndex)
-            adatome = data_to_convert["material"]["adatome"]
-            material_name = data_to_convert["material"]["name"]
-
-            # write the converted data into a string
-            data_converted = ""
-            data_converted += "$" + adatome + " in " + material_name + "\n"
-            i = 0
-
-            # solubility
-            try:
-                es = "{:.2e}".format(data_to_convert["equation"]["S"]["E_S"])
-                s0 = "{:.2e}".format(data_to_convert["equation"]["S"]["S_0"])
-                header = "Solubility of " +  adatome + " in " + material_name + "(" + adatome + "/(m³*Pa½))"
-                exp = "exp(" + es + "/8.625e-5/temp)"
-                data_converted += "$  (" + str(i) + ")  " + header + "\n"
-                data_converted += "y=" + s0 + "*" + exp + ",end" + "\n"
-                i += 1
-            except Exception as e:
-                print(e)
-            
-            # diffusivity
-            try:
-                es = "{:.2e}".format(data_to_convert["equation"]["D"]["E_D"])
-                s0 = "{:.2e}".format(data_to_convert["equation"]["D"]["D_0"])
-                header = "Diffusivity of " +  adatome + " in " + material_name + "(m²/s)"
-                exp = "exp(" + es + "/8.625e-5/temp)"
-                data_converted += "$  (" + str(i) + ")  " + header + "\n"
-                data_converted += "y=" + s0 + "*" + exp + ",end" + "\n"
-                i += 1
-            except Exception as e:
-                print(e)
-            
-            # recombination
-            try:
-                es = "{:.2e}".format(data_to_convert["equation"]["Kr"]["E_r"])
-                s0 = "{:.2e}".format(data_to_convert["equation"]["Kr"]["Kr_0"])
-                header = "Recombination of " +  adatome + " in " + material_name + "(m⁴/s)"
-                exp = "exp(" + es + "/8.625e-5/temp)"
-                data_converted += "$  (" + str(i) + ")  " + header + "\n"
-                data_converted += "y=" + s0 + "*" + exp + ",end" + "\n"
-                i += 1
-            except Exception as e:
-                print(e)
-
-            # save the string
-            filename = QFileDialog.getSaveFileName(None, "Save File")[0]
-            if filename[-4::] != ".txt":
-                filename += ".txt"
-
-            with open(filename, "w", encoding='utf-8') as fichier:
-                fichier.write(data_converted)
-        except Exception as e:
-            print("Une erreur est survenue lors de la conversion", e)
 
     def correctTypes(self, data):
         def to_float_secure(x):

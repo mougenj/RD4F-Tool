@@ -43,7 +43,6 @@ class Checkboxes(QGroupBox):
 
     def state_changed(self, cb, i):
         self.checked[i] = cb.isChecked()
-        print(self.checked)
     
     def getChecked(self):
         return self.checked

@@ -205,9 +205,6 @@ class PltWindowProfile(PltWindow):
             ax.legend()
             ax.set_xlabel(x_label)
             ax.set_ylabel(y_label)
-        print()
-        print()
-        print()
         self.canvas.draw()
 
     def clear(self):

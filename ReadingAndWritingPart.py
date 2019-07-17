@@ -111,8 +111,12 @@ class ReadingAndWritingPart():
                     # checkbox = grid_layout.itemAtPosition(1, 4).widget()
 
                     comment_content = groupbox.findChild(QTextEdit).toPlainText()
-                    # if checkbox.isChecked():
-                    if True:  # todo: ask if it is ok
+                    display_groupbox = True
+                    if grid_layout.itemAtPosition(1, 4):
+                        checkbox = grid_layout.itemAtPosition(1, 4).widget()
+                        display_groupbox = checkbox.isChecked()
+
+                    if display_groupbox:  # todo: ask if it is ok
                         if groupbox.objectName() == "diffusivity":
                             equation_type = "D"
                         elif groupbox.objectName() == "solubility":

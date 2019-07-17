@@ -136,7 +136,6 @@ class Profile(QWidget):
                     maxlen = max(maxlen, len(slave_traps))
         except Exception as e:
             print(e)
-        print(maxlen)
 
         return list_numbers, codename
 
