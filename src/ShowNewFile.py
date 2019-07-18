@@ -408,9 +408,13 @@ class ShowNewFile(QWidget):
         if self.editable:
             bt_add_new_trap = QPushButton("Add a trap")
             vbox.layout.addWidget(bt_add_new_trap)
-            empy_trap = {"density":None, "angular_frequency":None, "energy":[]}
-            bt_add_new_trap.clicked.connect(partial(self.create_subtree_for_a_trap, tree, empy_trap))
-        tabs.addTab(vbox, "Traps")
+            empty_trap = {"density":None, "angular_frequency":None, "energy":[]}
+            bt_add_new_trap.clicked.connect(partial(self.create_subtree_for_a_trap, tree, empty_trap))
+        comment = parameters.get("traps-comment", "")
+        textedit = QTextEdit(comment)
+        textedit.setReadOnly(not self.editable)
+        textedit.setObjectName("traps-comment")
+        tabs.addTab(makeWidget.make_vbox(vbox, textedit), "Traps")
         
         layout = QVBoxLayout()  # contient les tabs
         layout.addWidget(tabs)

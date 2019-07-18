@@ -279,28 +279,6 @@ class ReadingPart(QWidget, ReadingAndWritingPart):
             filepath, liste = success
             self.open_new_file(tab_to_add, get_name_from_path(filepath), liste)
 
-
-    def save(self, functionToCallToGetIndex):
-        """
-            Save a file (ie: a tab) to a json file. Each file is represented by 4 sub tabs.)
-        """
-        try:
-            data_to_save = self.getDataInFile(functionToCallToGetIndex)
-            filename = QFileDialog.getSaveFileName(None, "Save File")[0]
-            if filename[-4::] != ".txt":
-                filename += ".txt"
-            #pdb.Pdb.complete=rlcompleter.Completer(locals()).complete; pdb.set_trace()
-            with open(filename, "w") as fichier:
-                fichier.write(json.dumps(data_to_save, indent=4))
-        except Exception as e:
-            dialog = QMessageBox()
-            dialog.setWindowTitle("Error")
-            error_text = "An error occured while saving your file. It is likely that your file is filled with wrong datas (or maybe you don't have any file opened yet).\n"
-            error_text += "Error text: " + str(e)
-            dialog.setText(error_text)
-            dialog.setIcon(QMessageBox.Warning)
-            dialog.exec_()
-
     def convert_to_other_format(self, functionToCallToGetIndex):
         try:
             data_to_convert = self.getDataInFile(functionToCallToGetIndex)

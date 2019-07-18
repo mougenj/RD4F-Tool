@@ -107,67 +107,6 @@ class WritingPart(QWidget, ReadingAndWritingPart):
             dialog.setIcon(QMessageBox.Warning)
             dialog.exec_()
 
-    def correctTypes(self, data):
-        def to_float_secure(x):
-            try:
-                floated = float(x)
-                return floated
-            except Exception as e:
-                print("to_float_secure:", e)
-                return None
-
-        def to_int_secure(x):
-            try:
-                # here, I use int(float(x)) instead of int(x):
-                # that's because int(float("2.5e2")) return 250
-                # while int("2.5e2") raise a ValueError.
-                inted = int(float(x))
-                return inted
-            except Exception as e:
-                print(e)
-                return None
-        
-        def to_sci_notation(x):
-            try: 
-                scied = "{:.2e}".format(to_float_secure(x))
-                return scied
-            except:
-                return None
-
-
-        for i in range(len(data["traps"])):
-            try:
-                data["traps"][i]["density"] = to_sci_notation(data["traps"][i]["density"])
-            except KeyError as e:  # attrape le bouton d'ajout
-                print(e)
-            # data part
-            data_trap_dict_list = data["traps"][i]["data"]
-            data_trap_dict_list_corrected = []
-            for dictionnary in data_trap_dict_list:
-                dictionnary_corrected = {}
-                dictionnary_corrected["energy"] = to_sci_notation(dictionnary["energy"])
-                dictionnary_corrected["frequency"] = to_sci_notation(dictionnary["frequency"])
-                data_trap_dict_list_corrected.append(dictionnary_corrected)
-            data["traps"][i]["data"] = data_trap_dict_list_corrected
-
-        for key in data["equation"]:
-            for subkey in data["equation"][key]:
-                if subkey != "comment":
-                    data["equation"][key][subkey] = to_float_secure(data["equation"][key][subkey])
-        
-        data["source"]["year"] = to_int_secure(data["source"]["year"])
-        data["source"]["last_edit"] = ShowNewFile.get_today_date()
-
-        for key in ("melting_point", "lattice_parameter", "density"):
-            data["material"][key] = to_float_secure(data["material"][key])
-
-        #atomic number and adatom atomic number to float
-        data["material"]["atomic_number"] = to_int_secure(data["material"].get("atomic_number", None))
-        data["material"]["adatome_atomic_symbol"] = to_int_secure(data["material"].get("adatome_atomic_symbol", None))
-        data["material"]["adatome_atomic_number"] = to_int_secure(data["material"].get("adatome_atomic_number", None))
-
-        return data
-
     @pyqtSlot()
     def on_click_open_files(self, tab_to_add):
         options = QFileDialog.Options()
