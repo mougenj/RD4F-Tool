@@ -19,7 +19,7 @@ class HelpWindow(QMainWindow):
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
         scriptDir = os.path.dirname(os.path.realpath(__file__))
-        self.setWindowIcon(QIcon(scriptDir + os.path.sep + "ressources" +  os.path.sep + "logo.png"))
+        self.setWindowIcon(QIcon(scriptDir + os.path.sep + "ressources" +  os.path.sep + "logo2.png"))
         self.initUI()
         self.center()
 
