@@ -28,6 +28,57 @@ class PltWindow(QWidget):
         self.layout.addWidget(self.canvas)
         self.setLayout(self.layout)
 
+        self.plotted_data = []
+    
+    def save(self, filename):
+        """
+            Save the Canva into txt, in the file 'filename'.
+        """
+        print(self.plotted_data)
+        # list_x, list_y = [], []
+        # for plot in plotted_data:
+        #     x, y = plot
+        #     list_x.append(x)
+        #     list_y.append(y)
+
+
+        # here, I want to be able to write the plot into a file. But what if a
+        # plot has more points than the others? I want to plot the data like
+        # this :
+        # xa0, ya0; xb0, xb0
+        # xa1, yx1; xb1, yb1
+        # If xb and yb are too long, they will be printed after
+        # the end of xa and ya, and the two column will combine.
+        # That is why I need to save the longer set of data first.  
+        my_sort_function = lambda element : len(element[0])
+        self.plotted_data.sort(key = my_sort_function)
+        with open(filename, "w") as fichier:
+            a_line_was_printed = True
+            i = 0
+            while a_line_was_printed:  # line
+                # print("\n")
+                if i % 100 == 0:
+                    print("progression:", i, "/", len(self.plotted_data[0][0]))
+                # print("let us start a new line")
+                ligne = ""
+                a_line_was_printed = False
+                for plot in self.plotted_data:  # column
+                    # print("in this line, i will write a plot:")
+                    x, y = plot
+                    # print("x=", x)
+                    # print("y=", y)
+
+                    if len(x) > i and len(y) > i:  # a data can be save
+                        # print("The line ", i, "can be saved as ", x[i], y[i])
+                        ligne += "{:.5e}".format(x[i]) + ", " + "{:.5e}".format(y[i]) + ";   "
+                        a_line_was_printed = True
+                # remove te last ";"
+                ligne = ligne.rstrip(" ")
+                ligne = ligne.rstrip(";")
+                # print(ligne)
+                fichier.write(ligne + "\n")
+                i += 1
+
 
 class PltWindowReading(PltWindow):
     
@@ -71,12 +122,15 @@ class PltWindowReading(PltWindow):
             ax.legend()
             ax.set_xlabel(x_label)
             ax.set_ylabel(y_label)
+            self.plotted_data.append(data)
+        # we don't need the previous grid, let's erase it
         ax.grid(False)
         ax.grid(True)
         self.canvas.draw()
 
     def clear(self):
         self.figure.clear()
+        self.plotted_data = []
 
 
 class PltWindowProfile(PltWindow):
@@ -205,9 +259,12 @@ class PltWindowProfile(PltWindow):
             ax.legend()
             ax.set_xlabel(x_label)
             ax.set_ylabel(y_label)
+            self.plotted_data.append(data)
+
         self.canvas.draw()
 
     def clear(self):
         self.xmax = None
         self.xmin = None
         self.figure.clear()
+        self.plotted_data = []
