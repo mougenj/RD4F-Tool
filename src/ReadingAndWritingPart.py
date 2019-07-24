@@ -64,7 +64,7 @@ class ReadingAndWritingPart():
         data["source"]["year"] = to_int_secure(data["source"]["year"])
         data["source"]["last_edit"] = get_today_date()
 
-        for key in ("melting_point", "lattice_parameter", "density"):
+        for key in ("melting_point", "mean_lattice_constant", "density"):
             data["material"][key] = to_float_secure(data["material"][key])
 
         #atomic number and adatom atomic number to float
@@ -150,15 +150,18 @@ class ReadingAndWritingPart():
             
             elif tab_data_container.objectName() == "traps-comment":
                 data_to_save["traps-comment"] = tab_data_container.toPlainText()
+
             elif tab_data_container.objectName() == "material":
                 vbox = tab_data_container 
                 for groupbox in searchForChild(vbox, ["gb_material"]):
                     for row in range(groupbox.layout.rowCount()):
+                        print(label, value)
                         label = groupbox.layout.itemAtPosition(row, 0).widget().text()
                         value = groupbox.layout.itemAtPosition(row, 2).widget().text()
                         data_to_save["material"][label] = value
                 for groupbox in searchForChild(vbox, ["gb_adatome"]):
                     for row in range(groupbox.layout.rowCount()):
+                        print(label, value)
                         label = groupbox.layout.itemAtPosition(row, 0).widget().text()
                         value = groupbox.layout.itemAtPosition(row, 1).widget().text()
                         data_to_save["material"][label] = value

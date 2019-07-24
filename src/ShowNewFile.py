@@ -224,8 +224,20 @@ class ShowNewFile(QWidget):
 
         
         material_counter = 0
-        keys = ("lattice_parameter", "atomic_number", "density", "atomic_symbol", "melting_point", "name", "net")
-        units = ("m", "", "at/m³", "", "K", "", "")
+                # "name" : None,
+        # "atomic_symbol" : None,
+        # "lattice_type" : None,
+        # "melting_point" : None,
+        # "atomic_number" : None,
+        # "mean_lattice_constant" : None,
+        # "density" : None,
+
+        # "adatome" : None,
+        # "adatome_atomic_number" : None,
+        # "adatome_atomic_symbol" : None
+
+        keys = ("name", "atomic_symbol", "lattice_type", "melting_point", "atomic_number", "mean_lattice_constant", "density")
+        units = ("", "", "", "K", "", "m", "atoms/m³")
         for key, unit in zip(keys, units):
             value = ""
             try:

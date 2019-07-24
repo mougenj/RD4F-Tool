@@ -219,7 +219,6 @@ class Profile(QWidget):
                         str(i + 1 - len(self.names_of_buttons)))
         """
         if master:
-            # master
             master_t, master_y, *master_traps, master_source = master.data
             xmax = master_t[0]
 
@@ -236,7 +235,6 @@ class Profile(QWidget):
                     plot_every_window(master_t, trap, curve_name)
 
         if slaves:
-            # slaves
             for slave in slaves:
                 slave_t, slave_y, *slaves_traps, slave_source = slave.data
                 if checked[0]:

@@ -24,6 +24,7 @@ import os
 import sqlite3
 import dataFunctions
 from ReadingAndWritingPart import ReadingAndWritingPart
+import makeWidget
 
 class tooManyValues(Exception):
 
@@ -57,7 +58,7 @@ class WritingPart(QWidget, ReadingAndWritingPart):
         tab_left.setObjectName("tab_left")
         self.tab_left = tab_left
 
-        search_bar = make_vbox()
+        search_bar = makeWidget.make_vbox()
         search_bar.layout.addWidget(QLabel("<html><center>Choose a name of a material to load it from the database :</center></html>"))
         search_bar.layout.addWidget(SearchButtons("database.sqlite", self, tab_left))
 
@@ -65,13 +66,13 @@ class WritingPart(QWidget, ReadingAndWritingPart):
         button_add_files.clicked.connect(partial(self.on_click_open_files, tab_left))
         button_save = QPushButton("Save the file")
         button_save.clicked.connect(partial(self.save, tab_left.currentIndex))
-        add_files = make_vbox()
+        add_files = makeWidget.make_vbox()
         add_files.layout.addWidget(search_bar)
         add_files.layout.addWidget(button_save)
         add_files.layout.addWidget(DragAndDrop.FileEdit("Drop your files here", partial(self.open_new_file, tab_left)))
         add_files.layout.addWidget(button_add_files)
 
-        files_vbox = make_vbox()
+        files_vbox = makeWidget.make_vbox()
         files_vbox.layout.addWidget(add_files)
 
         self.layout.addWidget(tab_left)
@@ -148,7 +149,7 @@ class SearchButtons(QWidget):
         self.setLayout(self.layout)
         self.parent = parent
         if not os.path.isfile(self.dbname):
-            raise BDDNonTrouvee("base de donnes non trouvée")
+            raise BDDNonTrouvee("base de donnes non trouvée")  # todo error window
         col_index = 0
         lin_index = 0
         for name in self.getMaterialNameFromDatabase():
@@ -188,7 +189,6 @@ class SearchButtons(QWidget):
         db.close()
         return rows
 
-
     def getDataFromMaterialName(self, material_name):
         db = sqlite3.connect(self.dbname)
         cursor = db.cursor()
@@ -200,17 +200,3 @@ class SearchButtons(QWidget):
         rows = cursor.fetchall()[0]
         db.close()
         return list(zip(column_name, rows))
-
-
-def make_vbox():
-    vbox = QWidget()
-    vbox.layout = QVBoxLayout()
-    vbox.setLayout(vbox.layout)
-    return vbox
-
-
-def make_hbox():
-    hbox = QWidget()
-    hbox.layout = QHBoxLayout()
-    hbox.setLayout(hbox.layout)
-    return hbox
