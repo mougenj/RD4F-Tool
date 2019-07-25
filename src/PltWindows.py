@@ -1,12 +1,15 @@
 from PyQt5.QtWidgets import (QWidget,
                              QVBoxLayout
-                            )
+                             )
 import matplotlib.pyplot as plt
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
-from matplotlib.ticker import FuncFormatter
+from matplotlib.backends.backend_qt5agg \
+    import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5agg \
+    import NavigationToolbar2QT as NavigationToolbar
+from matplotlib.ticker import FuncFormatter, FormatStrFormatter
 import matplotlib.ticker as mtick
 import numpy as np
+
 
 class PltWindow(QWidget):
     """
@@ -31,18 +34,6 @@ class PltWindow(QWidget):
 
         self.plotted_data = []
 
-
-
-    def MyFormatter(self, x, lim):
-        """
-            Format a matplotlib axis.
-        """
-        if x == 0:
-            return 0
-        return '{0:.2f}e{1:.2f}'.format(np.sign(x)*10**(-np.floor(np.log10(abs(x)))+np.log10(abs(x))),np.floor(np.log10(abs(x))))
-        #The first argument of the format gives the first significant digits of the number with the sign preserved and brought to a range between [1-10), The next argument gives the  numbers integer exponent of 10
-        #Both the first and second arguments are formatted to display only 2 decimal places due to the lack of space.
-    
     def save(self, filename):
         """
             Save the Canva into txt, in the file 'filename'.
@@ -54,7 +45,6 @@ class PltWindow(QWidget):
         #     list_x.append(x)
         #     list_y.append(y)
 
-
         # here, I want to be able to write the plot into a file. But what if a
         # plot has more points than the others? I want to plot the data like
         # this :
@@ -62,9 +52,9 @@ class PltWindow(QWidget):
         # xa1, yx1; xb1, yb1
         # If xb and yb are too long, they will be printed after
         # the end of xa and ya, and the two column will combine.
-        # That is why I need to save the longer set of data first.  
-        my_sort_function = lambda element : len(element[0])
-        self.plotted_data.sort(key = my_sort_function)
+        # That is why I need to save the longer set of data first.
+        my_sort_function = lambda element: len(element[0])
+        self.plotted_data.sort(key=my_sort_function)
         with open(filename, "w") as fichier:
             a_line_was_printed = True
             i = 0
@@ -83,7 +73,8 @@ class PltWindow(QWidget):
 
                     if len(x) > i and len(y) > i:  # a data can be save
                         # print("The line ", i, "can be saved as ", x[i], y[i])
-                        ligne += "{:.5e}".format(x[i]) + ", " + "{:.5e}".format(y[i]) + ";   "
+                        ligne += "{:.5e}".format(x[i]) + ", " + \
+                            "{:.5e}".format(y[i]) + ";   "
                         a_line_was_printed = True
                 # remove te last ";"
                 ligne = ligne.rstrip(" ")
@@ -94,16 +85,18 @@ class PltWindow(QWidget):
 
 
 class PltWindowReading(PltWindow):
-    
+
     def __init__(self):
         """
             Init the PltWindowProfile.
         """
         super().__init__()
         self.plot()
-    
-    # def plot(self, data=None, name="", xlog = False, ylog = False, x_label="", y_label="", xlim="", xlimmax=""):
-    def plot(self, data=None, name="", xlog = False, ylog = False, x_label="", y_label=""):
+
+    # def plot(self, data=None, name="", xlog = False, ylog = False, \
+    # x_label="", y_label="", xlim="", xlimmax=""):
+    def plot(self, data=None, name="", xlog=False,
+             ylog=False, x_label="", y_label=""):
         """
             Plot the graph given the parameters.
             If data is None, plot an empty graph.
@@ -111,8 +104,10 @@ class PltWindowReading(PltWindow):
             The same goes for ylog.
             x_label and y_label designate the name of the axis.
         """
-            # xlim: position of a vertical line of equation x=xlim. Should be used to indicate the minimum limit of a graph. 
-            # xlimmax: position of a vertical line of equation x=xlimmax. Should be used to indicate the maximum limit of a graph. 
+        # xlim: position of a vertical line of equation x=xlim. Should
+        # be used to indicate the minimum limit of a graph.
+        # xlimmax: position of a vertical line of equation x=xlimmax. Should
+        # be used to indicate the maximum limit of a graph.
 
         if data is None:
             data = []
@@ -121,10 +116,7 @@ class PltWindowReading(PltWindow):
             ax.plot(data, "o--")
         else:
             ax = self.figure.add_subplot(111)
-            # ax.ticklabel_format(style="scientific", scilimits=(0, 0), useOffset=True)
-            majorFormatter = FuncFormatter(self.MyFormatter)
-            ax.xaxis.set_major_formatter(majorFormatter)
-            ax.yaxis.set_major_formatter(majorFormatter)
+            ax.ticklabel_format(style='sci', scilimits=(0, 0))
             if xlog:
                 ax.set_xscale("log", nonposx='clip')
             if ylog:
@@ -132,9 +124,11 @@ class PltWindowReading(PltWindow):
             x, y = data
             ax.plot(x, y, label=name)
             # if xlim:
-            #     ax.axvline(x=xlim, linestyle="--", color="red", label="300 K")
+            #     ax.axvline(x=xlim, linestyle="--",
+            #                color="red", label="300 K")
             # if xlimmax[0]:
-            #     ax.axvline(x=xlimmax[0], linestyle="--", color="green", label=str(xlimmax[1]) + " K")
+            #     ax.axvline(x=xlimmax[0], linestyle="--",
+            #                color="green", label=str(xlimmax[1]) + " K")
             # ax.grid()
             ax.legend()
             ax.set_xlabel(x_label)
@@ -151,7 +145,7 @@ class PltWindowReading(PltWindow):
 
 
 class PltWindowProfile(PltWindow):
-    
+
     def __init__(self):
         """
             Init the PltWindowProfile.
@@ -160,13 +154,13 @@ class PltWindowProfile(PltWindow):
         self.plot()
         self.xmin = None
         self.xmax = None
-    
+
     def getXminFromVector(self, abscissa):
         return abscissa[0]
 
     def getXmaxFromVector(self, abscissa, ordinate):
         xmax_of_this_vect = None
-        #todo: np.isnan
+        # todo: np.isnan
         dyx = np.abs(np.gradient(ordinate, abscissa))
         dyx_trigger = np.max(dyx) / 10
         for x, derivate in zip(abscissa[::-1], dyx[::-1]):
@@ -176,7 +170,7 @@ class PltWindowProfile(PltWindow):
                 break
         print(xmax_of_this_vect)
         return xmax_of_this_vect
-    
+
     def findXMinXMax(self, x, y):
         index_x_min = 0
         print("trouvons le x minimal")
@@ -184,27 +178,29 @@ class PltWindowProfile(PltWindow):
             print(y[index_x_min])
             index_x_min += 1
             if index_x_min == len(x):
-                # nothing interesting to plot here, let's try to plot all the curve
+                # nothing interesting to plot here,
+                # let's try to plot all the curve
                 index_x_min = None
         print("fin", y[index_x_min])
-        
+
         print("trouvons le x maximal")
         index_x_max = len(x) - 1
         while y[index_x_max] < 1e-9:
             print(y[index_x_max])
             index_x_max -= 1
             if index_x_max == 0:
-                # nothing interesting to plot here, let's try to plot all the curve
+                # nothing interesting to plot here,
+                # let's try to plot all the curve
                 index_x_max = None
-        
+
         xmin = None if index_x_min is None else x[index_x_min]
         xmax = None if index_x_max is None else x[index_x_max]
         return xmin, xmax
-    
+
     def updateXMinXMax(self, x, y):
         print("avant", self.xmin, self.xmax)
         xmin, xmax = self.findXMinXMax(x, y)
-        
+
         if self.xmin and xmin:
             self.xmax = min(self.xmin, xmin)
         else:
@@ -215,9 +211,11 @@ class PltWindowProfile(PltWindow):
         else:
             self.xmax = xmax
         print("apres", self.xmin, self.xmax)
-    
-    # def plot(self, data=None, name="", xlog = False, ylog = False, x_label="", y_label=""):
-    def plot(self, data=None, name="", xlog = False, ylog = False, x_label="", y_label="", linestyle=""):
+
+    # def plot(self, data=None, name="", xlog = False,
+    #          ylog = False, x_label="", y_label=""):
+    def plot(self, data=None, name="", xlog=False,
+             ylog=False, x_label="", y_label="", linestyle=""):
         """
             Plot the graph given the parameters.
             If data is None, plot an empty graph.
@@ -237,12 +235,11 @@ class PltWindowProfile(PltWindow):
             if ylog:
                 ax.set_yscale("log", nonposy='clip')
             x, y = data
-            
+
             majorFormatter = FuncFormatter(self.MyFormatter)
             ax.xaxis.set_major_formatter(majorFormatter)
             ax.yaxis.set_major_formatter(majorFormatter)
             self.updateXMinXMax(x, y)
-
 
             # xmaxtemp = self.getXmaxFromVector(x, y)
             # if self.xmax:
@@ -252,7 +249,7 @@ class PltWindowProfile(PltWindow):
             #     self.xmax = xmaxtemp
             # if self.xmax:
             #     ax.set_xlim(right=self.xmax)
-            
+
             # xmintemp = self.getXminFromVector(x)
             # if self.xmin:
             #     if self.xmin > xmintemp:
@@ -263,10 +260,10 @@ class PltWindowProfile(PltWindow):
             #     ax.set_xlim(left=self.xmin)
             # ax.set_xlim(left=0)
             # ax.set_xlim(right=1e-8)
-            
+
             # x, y = x[index_x_min:index_x_max], y[index_x_min:index_x_max]
             # ax.set_ylim([x[index_x_min], x[index_x_max]])
-            ax.set_ylim([1e-9,1e-1])
+            ax.set_ylim([1e-9, 1e-1])
             ax.set_xlim(left=self.xmin)
             ax.set_xlim(right=self.xmax)
             if linestyle:
