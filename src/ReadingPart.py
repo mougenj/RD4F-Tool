@@ -205,11 +205,11 @@ class ReadingPart(QWidget, ReadingAndWritingPart):
                 if equation[0] == name:
                     try:
                         if name == "D":
-                            y_unit = "Diffusivity (m²/s)"
+                            y_unit = r"Diffusivity (m$^2$/s)"
                         elif name == "Kr":
-                            y_unit = "Recombinaison coefficient (m⁴/s)"
+                            y_unit = r"Recombinaison coefficient (m$^4$/s)"
                         elif name == "S":
-                            y_unit = "Solubility (adatome/(m³*Pa½)"
+                            y_unit = r"Solubility (adatome/(m$^3$ Pa$^{0.5}$)"
                         else:
                             y_unit = ""
                         y_values = equation[1][1] * np.exp(-equation[2][1]/(k_b * les_temperatures))
