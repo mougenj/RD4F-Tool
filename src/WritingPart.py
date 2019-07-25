@@ -24,6 +24,7 @@ import os
 import sqlite3
 import dataFunctions
 from ReadingAndWritingPart import ReadingAndWritingPart
+import makeWidget
 
 class tooManyValues(Exception):
 
@@ -57,7 +58,7 @@ class WritingPart(QWidget, ReadingAndWritingPart):
         tab_left.setObjectName("tab_left")
         self.tab_left = tab_left
 
-        search_bar = make_vbox()
+        search_bar = makeWidget.make_vbox()
         search_bar.layout.addWidget(QLabel("<html><center>Choose a name of a material to load it from the database :</center></html>"))
         search_bar.layout.addWidget(SearchButtons("database.sqlite", self, tab_left))
 
@@ -65,13 +66,13 @@ class WritingPart(QWidget, ReadingAndWritingPart):
         button_add_files.clicked.connect(partial(self.on_click_open_files, tab_left))
         button_save = QPushButton("Save the file")
         button_save.clicked.connect(partial(self.save, tab_left.currentIndex))
-        add_files = make_vbox()
+        add_files = makeWidget.make_vbox()
         add_files.layout.addWidget(search_bar)
         add_files.layout.addWidget(button_save)
         add_files.layout.addWidget(DragAndDrop.FileEdit("Drop your files here", partial(self.open_new_file, tab_left)))
         add_files.layout.addWidget(button_add_files)
 
-        files_vbox = make_vbox()
+        files_vbox = makeWidget.make_vbox()
         files_vbox.layout.addWidget(add_files)
 
         self.layout.addWidget(tab_left)
@@ -106,67 +107,6 @@ class WritingPart(QWidget, ReadingAndWritingPart):
             dialog.setText(error_text)
             dialog.setIcon(QMessageBox.Warning)
             dialog.exec_()
-
-    def correctTypes(self, data):
-        def to_float_secure(x):
-            try:
-                floated = float(x)
-                return floated
-            except Exception as e:
-                print("to_float_secure:", e)
-                return None
-
-        def to_int_secure(x):
-            try:
-                # here, I use int(float(x)) instead of int(x):
-                # that's because int(float("2.5e2")) return 250
-                # while int("2.5e2") raise a ValueError.
-                inted = int(float(x))
-                return inted
-            except Exception as e:
-                print(e)
-                return None
-        
-        def to_sci_notation(x):
-            try: 
-                scied = "{:.2e}".format(to_float_secure(x))
-                return scied
-            except:
-                return None
-
-
-        for i in range(len(data["traps"])):
-            try:
-                data["traps"][i]["density"] = to_sci_notation(data["traps"][i]["density"])
-            except KeyError as e:  # attrape le bouton d'ajout
-                print(e)
-            # data part
-            data_trap_dict_list = data["traps"][i]["data"]
-            data_trap_dict_list_corrected = []
-            for dictionnary in data_trap_dict_list:
-                dictionnary_corrected = {}
-                dictionnary_corrected["energy"] = to_sci_notation(dictionnary["energy"])
-                dictionnary_corrected["frequency"] = to_sci_notation(dictionnary["frequency"])
-                data_trap_dict_list_corrected.append(dictionnary_corrected)
-            data["traps"][i]["data"] = data_trap_dict_list_corrected
-
-        for key in data["equation"]:
-            for subkey in data["equation"][key]:
-                if subkey != "comment":
-                    data["equation"][key][subkey] = to_float_secure(data["equation"][key][subkey])
-        
-        data["source"]["year"] = to_int_secure(data["source"]["year"])
-        data["source"]["last_edit"] = ShowNewFile.get_today_date()
-
-        for key in ("melting_point", "lattice_parameter", "density"):
-            data["material"][key] = to_float_secure(data["material"][key])
-
-        #atomic number and adatom atomic number to float
-        data["material"]["atomic_number"] = to_int_secure(data["material"].get("atomic_number", None))
-        data["material"]["adatome_atomic_symbol"] = to_int_secure(data["material"].get("adatome_atomic_symbol", None))
-        data["material"]["adatome_atomic_number"] = to_int_secure(data["material"].get("adatome_atomic_number", None))
-
-        return data
 
     @pyqtSlot()
     def on_click_open_files(self, tab_to_add):
@@ -209,7 +149,7 @@ class SearchButtons(QWidget):
         self.setLayout(self.layout)
         self.parent = parent
         if not os.path.isfile(self.dbname):
-            raise BDDNonTrouvee("base de donnes non trouvée")
+            raise BDDNonTrouvee("base de donnes non trouvée")  # todo error window
         col_index = 0
         lin_index = 0
         for name in self.getMaterialNameFromDatabase():
@@ -249,7 +189,6 @@ class SearchButtons(QWidget):
         db.close()
         return rows
 
-
     def getDataFromMaterialName(self, material_name):
         db = sqlite3.connect(self.dbname)
         cursor = db.cursor()
@@ -261,17 +200,3 @@ class SearchButtons(QWidget):
         rows = cursor.fetchall()[0]
         db.close()
         return list(zip(column_name, rows))
-
-
-def make_vbox():
-    vbox = QWidget()
-    vbox.layout = QVBoxLayout()
-    vbox.setLayout(vbox.layout)
-    return vbox
-
-
-def make_hbox():
-    hbox = QWidget()
-    hbox.layout = QHBoxLayout()
-    hbox.setLayout(hbox.layout)
-    return hbox

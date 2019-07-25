@@ -21,63 +21,60 @@ def create_database():
     if os.path.isfile(dbname):
         os.remove(dbname)
     if not os.path.isfile(dbname):
+        print('gogogo')
         db = sqlite3.connect(dbname)
         cursor = db.cursor()
         cursor.execute(
             "CREATE TABLE MATERIAL ("
             "[id] INTEGER PRIMARY KEY,"
             "[name] text NOT NULL,"
-            "[lattice_parameter] number,"
-            "[density] number,"
-            "[net] text,"
-            "[atomic_number] INTEGER,"
+            "[atomic_symbol] text,"
+            "[lattice_type] text,"
             "[melting_point] number,"
-            "[difusion_coefficient] number,"
-            "[noccupied_site] number,"
-            "[diffusion_energy], number,"
-            "[traps_energy] number,"
-            "[frequence_attaque] number,"  # todo: traduire
-            "[distance_interdtitielle] number"  # todo: traduire
+            "[atomic_number] INTEGER,"
+            "[mean_lattice_constant] number,"
+            "[density] number"
             ")"
         )
+        #     "[difusion_coefficient] number,"
+        #     "[noccupied_site] number,"
+        #     "[diffusion_energy], number,"
+        #     "[traps_energy] number,"
+        #     "[frequence_attaque] number,"  # todo: traduire
+        #     "[distance_interdtitielle] number"  # todo: traduire
+            
+        # )
         db.commit()
-        cursor.execute(
-            "INSERT INTO MATERIAL"
-            "(id, name, lattice_parameter, density, net, atomic_number, melting_point)"
-            "VALUES"
-            "(1, \"Carbone\", 0.3, 0.5, \"CFC\", 6,  3553.85);")
-        db.commit()
-        cursor.execute(
-            "INSERT INTO MATERIAL"
-            "(id, name, lattice_parameter, density, net, atomic_number, melting_point)"
-            "VALUES"
-            "(2, \"Acier\", 0.3, 0.5, \"changeme\", 6,  3553.85);")
-        db.commit()
-        cursor.execute(
-            "INSERT INTO MATERIAL"
-            "(id, name, lattice_parameter, density, net, atomic_number, melting_point)"
-            "VALUES"
-            "(4, \"Carbone\", 0.3, 0.5, \"CFC\", 6,  3553.85);")
-        db.commit()
-        cursor.execute(
-            "INSERT INTO MATERIAL"
-            "(id, name, lattice_parameter, density, net, atomic_number, melting_point)"
-            "VALUES"
-            "(5, \"Carbone\", 0.3, 0.5, \"CFC\", 6,  3553.85);")
-        db.commit()
-        cursor.execute(
-            "INSERT INTO MATERIAL"
-            "(id, name, lattice_parameter, density, net, atomic_number, melting_point)"
-            "VALUES"
-            "(6, \"Carbone\", 0.3, 0.5, \"CFC\", 6,  3553.85);")
-        db.commit()
-        cursor.execute(
-            "INSERT INTO MATERIAL"
-            "(id, name, lattice_parameter, density, net, atomic_number, melting_point)"
-            "VALUES"
-            "(7, \"Carbone\", 0.3, 0.5, \"CFC\", 6,  3553.85);")
-        db.commit()
+        # cursor.execute(
+        #     "INSERT INTO MATERIAL"
+        #     "(id, name, lattice_parameter, density, net, atomic_number, melting_point)"
+        #     "VALUES"
+        #     "(1, \"Carbone\", 0.3, 0.5, \"CFC\", 6,  3553.85);")
+        # db.commit()
+        # cursor.execute(
+        #     "INSERT INTO MATERIAL"
+        #     "(id, name, lattice_parameter, density, net, atomic_number, melting_point)"
+        #     "VALUES"
+        #     "(2, \"Acier\", 0.3, 0.5, \"changeme\", 6,  3553.85);")
+        # db.commit()
 
+
+        def insert(id, name, atomic_symbol, lattice_type, melting_point, atomic_number, mean_lattice_constant, density):
+            id = str(id)
+            mean_lattice_constant = str(mean_lattice_constant)
+            density = str(density)
+            requete = ("INSERT INTO MATERIAL"
+                "(id, name, atomic_symbol, lattice_type, melting_point, atomic_number, mean_lattice_constant, density)"
+                "VALUES"
+                "({0}, \"{1}\", \"{2}\", \"{3}\", {4}, {5}, {6}, {7});").format(id, name, atomic_symbol, lattice_type, melting_point, atomic_number, mean_lattice_constant, density)
+            cursor.execute(requete)
+            db.commit()
+        
+        insert(1, "Tungsten",  "W",  "cc",  3695, 74, 3.156*10**-10, 6.322*10**28)
+        insert(2, "Aluminium", "Al", "cfc", 933,  13, 4.06*10**-10,  6.026*10**28)
+        insert(3, "Beryllium", "Be", "hcp", 1590, 4,  2.72*10**-10,  1.235*10**29)
+        insert(4, "Carbon",    "C",  "hcp", 3823, 6,  3.88*10**-10,  1.133*10**29)
+        insert(5, "Cupper",    "Cu", "cfc", 1358, 29, 3.615*10**-10, 8.491*10**28)
         cursor.execute("SELECT * FROM MATERIAL")
 
         """
@@ -89,9 +86,12 @@ def create_database():
         db.close()
 
 # todo:
-# troisieme partie
-# lire le matlab founi par le client
 # export des valeur brutes
+# changer taille comment trap
+# decouper en classes
+# drag and drop post traitement
+# tout passer en anglis (nom du post traitement)
+# voir pour le DOI
 
 # optionel:
 # afficher le doi même si on a pas de reponse de l'api et l'afficher par la suite
@@ -100,7 +100,6 @@ def create_database():
 # ecrire l'aide (ecriture)
 def main():
     signal.signal(signal.SIGINT, signal.SIG_DFL)
-    dataFunctions.create_json_example()
     create_database()
     # print("création de l'interface")
     app = QApplication(sys.argv)

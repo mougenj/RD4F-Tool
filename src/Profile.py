@@ -12,7 +12,7 @@ from PyQt5.QtWidgets import (QWidget,
                              QCheckBox,
                              QScrollArea,
                              QScroller
-                            )
+                             )
 from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtCore import Qt
 import matplotlib.pyplot as plt
@@ -25,13 +25,13 @@ from myListWidget import DoubleThumbListWidget
 from makeWidget import make_vbox, make_hbox, make_scroll
 from PltWindows import PltWindowProfile
 from AddFiles import AddFiles
- 
+
 from DataOfAFile import DataOfAFile
 from Checkboxes import ProfileCheckboxes
 
 
 class Profile(QWidget):
-    
+
     def __init__(self):
         super().__init__()
         self.layout = QHBoxLayout()
@@ -41,10 +41,10 @@ class Profile(QWidget):
 
         self.doublelist = DoubleThumbListWidget()
         trigger_click = partial(self.on_click_open_files, self.doublelist)
-        
+
         def todo(*args):
             pass
-        
+
         bt_draw = QPushButton("Draw")
         bt_draw.clicked.connect(self.draw)
 
@@ -53,8 +53,9 @@ class Profile(QWidget):
         #    draw_bts.layout.addWidget(QLabel(" "))
         draw_bts.layout.addWidget(QLabel("Draw"))
         draw_bts.layout.addWidget(bt_draw)
-        self.checkboxes = ProfileCheckboxes("Select your data", self.names_of_curves)
-        
+        self.checkboxes = ProfileCheckboxes(
+            "Select your data", self.names_of_curves)
+
         self.layout.addWidget(
             make_hbox(
                 make_vbox(
@@ -83,12 +84,10 @@ class Profile(QWidget):
         # data, codename = self.getDataFromFilepath(filepath)
         # name = get_name_from_path(filepath)
         # self.open_new_file(self.doublelist, DataOfAFile(filepath, name, data, codename))
-        
-        
 
     def open_new_file(self, doubleListToAdd, data):
         doubleListToAdd.addItemFromData(data)
-    
+
     def getDataFromFilepath(self, filepath):
         list_numbers = []
         length = -1
@@ -109,7 +108,6 @@ class Profile(QWidget):
                     if ligne.split(":")[0].replace(" ", "") == "%Code":
                         codename = ligne.split(":")[1].strip(" ")
 
-        
         # Here, numbers looks like:
         # [[x0, y0, z0, ...], [x1, y1, z1, ...], [x2, y2, z2, ...], ...]
         # It is better to have:
@@ -119,12 +117,12 @@ class Profile(QWidget):
         maxlen = len(list_numbers)
 
         checked = self.checkboxes.getChecked()
-        
+
         if (maxlen > len(checked)):
             diff = maxlen - len(checked) - 1  # -1 because of the abscissa
             for i in range(diff):
                 self.checkboxes.addCheckbox()
-        
+
         try:
             master, slaves = self.doublelist.getData()
             if master:
@@ -143,15 +141,18 @@ class Profile(QWidget):
     def on_click_open_files(self, doubleListToAdd):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        files, _ = QFileDialog.getOpenFileNames(self, "QFileDialog.getOpenFileNames()", "","All Files (*);;Python Files (*.py)", options=options)
+        files, _ = QFileDialog.getOpenFileNames(
+            self, "QFileDialog.getOpenFileNames()",
+            "", "All Files (*);;Python Files (*.py)", options=options)
         sucessfully_loaded = []
         failed = []
-        get_name_from_path = lambda path : path.split("/")[-1].split('.', 1)[0]
+        get_name_from_path = lambda path: path.split("/")[-1].split('.', 1)[0]
         for filepath in files:
             try:
                 data, codename = self.getDataFromFilepath(filepath)
                 name = get_name_from_path(filepath)
-                sucessfully_loaded.append(DataOfAFile(filepath, name, data, codename))
+                sucessfully_loaded.append(DataOfAFile(filepath, name,
+                                                      data, codename))
             except Exception as e:
                 print(e)
                 failed.append(filepath)
@@ -166,7 +167,7 @@ class Profile(QWidget):
             self.newErrorWindow(title, error_text)
         for success in sucessfully_loaded:
             self.open_new_file(doubleListToAdd, success)
-    
+
     def newErrorWindow(self, title, content):
         dialog = QMessageBox()
         dialog.setWindowTitle(title)
@@ -191,53 +192,65 @@ class Profile(QWidget):
             else:
                 linestyle = ""
             data = x, y
-            self.pltwindows[0].plot(data, name, ylog=True, x_label="TODO", y_label="" + " (logscale)", linestyle=linestyle)
-            
+            self.pltwindows[0].plot(data, name, ylog=True, x_label="TODO",
+                                    y_label="" + " (logscale)",
+                                    linestyle=linestyle)
+
             data = 1 / x, y
-            self.pltwindows[1].plot(data, name, ylog=True, x_label="TODO", y_label="" + " (logscale)", linestyle=linestyle)
+            self.pltwindows[1].plot(data, name, ylog=True, x_label="TODO",
+                                    y_label="" + " (logscale)",
+                                    linestyle=linestyle)
 
             data = x, y
-            self.pltwindows[2].plot(data, name, x_label="TODOs", y_label="", linestyle=linestyle)
+            self.pltwindows[2].plot(data, name, x_label="TODOs", y_label="",
+                                    linestyle=linestyle)
 
             data = x, y
-            self.pltwindows[3].plot(data, name, xlog=True, ylog=True, x_label="Temperature (K)" + " (logscale)",y_label=""  + " (logscale)", linestyle=linestyle)
+            self.pltwindows[3].plot(data, name, xlog=True, ylog=True,
+                                    x_label="Temperature (K)" + " (logscale)",
+                                    y_label="" + " (logscale)",
+                                    linestyle=linestyle)
         """
                 i = len(self.checked)
                 if i < len(self.names_of_buttons) - 1:
                     cb = QCheckBox(self.names_of_buttons[i])
                 else:
-                    cb = QCheckBox(self.names_of_buttons[-1] + str(i + 1 - len(self.names_of_buttons)))
+                    cb = QCheckBox(self.names_of_buttons[-1] +\
+                        str(i + 1 - len(self.names_of_buttons)))
         """
         if master:
-            # master
             master_t, master_y, *master_traps, master_source = master.data
             xmax = master_t[0]
 
             if checked[0]:
-                curve_name =  master.name + " " + self.names_of_curves[0]
+                curve_name = master.name + " " + self.names_of_curves[0]
                 plot_every_window(master_t, master_y, curve_name)
             if checked[1]:
                 curve_name = master.name + " " + self.names_of_curves[1]
                 plot_every_window(master_t, master_source, curve_name)
             for index, trap in enumerate(master_traps):
                 if checked[index + 2]:
-                    curve_name = master.name + " (" + self.names_of_curves[2] + " " + str(index + 1) + ")"
+                    curve_name = master.name + " (" + \
+                        self.names_of_curves[2] + " " + str(index + 1) + ")"
                     plot_every_window(master_t, trap, curve_name)
-            
+
         if slaves:
-            # slaves
             for slave in slaves:
                 slave_t, slave_y, *slaves_traps, slave_source = slave.data
                 if checked[0]:
-                    curve_name =  slave.name + " " + self.names_of_curves[0]
+                    curve_name = slave.name + " " + self.names_of_curves[0]
                     plot_every_window(slave_t, slave_y, curve_name)
                 if checked[1]:
-                    score = np.max(np.abs(np.sqrt((master_source - slave_source)**2)))
-                    curve_name = slave.name + " " + self.names_of_curves[1] + " (score: " + str(score) + ")"
+                    score = np.max(np.abs(np.sqrt(
+                        (master_source - slave_source)**2)))
+                    curve_name = slave.name + " " + self.names_of_curves[1] +\
+                        " (score: " + str(score) + ")"
                     plot_every_window(slave_t, slave_source, curve_name)
                 for index, trap in enumerate(slaves_traps):
                     if checked[index + 2]:
-                        curve_name = slave.name + " (" + self.names_of_curves[2] + " " + str(index + 1) + ")"
+                        curve_name = slave.name + " (" +\
+                            self.names_of_curves[2] + " " + str(index + 1) +\
+                            ")"
                         plot_every_window(slave_t, trap, curve_name)
-                
+
         print("Time taken to plot " + str(time.time() - start))

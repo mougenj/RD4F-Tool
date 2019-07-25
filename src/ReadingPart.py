@@ -26,6 +26,7 @@ from makeWidget import make_vbox
 from AddFiles import AddFiles
 from datetime import datetime
 from ReadingAndWritingPart import ReadingAndWritingPart
+from pathlib import Path
 
 
 
@@ -103,9 +104,14 @@ class ReadingPart(QWidget, ReadingAndWritingPart):
             hbox.layout.addWidget(QLabel(" "))
             self.majValidityRange()
         
-        button_save = QPushButton("Convert the file")
-        button_save.clicked.connect(partial(self.convert_to_other_format, tab_left.currentIndex))
+        button_convert = QPushButton("Convert the file into TMAP")
+        button_convert.clicked.connect(partial(self.convert_to_other_format, tab_left.currentIndex))
+        hbox.layout.addWidget(button_convert)
+
+        button_save = QPushButton("Save into txt file")
+        button_save.clicked.connect(self.save_into_txt_file)
         hbox.layout.addWidget(button_save)
+
         self.qlabel_validity_range.setText(self.validity_range)
         hbox.layout.addWidget(self.qlabel_validity_range)
         hbox.layout.addWidget(QLabel("Coefficients"))
@@ -173,7 +179,22 @@ class ReadingPart(QWidget, ReadingAndWritingPart):
         self.end_validity_ranges.append(parameters["material"]["melting_point"])
         self.majValidityRange()
         self.qlabel_validity_range.setText(self.validity_range)
-
+    
+    def save_into_txt_file(self):
+        try:
+            filename = QFileDialog.getSaveFileName(None, "Save File")[0]
+            print(filename)
+            path = Path(filename)
+            ends_of_filenames = ["log - natural", "log - T-1", "natural - natural", "log - log"]
+            for i in range(len(self.pltwindows)):
+                new_filename = path.stem + "_" + ends_of_filenames[i] + path.suffix
+                newpath = path.with_name(new_filename)
+                print(newpath)
+                self.pltwindows[i].save(str(new_filename))
+        except Exception as e:
+            title = "Error encountered while saving"
+            content = "An error was encountered while saving. This error is:\n" + str(e)
+            newErrorWindow(title, content)
 
     @pyqtSlot()
     def on_click_tracer(self, name):
@@ -184,7 +205,7 @@ class ReadingPart(QWidget, ReadingAndWritingPart):
             or 'Kr' (for combination).
         """
         start = time.time()
-        print('Tracons la courbe des lignes ' + name)
+        print('Tracons la courbe ' + name)
 
         # clean graphs
         for indice_figure in range(len(self.pltwindows)):
@@ -205,11 +226,11 @@ class ReadingPart(QWidget, ReadingAndWritingPart):
                 if equation[0] == name:
                     try:
                         if name == "D":
-                            y_unit = "Diffusivity (m²/s)"
+                            y_unit = r"Diffusivity (m$^2$/s)"
                         elif name == "Kr":
-                            y_unit = "Recombinaison coefficient (m⁴/s)"
+                            y_unit = r"Recombinaison coefficient (m$^4$/s)"
                         elif name == "S":
-                            y_unit = "Solubility (adatome/(m³*Pa½)"
+                            y_unit = r"Solubility (adatome/(m$^3$ Pa$^{0.5}$)"
                         else:
                             y_unit = ""
                         y_values = equation[1][1] * np.exp(-equation[2][1]/(k_b * les_temperatures))
@@ -279,28 +300,6 @@ class ReadingPart(QWidget, ReadingAndWritingPart):
             filepath, liste = success
             self.open_new_file(tab_to_add, get_name_from_path(filepath), liste)
 
-
-    def save(self, functionToCallToGetIndex):
-        """
-            Save a file (ie: a tab) to a json file. Each file is represented by 4 sub tabs.)
-        """
-        try:
-            data_to_save = self.getDataInFile(functionToCallToGetIndex)
-            filename = QFileDialog.getSaveFileName(None, "Save File")[0]
-            if filename[-4::] != ".txt":
-                filename += ".txt"
-            #pdb.Pdb.complete=rlcompleter.Completer(locals()).complete; pdb.set_trace()
-            with open(filename, "w") as fichier:
-                fichier.write(json.dumps(data_to_save, indent=4))
-        except Exception as e:
-            dialog = QMessageBox()
-            dialog.setWindowTitle("Error")
-            error_text = "An error occured while saving your file. It is likely that your file is filled with wrong datas (or maybe you don't have any file opened yet).\n"
-            error_text += "Error text: " + str(e)
-            dialog.setText(error_text)
-            dialog.setIcon(QMessageBox.Warning)
-            dialog.exec_()
-
     def convert_to_other_format(self, functionToCallToGetIndex):
         try:
             data_to_convert = self.getDataInFile(functionToCallToGetIndex)
@@ -358,3 +357,10 @@ class ReadingPart(QWidget, ReadingAndWritingPart):
                 fichier.write(data_converted)
         except Exception as e:
             print("Une erreur est survenue lors de la conversion", e)
+
+def newErrorWindow(title, content):
+    dialog = QMessageBox()
+    dialog.setWindowTitle(title)
+    dialog.setText(content)
+    dialog.setIcon(QMessageBox.Warning)
+    dialog.exec_()

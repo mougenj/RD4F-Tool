@@ -25,7 +25,7 @@ class AboutWindow(QMainWindow):
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
         scriptDir = os.path.dirname(os.path.realpath(__file__))
-        self.setWindowIcon(QIcon(scriptDir + os.path.sep + "ressources" +  os.path.sep + "logo.png"))
+        self.setWindowIcon(QIcon(scriptDir + os.path.sep + "ressources" +  os.path.sep + "2.png"))
         self.center()
         self.initUI()
 
@@ -49,7 +49,7 @@ class AboutWindow(QMainWindow):
 
         central_widget.layout = QHBoxLayout()
         central_widget.setLayout(central_widget.layout)
-        logo = makeWidget.make_pixmap("ressources/lspm-trasparent.png")
+        logo = makeWidget.make_pixmap("ressources/logo2.png")
         central_widget.layout.addWidget(logo)
 
         text_area = makeWidget.make_vbox()

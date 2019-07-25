@@ -64,7 +64,7 @@ class ReadingAndWritingPart():
         data["source"]["year"] = to_int_secure(data["source"]["year"])
         data["source"]["last_edit"] = get_today_date()
 
-        for key in ("melting_point", "lattice_parameter", "density"):
+        for key in ("melting_point", "mean_lattice_constant", "density"):
             data["material"][key] = to_float_secure(data["material"][key])
 
         #atomic number and adatom atomic number to float
@@ -84,31 +84,25 @@ class ReadingAndWritingPart():
             "material" :{},
             "source" :{},
             "traps" : [],
-            "equation" : {}
+            "equation" : {},
+            "traps-comment" : ""
         }
-        print("todoa")
-        print(searchForChild(self, ["tab_left"]))
+
         tabs = searchForChild(self, ["tab_left"])[0]
         snf = tabs.widget(index)
         tabs_to_save = snf.findChild(QTabWidget)
-        print("todob")
 
-        for tab_data_container in searchForChild(tabs_to_save, ["traps", "material", "source", "equation"]):
+        for tab_data_container in searchForChild(tabs_to_save, ["traps", "material", "source", "equation", "traps-comment"]):
             print(tab_data_container.objectName())
             if tab_data_container.objectName() == "equation":
-                print("todoc")
                 vbox = tab_data_container
-                print("vbox", vbox)
                 groupboxes = vbox.findChildren(QGroupBox)
-                print("groupboxes", groupboxes)
                 for groupbox in groupboxes:
-                    print("groupbox", groupbox)
                     grid_layout = groupbox.findChild(QGridLayout)
                     coef1 = grid_layout.itemAtPosition(1, 0).widget().text()
                     val1 = grid_layout.itemAtPosition(1, 1).widget().text()
                     coef2 = grid_layout.itemAtPosition(2, 0).widget().text()
                     val2 = grid_layout.itemAtPosition(2, 1).widget().text()
-                    # checkbox = grid_layout.itemAtPosition(1, 4).widget()
 
                     comment_content = groupbox.findChild(QTextEdit).toPlainText()
                     display_groupbox = True
@@ -130,6 +124,7 @@ class ReadingAndWritingPart():
                         data_to_save["equation"][equation_type][coef2] = val2
                         data_to_save["equation"][equation_type]["comment"] = comment_content
             elif tab_data_container.objectName() == "traps":
+
                 for i in range(tab_data_container.topLevelItemCount()):
                     trap_tree = tab_data_container.topLevelItem(i)
                     dictionnary_of_this_trap = {
@@ -152,16 +147,21 @@ class ReadingAndWritingPart():
 
                     if not dictionnary_of_this_trap == {}:
                         data_to_save["traps"].append(dictionnary_of_this_trap)
-                
+            
+            elif tab_data_container.objectName() == "traps-comment":
+                data_to_save["traps-comment"] = tab_data_container.toPlainText()
+
             elif tab_data_container.objectName() == "material":
                 vbox = tab_data_container 
                 for groupbox in searchForChild(vbox, ["gb_material"]):
                     for row in range(groupbox.layout.rowCount()):
+                        print(label, value)
                         label = groupbox.layout.itemAtPosition(row, 0).widget().text()
                         value = groupbox.layout.itemAtPosition(row, 2).widget().text()
                         data_to_save["material"][label] = value
                 for groupbox in searchForChild(vbox, ["gb_adatome"]):
                     for row in range(groupbox.layout.rowCount()):
+                        print(label, value)
                         label = groupbox.layout.itemAtPosition(row, 0).widget().text()
                         value = groupbox.layout.itemAtPosition(row, 1).widget().text()
                         data_to_save["material"][label] = value

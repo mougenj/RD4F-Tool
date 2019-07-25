@@ -1,6 +1,21 @@
 import DragAndDrop
 from PyQt5.QtCore import pyqtSlot
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QGroupBox, QGridLayout, QLabel, QHBoxLayout, QScrollArea, QScroller, QPushButton, QApplication, QTabWidget, QTreeWidget, QTreeWidgetItem, QHeaderView, QCheckBox, QTextEdit
+from PyQt5.QtWidgets import (QWidget,
+                             QVBoxLayout,
+                             QGroupBox,
+                             QGridLayout,
+                             QLabel,
+                             QHBoxLayout,
+                             QScrollArea,
+                             QScroller,
+                             QPushButton,
+                             QApplication,
+                             QTabWidget,
+                             QTreeWidget,
+                             QTreeWidgetItem,
+                             QHeaderView,
+                             QCheckBox,
+                             QTextEdit)
 from QLineEditWidthed import QLineEditWidthed
 from PyQt5.QtGui import QColor, QFont, QIcon
 import pdb
@@ -9,6 +24,65 @@ import rlcompleter
 from functools import partial
 import makeWidget
 from datetime import datetime
+
+import sys
+from matplotlib import pyplot as plt
+from matplotlib.backends.backend_agg import FigureCanvasAgg
+from PyQt5 import QtGui, QtCore
+# Use LaTEX font
+try:
+    plt.rc('text', usetex=True)
+    plt.rc('font', family='serif')
+except:
+    print('No latex installation found')
+    pass
+
+
+def mathTex_to_QPixmap(mathTex, fs):
+    '''
+    Convert matplotlib figure to QPixmap object
+    Args:
+    - mathTex : str, mathematical expression
+    - fs : int, font size
+    Returns QPixmap object's label.
+    '''
+    # ---- set up a mpl figure instance ----
+
+    fig = plt.Figure()
+    fig.patch.set_facecolor('none')
+    fig.set_canvas(FigureCanvasAgg(fig))
+    renderer = fig.canvas.get_renderer()
+
+    # ---- plot the mathTex expression ----
+
+    ax = fig.add_axes([0, 0, 1, 1])
+    ax.axis('off')
+    ax.patch.set_facecolor('none')
+    t = ax.text(0, 0, mathTex, ha='left', va='bottom', fontsize=fs)
+
+    # ---- fit figure size to text artist ----
+
+    fwidth, fheight = fig.get_size_inches()
+    fig_bbox = fig.get_window_extent(renderer)
+
+    text_bbox = t.get_window_extent(renderer)
+
+    tight_fwidth = text_bbox.width * fwidth / fig_bbox.width
+    tight_fheight = text_bbox.height * fheight / fig_bbox.height + 0.1
+
+    fig.set_size_inches(tight_fwidth, tight_fheight)
+    # ---- convert mpl figure to QPixmap ----
+
+    buf, size = fig.canvas.print_to_buffer()
+    qimage = QtGui.QImage.rgbSwapped(QtGui.QImage(buf, size[0], size[1],
+                                                  QtGui.QImage.Format_ARGB32))
+    qpixmap = QtGui.QPixmap(qimage)
+
+    label = QLabel()
+    label.setObjectName('label')
+    label.setPixmap(qpixmap)
+
+    return label
 
 
 def get_today_date():
@@ -150,8 +224,20 @@ class ShowNewFile(QWidget):
 
         
         material_counter = 0
-        keys = ("lattice_parameter", "atomic_number", "density", "atomic_symbol", "melting_point", "name", "net")
-        units = ("m", "", "at/m³", "", "K", "", "")
+                # "name" : None,
+        # "atomic_symbol" : None,
+        # "lattice_type" : None,
+        # "melting_point" : None,
+        # "atomic_number" : None,
+        # "mean_lattice_constant" : None,
+        # "density" : None,
+
+        # "adatome" : None,
+        # "adatome_atomic_number" : None,
+        # "adatome_atomic_symbol" : None
+
+        keys = ("name", "atomic_symbol", "lattice_type", "melting_point", "atomic_number", "mean_lattice_constant", "density")
+        units = ("", "", "", "K", "", "m", "atoms/m³")
         for key, unit in zip(keys, units):
             value = ""
             try:
@@ -334,9 +420,13 @@ class ShowNewFile(QWidget):
         if self.editable:
             bt_add_new_trap = QPushButton("Add a trap")
             vbox.layout.addWidget(bt_add_new_trap)
-            empy_trap = {"density":None, "angular_frequency":None, "energy":[]}
-            bt_add_new_trap.clicked.connect(partial(self.create_subtree_for_a_trap, tree, empy_trap))
-        tabs.addTab(vbox, "Traps")
+            empty_trap = {"density":None, "angular_frequency":None, "energy":[]}
+            bt_add_new_trap.clicked.connect(partial(self.create_subtree_for_a_trap, tree, empty_trap))
+        comment = parameters.get("traps-comment", "")
+        textedit = QTextEdit(comment)
+        textedit.setReadOnly(not self.editable)
+        textedit.setObjectName("traps-comment")
+        tabs.addTab(makeWidget.make_vbox(vbox, textedit), "Traps")
         
         layout = QVBoxLayout()  # contient les tabs
         layout.addWidget(tabs)
@@ -464,21 +554,30 @@ class ShowNewFile(QWidget):
             unit2 = ("(eV)", "(kJ/mol)")
             if name == "D":
                 unit1 = "(m²/s)"
-                latex_equation = makeWidget.make_pixmap("ressources/latex_equation_diffusivity_resized.png")
+                # latex_equation = makeWidget.make_pixmap("ressources/latex_equation_diffusivity_resized.png")
+                latex_equation_text = \
+                    r"$D = D_0 \cdot e^{-\frac{E_D}{k_B \cdot T}}$"
+                latex_equation = mathTex_to_QPixmap(latex_equation_text, 16)
                 title = "For interstitial diffusivity"
                 objectName = "diffusivity"
                 coef1_name = "D_0"
                 coef2_name = "E_D"
             elif name == "S":
                 unit1 = "(adatome/(m³*Pa½))"  # todo: update it (like JS)
-                latex_equation = makeWidget.make_pixmap("ressources/latex_equation_solubility_resized.png")
+                # latex_equation = makeWidget.make_pixmap("ressources/latex_equation_solubility_resized.png")
+                latex_equation_text = \
+                    r"$S = S_0 \cdot e^{-\frac{E_S}{k_B \cdot T}}$"
+                latex_equation = mathTex_to_QPixmap(latex_equation_text, 16)
                 title = "For solubility"
                 objectName = "solubility"
                 coef1_name = "S_0"
                 coef2_name = "E_S"
             elif name == "Kr":
                 unit1 = "(m⁴/s)"
-                latex_equation = makeWidget.make_pixmap("ressources/latex_equation_combination_resized.png")
+                # latex_equation = makeWidget.make_pixmap("ressources/latex_equation_combination_resized.png")
+                latex_equation_text = \
+                    r"$K_r = K_{r_0} \cdot e^{-\frac{E_r}{k_B \cdot T}}$"
+                latex_equation = mathTex_to_QPixmap(latex_equation_text, 16)
                 title = "For combination"  # todo: check translation
                 objectName = "combination"
                 coef1_name = "Kr_0"
@@ -542,6 +641,3 @@ class ShowNewFile(QWidget):
                     fillVboxWithAnything(equations_container, name, "None", "None", "", is_in_the_file=False)
 
         return equations_container
-
-
-
