@@ -116,7 +116,7 @@ class PltWindowReading(PltWindow):
             ax.plot(data, "o--")
         else:
             ax = self.figure.add_subplot(111)
-            ax.ticklabel_format(style='sci', scilimits=(0, 0))
+            ax.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
             if xlog:
                 ax.set_xscale("log", nonposx='clip')
             if ylog:
