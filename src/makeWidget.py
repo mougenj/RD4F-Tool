@@ -1,5 +1,12 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QScrollArea, QScroller, QLabel, QGroupBox
-from PyQt5.QtGui import QPixmap 
+from PyQt5.QtWidgets import QWidget, \
+                            QVBoxLayout, \
+                            QHBoxLayout, \
+                            QScrollArea, \
+                            QScroller, \
+                            QLabel, \
+                            QGroupBox
+from PyQt5.QtGui import QPixmap
+
 
 def make_vbox(*args):
     """
@@ -35,19 +42,22 @@ def make_scroll(scrollAreaWidgetContents):
     scroll_area = QScrollArea()
     scroll_area.setWidgetResizable(True)
     scroll_area.setWidget(scrollAreaWidgetContents)
-    QScroller.grabGesture(scroll_area.viewport(), QScroller.LeftMouseButtonGesture)
+    QScroller.grabGesture(
+        scroll_area.viewport(), QScroller.LeftMouseButtonGesture)
     return scroll_area
+
 
 def make_pixmap(picture_name):
     """
         Create a QLabel with the name picture_name, containing a QPixmap
-        made from the image picture_name. 
+        made from the image picture_name.
     """
     label = QLabel()
     label.setObjectName(picture_name)
     pixmap = QPixmap(picture_name)
     label.setPixmap(pixmap)
     return label
+
 
 def make_groupbox(name, *args):
     gb_material = QGroupBox()
@@ -59,4 +69,3 @@ def make_groupbox(name, *args):
         for arg in args:
             gb_material.layout.addWidget(arg)
     return gb_material
-    
