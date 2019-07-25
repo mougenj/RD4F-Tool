@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import (QWidget,
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
+from matplotlib.ticker import FuncFormatter
 import matplotlib.ticker as mtick
 import numpy as np
 
@@ -29,6 +30,18 @@ class PltWindow(QWidget):
         self.setLayout(self.layout)
 
         self.plotted_data = []
+
+
+
+    def MyFormatter(self, x, lim):
+        """
+            Format a matplotlib axis.
+        """
+        if x == 0:
+            return 0
+        return '{0:.2f}e{1:.2f}'.format(np.sign(x)*10**(-np.floor(np.log10(abs(x)))+np.log10(abs(x))),np.floor(np.log10(abs(x))))
+        #The first argument of the format gives the first significant digits of the number with the sign preserved and brought to a range between [1-10), The next argument gives the  numbers integer exponent of 10
+        #Both the first and second arguments are formatted to display only 2 decimal places due to the lack of space.
     
     def save(self, filename):
         """
@@ -108,6 +121,10 @@ class PltWindowReading(PltWindow):
             ax.plot(data, "o--")
         else:
             ax = self.figure.add_subplot(111)
+            # ax.ticklabel_format(style="scientific", scilimits=(0, 0), useOffset=True)
+            majorFormatter = FuncFormatter(self.MyFormatter)
+            ax.xaxis.set_major_formatter(majorFormatter)
+            ax.yaxis.set_major_formatter(majorFormatter)
             if xlog:
                 ax.set_xscale("log", nonposx='clip')
             if ylog:
@@ -220,10 +237,10 @@ class PltWindowProfile(PltWindow):
             if ylog:
                 ax.set_yscale("log", nonposy='clip')
             x, y = data
-
-            ax.xaxis.set_major_formatter(mtick.FormatStrFormatter('%.2e'))
-            ax.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.2e'))
-
+            
+            majorFormatter = FuncFormatter(self.MyFormatter)
+            ax.xaxis.set_major_formatter(majorFormatter)
+            ax.yaxis.set_major_formatter(majorFormatter)
             self.updateXMinXMax(x, y)
 
 
