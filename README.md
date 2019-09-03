@@ -17,6 +17,14 @@ git clone https://github.com/Ribodou/LSPM-Gui
 cd LSPM-Gui
 python3 main.py
 ```
+On Windows:
+After having installing git (https://git-scm.com/download/win), go to https://www.python.org/downloads/windows/ and click on "Latest Python 3 Release". Execute the Python installer. At the end of the installation, the installer will let you add Python to your PATH. Be sure to add Python in your PATH, otherwise you won't have access to pip (wich is required to install modules). Then, use pip to install every modules. Depending on your version of Windows, you might already have some of them on your machine. In such case, if you try to install them, you might get an error. You should just ignore them and re-enter the command without the troublesome modules.
+```
+python -m pip install matplotlib PyQt5 numpy functools crossrefapi
+git clone https://github.com/Ribodou/LSPM-Gui
+cd LSPM-Gui
+python main.py
+```
 This way, you can execute the program via command-line interface, via "python main.py" on Windows, or "python3 main.py" on Linux.  
 
 However, you may want to build an executable (ie: double-click on it to execute it). In this case, you will have to "compile" the python program. In this case, the crossref module is mandatory. To compile python scripts, you should install another module: pyinstaller. Then, type "pyinstaller main.py --exclude-module PyQt4 --onedir --noconsole" in a console while being in the LSPM-Gui folder.
