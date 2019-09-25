@@ -1,0 +1,58 @@
+{
+    "material": {
+        "net": "cc",
+        "adatome_atomic_symbol": null,
+        "lattice_parameter": 3.1652e-10,
+        "atomic_symbol": "W",
+        "name": "Tunsgten",
+        "adatome": "Hydrogen",
+        "density": 6.322e+28,
+        "adatome_atomic_number": 1,
+        "melting_point": 3695.0,
+        "atomic_number": 74
+    },
+    "equation": {
+        "D": {
+            "E_D": 0.2,
+            "D_0": 1.93e-07,
+            "comment": "DFT work. High Temperature (HT) value."
+        }
+    },
+    "source": {
+        "doi": "10.1016/j.actamat.2015.04.052",
+        "author_name": "Fernandez et al.",
+        "last_edit": "2019-07-04 16:43:54",
+        "year": 2015
+    },
+    "traps": [
+        {
+            "density": null,
+            "data": [
+                {
+                    "frequency": "8.50e+12",
+                    "energy": "1.43e+00"
+                },
+                {
+                    "frequency": "8.30e+12",
+                    "energy": "1.42e+00"
+                },
+                {
+                    "frequency": "1.45e+13",
+                    "energy": "1.25e+00"
+                },
+                {
+                    "frequency": "9.90e+12",
+                    "energy": "1.17e+00"
+                },
+                {
+                    "frequency": "1.07e+13",
+                    "energy": "1.11e+00"
+                },
+                {
+                    "frequency": "9.80e+12",
+                    "energy": "8.60e-01"
+                }
+            ]
+        }
+    ]
+}

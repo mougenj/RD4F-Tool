@@ -1,0 +1,25 @@
+{
+    "equation": {
+        "D": {
+            "D_0": 1.58e-7,
+            "comment": "Fit from experimental works. D0=1.58+1.9-0.77 m2/s. ED=0.25+/-0.08 eV",
+            "E_D": 0.25
+        }
+    },
+    "material": {
+        "lattice_parameter": 3.1652e-10,
+        "adatome": "Hydrogen",
+        "name": "Tunsgten",
+        "density": 6.322e+28,
+        "atomic_symbol": "W",
+        "net": "cc",
+        "melting_point": 3695.0,
+        "atomic_number": 74.0
+    },
+    "traps": [],
+    "source": {
+        "author_name": "Heinola et al.",
+        "year": 2010,
+        "doi": "10.1063/1.3386515"
+    }
+}

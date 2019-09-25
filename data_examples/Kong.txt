@@ -1,0 +1,28 @@
+{
+    "equation": {
+        "D": {
+            "D_0": 7.44e-8,
+            "E_D": 0.13
+        },
+        "S": {
+            "E_S": 1.25,
+            "S_0": 0.0099
+        }
+    },
+    "source": {
+        "doi": "10.1016/j.actamat.2014.10.039",
+        "year": 2015,
+        "author_name": "Kong et al."
+    },
+    "material": {
+        "lattice_parameter": 3.1652e-10,
+        "adatome": "Hydrogen",
+        "name": "Tunsgten",
+        "density": 6.322e+28,
+        "atomic_symbol": "W",
+        "net": "cc",
+        "melting_point": 3695.0,
+        "atomic_number": 74.0
+    },
+    "traps": []
+}

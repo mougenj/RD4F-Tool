@@ -1,0 +1,28 @@
+{
+    "source": {
+        "last_edit": "2019-07-04 09:18:20",
+        "year": 1969,
+        "doi": "10.1116/1.1492699",
+        "author_name": "Frauenfelder"
+    },
+    "material": {
+        "atomic_number": 74,
+        "net": "cc",
+        "adatome_atomic_number": 1,
+        "density": 6.322e+28,
+        "lattice_parameter": 3.1652e-10,
+        "melting_point": 3695.0,
+        "adatome_atomic_symbol": null,
+        "name": "Tunsgten",
+        "atomic_symbol": "W",
+        "adatome": "Hydrogen"
+    },
+    "equation": {
+        "D": {
+            "comment": "Fit from experimental works. D0=4.1+0.5-0.2 m2/s. ED=0.39+/-0.08 eV",
+            "E_D": 0.39,
+            "D_0": 4.1e-07
+        }
+    },
+    "traps": []
+}
